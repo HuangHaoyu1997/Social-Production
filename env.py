@@ -17,3 +17,8 @@ def consume(agent):
 
 def salary(agent):
     pass
+
+def hire(agent):
+    pass
+
+
