@@ -50,27 +50,46 @@ class env:
         pass
     
     def pay(self,):
-        # 遍历E中的每个agent a，为a.hire中的工人发工资
-        
+        # 遍历E中的每个employer，为employer.hire中的worker发工资
         for employer in self.E:
-            capital = self.agent_pool[employer].coin
-            worker_list = self.agent_pool[employer].hire
+            capital = self.agent_pool[employer].coin # employer现有资本
+            worker_list = self.agent_pool[employer].hire # 雇佣名单
             random.shuffle(worker_list)
             for worker in worker_list:
+                # 在最低工资和最高工资之间发工资
                 w = np.random.randint(self.param.w1,self.param.w2)
-                if w <= capital:
+                if capital >= w:
                     self.agent_pool[worker].coin += w
                     capital -= w
-                if w > capital:
-                    
+                # 资本量不足以开出现有工资
+                elif capital < w and capital > self.param.w1:
+                    w = np.random.randint(self.param.w1,capital) # 降薪发工资
+                    self.agent_pool[worker].coin += w
+                    capital -= w
+                elif capital <= self.param.w1:
+                    self.agent_pool[worker].coin += capital # 破产发工资
+                    capital = 0
+                    break
+            if capital <= 0:
+                self.broken(employer) # 破产
+                self.E, self.W, self.U = self.working_state() # 更新工作状态
         return None
 
-    def broken(self):
-        pass
+    def broken(self,employer):
+        # 雇佣者及其雇工都失业，加入U集合，从E和W集合中删除对应agent
+        # 被雇者的雇主设置为0，修改其工作状态
+        # 雇佣者的雇佣名单清空，修改其工作状态
+        self.agent_pool[employer].work = 0 # 失业
+        for worker in self.agent_pool[employer].hire:
+            self.agent_pool[worker].work = 0 # 失业
+            self.agent_pool[worker].employer = None
+        self.agent_pool[employer].hire = {}
         
         return None
 
-
+    def fire(self, employer):
+        # 解雇
+        
 def total_value(agent_pool, V):
     # 系统总货币量
     M = 0
