@@ -41,13 +41,14 @@ class env:
                     W.append(name)
         return E, W, U
     
-    def hire(self,):
-        pass
 
     def step(self,):
         # 单步执行函数
-        
-        pass
+        self.hire()
+        self.exploit()
+        self.hire()
+        self.pay()
+        self.consume()
     
     def pay(self,):
         # 遍历E中的每个employer，为employer.hire中的worker发工资
@@ -87,9 +88,44 @@ class env:
         
         return None
 
+    def hire(self,):
+        for unemployed in self.U:
+            pass
+
+    def exploit(self,):
+        pass
+
     def fire(self, employer):
         # 解雇
+        capital = self.agent_pool[employer]
+        worker_list = self.agent_pool[employer].hire
+
+        max_num = np.floor(2*capital / (self.param.w1+self.param.w2)) # 最大工人数量
+        num_worker = len(worker_list) # 工人数量
+        fire_num = np.max(num_worker - max_num,0) # 解雇数量
+        if fire_num > 0:
+            fire_list = random.sample(self.agent_pool[employer].hire,fire_num) # 随机解雇
+            for worker in fire_list:
+                self.agent_pool[worker].work = 0
+                self.agent_pool[worker].employer = None
+
+
+
+
+    def consume(self,):
+        # 消费，随机量m∈[0,m_a]
+        # agent的钱减少m，市场价值增加m
+        V_value = 0
+        for name in self.agent_pool:
+            ma = self.agent_pool[name].coin
+            if ma > 0: m = np.random.randint(0,ma)
+            else: m = 0
+            self.agent_pool[name].coin -= m
+            V_value += m
         
+        self.market_V += V_value
+        return None
+
 def total_value(agent_pool, V):
     # 系统总货币量
     M = 0
@@ -97,19 +133,6 @@ def total_value(agent_pool, V):
         M += agent_pool[name].coin
     return M+V
 
-def consume(agent_pool):
-    # 消费，随机量m∈[0,m_a]
-    # agent的钱减少m，市场价值增加m
-    V_value = 0
-    for name in agent_pool:
-        ma = agent_pool[name].coin
-        m = np.random.randint(0,ma)
-        agent_pool[name].coin -= m
-        V_value += m
-    return agent_pool, V_value
-
-def salary(agent):
-    pass
 
 
 
