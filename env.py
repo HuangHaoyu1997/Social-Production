@@ -48,14 +48,48 @@ class env:
                 W.append(name)
         return E, W, U
     
-    def step(self,): # 单步执行函数
+    def step(self,action): # 单步执行函数
+        if len(action)!=self.agent_num:
+            raise Exception('动作空间必须与智能体数量相同')
         
-        self.hire()
-        self.exploit()
-        self.pay()
-        self.consume()
+        agent_list = copy.deepcopy(self.agent_pool)
+        random.shuffle(agent_list)
+        for name in agent_list:
+            self.hire_for_single(name)
+            self.exploit()
+            self.pay()
+            self.consume()
 
-    def hire(self,):
+    def hire_for_single(self, name):
+        work = self.agent_pool[name].work
+        self.E, self.W, self.U = self.working_state() # 可能耗费时间
+        if work == 0: # 失业
+            U = copy.deepcopy(self.U); E = copy.deepcopy(self.E); random.shuffle(U)
+            UE = U+E; random.shuffle(UE)
+            # name的潜在雇佣者的货币统计
+            potential_e = [self.agent_pool[h].coin for h in UE]
+            # 按货币量多少概率决定u的雇主
+            prob = np.array(potential_e) / np.array(potential_e).sum()
+            e = UE[np.random.choice(np.arange(len(prob)),p=prob)]
+            if self.agent_pool[e].coin >= config.avg_coin:
+                # 给u设置雇主e,修改工作状态
+                self.agent_pool[name].employer = e
+                self.agent_pool[name].work = 2 # 2 for worker
+                # 给雇主e添加员工u,修改工作状态
+                self.agent_pool[e].employer = e
+                self.agent_pool[e].hire.append(name)
+                self.agent_pool[e].work = 1 # 1 for employer
+                u_idx = UE.index(name); UE.pop(u_idx)
+                # print(e,self.agent_pool[e].work)
+                # e_idx = UE.index(e)
+        elif work == 1: # 雇佣者
+            pass
+                
+        elif work == 2: # 被雇佣者
+            pass
+        self.E, self.W, self.U = self.working_state() # 更新维护智能体状态
+
+    def hire(self):
         U = copy.deepcopy(self.U)
         E = copy.deepcopy(self.E)
         random.shuffle(U)
@@ -86,6 +120,16 @@ class env:
         
         self.E, self.W, self.U = self.working_state() # 更新维护智能体状态
 
+    def exploit(self, name):
+        work = self.agent_pool[name].work
+        if work == 0: pass
+        elif work == 1: # 雇主
+            pass
+        elif work == 2: # 被雇佣
+            employer = self.agent_pool[name].employer
+            
+        w = np.random.randint(low=0,high=int(config.danjia*self.market_V)) # 1000
+
 
     def exploit(self,):
         for name in self.agent_pool:
@@ -99,8 +143,10 @@ class env:
 
 
     def pay(self,):
+
         # 遍历E中的每个employer，为employer.hire中的worker发工资
-        for employer in self.E:
+        E = copy.deepcopy(self.E)
+        for employer in E:
             capital = self.agent_pool[employer].coin # employer现有资本
             worker_list = self.agent_pool[employer].hire # 雇佣名单
             random.shuffle(worker_list)
@@ -203,7 +249,7 @@ for t in range(config.T):
         total_value(env.agent_pool,env.market_V),
         avg_coin(env.agent_pool,env.E),
         avg_coin(env.agent_pool,env.W))
-    env.step()
+    env.step(np.zeros((40)))
 
 
 # env.add_agent()
