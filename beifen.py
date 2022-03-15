@@ -1,5 +1,5 @@
 import numpy as np
-from config import config
+from configuration import config
 from agent import agent
 import random
 import math
