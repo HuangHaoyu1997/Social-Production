@@ -1,11 +1,10 @@
-from tkinter.messagebox import NO
 import numpy as np
 from configuration import config
-from agent import agent
 import random
 import math
 import copy
 from utils import *
+import networkx as nx
 
 random.seed(config.seed)
 np.random.seed(config.seed)
@@ -14,43 +13,17 @@ class Env:
     def __init__(self) -> None:
         pass
         
-    
     def reset(self,):
         self.t = 0 # tick
         self.agent_num = config.N # 智能体数量
-        self.agent_pool = self.add_agent(self.agent_num) # 添加智能体
+        self.agent_pool = add_agent(self.agent_num) # 添加智能体
         self.market_V = config.V # 市场价值
-        self.E, self.W, self.U = self.working_state() # 更新维护智能体状态
-
+        self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
+        
+        self.G = build_graph(self.agent_pool)
         self.resource = np.round(np.random.uniform(config.x_range[0],config.x_range[1],[config.resource,2]),2) # 资源坐标
 
         return [self.E, self.W ,self.U, self.market_V]
-
-    def add_agent(self, N):
-        pool = {}
-        for i in range(N):
-            name = str(i)
-            pool[name] = agent(name)
-        return pool
-    
-    def working_state(self,):
-        '''
-        统计当前所有agent工作状态
-        E:Employer
-        W:Worker
-        U:Unemployed
-        '''
-
-        E, W, U = [], [], []
-        for name in self.agent_pool:
-            if self.agent_pool[name].alive:
-                if self.agent_pool[name].work == 0:# 失业者
-                    U.append(name)
-                elif self.agent_pool[name].work == 1:# 雇主是自己，资本家
-                    E.append(name)
-                elif self.agent_pool[name].work == 2:# 雇主是别人，自己是工人
-                    W.append(name)
-        return E, W, U
     
     def step(self,action): # 单步执行函数
         if len(action)!=self.agent_num:
@@ -59,24 +32,40 @@ class Env:
         agent_list = list(self.agent_pool.keys())
         random.shuffle(agent_list)
         
+        data_step = []
+        
         for name in agent_list:
             # 必须活着
             if self.agent_pool[name].alive is not True: continue
+            
+            self.agent_pool[name].exploit = 0
+            self.agent_pool[name].labor_cost = 0
+
+            mod = round(random.uniform(0,config.move_len),2)
+            dir = round(random.uniform(0,config.move_dir),3)
+            self.agent_pool[name].move(mod=mod,direction=dir) # 移动
             self.production(name)
             self.hire(name)
             self.exploit(name)
             self.pay(name)
-            self.consume(name)
+            data = self.consume(name)
+            data_step.append(data)
         
-        self.E, self.W, self.U = self.working_state()
+        self.E, self.W, self.U = working_state(self.agent_pool)
+        
+        return data_step
+        # 由于nx可视化的错误，暂时取消self.G的更新
+        # self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
+
+
     
     def production(self,name):
         '''
-        产出量和距离成反比，和skill成正比
+        产出量和距离成反比,和skill成正比
         '''
         shortest_dis = CalDistance(self.agent_pool[name], self.resource)
         if shortest_dis <= config.product_thr:
-            product = (config.product_thr - shortest_dis)*self.agent_pool[name].skill
+            product = (config.product_thr - shortest_dis)*round(random.uniform(0,self.agent_pool[name].skill),2)
             self.agent_pool[name].coin += product
 
     def hire(self, name):
@@ -84,7 +73,7 @@ class Env:
         work = self.agent_pool[name].work
         
         # 【下一行能不能删去，安全吗？】
-        self.E, self.W, self.U = self.working_state() # 可能耗费时间，确保都是活着的
+        self.E, self.W, self.U = working_state(self.agent_pool) # 可能耗费时间，确保都是活着的
         if work == 0: # 失业
             # U = copy.deepcopy(self.U); E = copy.deepcopy(self.E); random.shuffle(U)
             UE = self.U + self.E
@@ -114,7 +103,7 @@ class Env:
             pass
         
         # 【这一行能不能删去，安全吗？】
-        self.E, self.W, self.U = self.working_state()
+        self.E, self.W, self.U = working_state(self.agent_pool)
 
     def exploit(self, name):
         work = self.agent_pool[name].work
@@ -127,6 +116,7 @@ class Env:
         w = round(w,2) # 四舍五入2位小数
         self.market_V -= w
         self.agent_pool[employer].coin += w
+        self.agent_pool[employer].exploit += w
 
     '''
         def pay_for_single(self, name):
@@ -164,31 +154,44 @@ class Env:
         '''为agent_pool[name].hire中的worker发工资'''
         if self.agent_pool[name].work != 1: return None
         
-        worker_list = self.agent_pool[name].hire # 雇佣名单
-        random.shuffle(worker_list)
-        for worker in worker_list:
-            capital = self.agent_pool[name].coin # employer现有资本
-            # 在最低工资和最高工资之间随机发工资
-            w = np.random.uniform(config.w1, config.w2); w = round(w,2)
-            if capital >= w:
-                self.agent_pool[worker].coin += w
-                capital -= w
-                self.agent_pool[name].coin = capital  ## 更新employer
-            # 资本量不足以开出现有工资
-            elif capital < w and capital > config.w1:
-                w = np.random.uniform(config.w1, capital); w = round(w,2) # 降薪发工资
-                self.agent_pool[worker].coin += w
-                capital -= w
-                self.agent_pool[name].coin = capital  ## 更新employer
-            elif capital <= config.w1:
-                self.agent_pool[worker].coin += capital # 破产发工资
-                capital = 0
-                self.agent_pool[name].coin = capital  ## 更新employer
-                break
-        # self.agent_pool[name].coin = capital # 【这一行有没有必要】
-        if self.agent_pool[name].coin <= 0:
+        coin_before = self.agent_pool[name].coin # 发工资之前的资本
+        
+        if coin_before <= 0:
             self.broken(name) # 破产
-        self.E, self.W, self.U = self.working_state() # 更新工作状态
+        else:
+            worker_list = self.agent_pool[name].hire # 雇佣名单
+            random.shuffle(worker_list)
+            for worker in worker_list:
+                capital = self.agent_pool[name].coin # employer现有资本
+                # 在最低工资和最高工资之间随机发工资
+                w = np.random.uniform(config.w1, config.w2); w = round(w,2)
+                if capital >= w:
+                    self.agent_pool[worker].coin += w
+                    capital -= w
+                    self.agent_pool[name].coin = capital  ## 更新employer
+                # 资本量不足以开出现有工资
+                elif capital < w and capital > config.w1:
+                    w = np.random.uniform(config.w1, capital); w = round(w,2) # 降薪发工资
+                    self.agent_pool[worker].coin += w
+                    capital -= w
+                    self.agent_pool[name].coin = capital  ## 更新employer
+                elif capital <= config.w1:
+                    self.agent_pool[worker].coin += capital # 破产发工资
+                    capital = 0
+                    self.agent_pool[name].coin = capital  ## 更新employer
+                    break
+            coin_after = self.agent_pool[name].coin
+        
+            # 【保持configuration.py不变，程序运行628步后报错】
+            if (coin_before - coin_after)<0: print(name, coin_before - coin_after)
+            assert (coin_before - coin_after)>=0
+        
+            self.agent_pool[name].labor_cost = coin_before - coin_after
+        
+            # self.agent_pool[name].coin = capital # 【这一行有没有必要】
+            if self.agent_pool[name].coin <= 0:
+                self.broken(name) # 破产
+        self.E, self.W, self.U = working_state(self.agent_pool) # 更新工作状态
         return None
 
     def broken(self,employer):
@@ -206,6 +209,8 @@ class Env:
             self.agent_pool[worker].employer = None
         self.agent_pool[employer].hire = []
         self.agent_pool[employer].employer = None
+        self.agent_pool[employer].labor_cost = 0
+        self.agent_pool[employer].exploit = 0
         return None
 
     def fire(self, name):
@@ -214,7 +219,7 @@ class Env:
         '''
         if self.agent_pool[name].work != 1: return None
 
-        self.E, self.W, self.U = self.working_state() # 更新维护智能体状态
+        self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         
         # 该资本家的货币量
         capital = self.agent_pool[name].coin
@@ -241,26 +246,35 @@ class Env:
             self.agent_pool[name].work = 0
             self.agent_pool[name].employer = None
         
-        self.E, self.W, self.U = self.working_state() # 更新维护智能体状态
+        self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
     def consume(self, name):
         # 消费，随机量m∈[0,m_a]
         # agent的钱减少m，市场价值增加m
         
         ma = self.agent_pool[name].coin
+        data = [name,config.consume,ma,self.agent_pool[name].hungry]
         if ma > 0: 
             m = np.random.uniform(0, config.consume*ma)+1
+            # m = max(0.1*ma, 1)
             self.agent_pool[name].hungry = 0 # 要限制，连续饿三天才会死
 
         elif ma <= 0: 
             m = 0
             self.agent_pool[name].hungry += 1
+
         self.agent_pool[name].coin -= m
         self.market_V += m
+        
+        data.append(self.agent_pool[name].coin)
+        data.append(self.market_V)
+        data.append(self.agent_pool[name].hungry)
+
         if config.die: 
             if self.agent_pool[name].hungry >= config.hungry_days:
                 self.die(name) # 饥饿超过5步就死掉
         
+        return data
     
     def die(self, name):
         '''死亡'''
@@ -278,23 +292,6 @@ class Env:
         if name in self.U: idx = self.U.index(name); self.U.pop(idx)
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
         if config.Verbose: print('%s is dead!'%name)
-
-
-
-env = Env()
-env.reset()
-agent_num = [[],[],[]]
-for t in range(config.T):
-    coin_a, coin_v, coin_t = total_value(env.agent_pool,env.market_V)
-    avg_coin_e, _ = avg_coin(env.agent_pool,env.E)
-    avg_coin_w, _ = avg_coin(env.agent_pool,env.W)
-    print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f'%\
-        (t, len(env.E),len(env.U),len(env.W),len(env.agent_pool),coin_a,coin_v,coin_t,avg_coin_e,avg_coin_w)
-        )
-    agent_num[0].append(len(env.U))
-    agent_num[1].append(len(env.E))
-    agent_num[2].append(len(env.W))
-    env.step(np.zeros((config.N)))
 
 
 # env.add_agent()
