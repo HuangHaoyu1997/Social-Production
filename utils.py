@@ -1,5 +1,6 @@
 from ast import Return
 import numpy as np
+from pandas import array
 from agent import agent
 from configuration import config
 import networkx as nx
@@ -105,10 +106,17 @@ def most_poor(agent, N):
     '''
     poor_list = []
     name_list = []
+    out = []
     for name in agent:
         if agent[name].alive:
             poor_list.append(agent[name].coin)
             name_list.append(name)
+    poor_list = np.array(poor_list)
+    idx = poor_list.argsort()[:N]
+    for i in idx:
+        out.append(name_list[i])
+    return out
+
 
 def exploit_ratio(agent, employer):
     '''
