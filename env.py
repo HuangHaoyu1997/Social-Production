@@ -18,6 +18,8 @@ class Env:
         self.agent_num = config.N # 智能体数量
         self.agent_pool = add_agent(self.agent_num) # 添加智能体
         self.market_V = config.V # 市场价值
+        self.gov = config.G # 政府财政
+        
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         
         self.G = build_graph(self.agent_pool)
@@ -114,6 +116,13 @@ class Env:
 
         w = np.random.uniform(low=0,high=int(config.danjia*self.market_V)) # 1000
         w = round(w,2) # 四舍五入2位小数
+        
+        if config.tax:
+            tax = w * config.business_tax
+            w = w * (1-config.business_tax) # 扣除企业税
+            self.gov += tax
+            print('ex,',tax)
+        
         self.market_V -= w
         self.agent_pool[employer].coin += w
         self.agent_pool[employer].exploit += w
@@ -166,18 +175,36 @@ class Env:
                 # 在最低工资和最高工资之间随机发工资
                 w = np.random.uniform(config.w1, config.w2); w = round(w,2)
                 if capital >= w:
-                    self.agent_pool[worker].coin += w
                     capital -= w
+
+                    # 缴个税
+                    if config.tax:
+                        tax = w * config.personal_income_tax
+                        w = w * (1-config.personal_income_tax)
+                        self.gov += tax
+                        print('pay,',tax)
+
+                    self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
                 # 资本量不足以开出现有工资
                 elif capital < w and capital > config.w1:
                     w = np.random.uniform(config.w1, capital); w = round(w,2) # 降薪发工资
-                    self.agent_pool[worker].coin += w
                     capital -= w
+                    
+                    # 缴个税
+                    if config.tax:
+                        tax = w * config.personal_income_tax
+                        w = w * (1-config.personal_income_tax)
+                        self.gov += tax
+                        print('pay,',tax)
+                    
+                    self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
                 elif capital <= config.w1:
                     self.agent_pool[worker].coin += capital # 破产发工资
                     capital = 0
+                    
+                    # 低于最低工资，不交税
                     self.agent_pool[name].coin = capital  ## 更新employer
                     break
             coin_after = self.agent_pool[name].coin
@@ -256,15 +283,24 @@ class Env:
         data = [name,config.consume,ma,self.agent_pool[name].hungry]
         if ma > 0: 
             m = np.random.uniform(0, config.consume*ma)+1
+            m_ = m
             # m = max(0.1*ma, 1)
+
+            # 消费税
+            if config.tax:
+                tax = m * config.consumption_tax
+                m_ = m * (1-config.consumption_tax)
+                self.gov += tax
+                print('con,',tax)
+
             self.agent_pool[name].hungry = 0 # 要限制，连续饿三天才会死
 
         elif ma <= 0: 
-            m = 0
+            m = 0; m_ = 0
             self.agent_pool[name].hungry += 1
 
         self.agent_pool[name].coin -= m
-        self.market_V += m
+        self.market_V += m_
         
         data.append(self.agent_pool[name].coin)
         data.append(self.market_V)

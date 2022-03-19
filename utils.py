@@ -82,7 +82,7 @@ def avg_coin(agent_pool:dict, agent:list):
     count = np.array(count)
     return np.round(count.mean(),2), np.round(count.std(),2)
 
-def total_value(agent_pool, V):
+def total_value(agent_pool, V, G):
     '''
     return: agent总货币量, 市场价值, 系统总价值
     '''
@@ -90,7 +90,7 @@ def total_value(agent_pool, V):
     for name in agent_pool:
         if agent_pool[name].alive:
             M += agent_pool[name].coin
-    return M,V,M+V
+    return M,V,G,M+V+G
 
 def CalDistance(agent:agent,resource:np.ndarray):
     '''
@@ -98,6 +98,12 @@ def CalDistance(agent:agent,resource:np.ndarray):
     '''
     tmp = np.sqrt((agent.x - resource[:,0])**2 + (agent.y - resource[:,1])**2)
     return tmp.min()
+
+def most_poor(agent, N):
+    '''
+    找出最穷的N个人
+    '''
+    
 
 def exploit_ratio(agent, employer):
     '''

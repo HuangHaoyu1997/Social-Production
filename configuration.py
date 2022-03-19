@@ -9,7 +9,8 @@ class config:
     coin_range = [20,100]       # 初始货币随机分布区间,仅random_coin=True生效
     w1 = 10                     # 最低工资
     w2 = 90                     # 最高工资
-    V = 1000                     # 初始市场价值
+    V = 1000                    # 初始市场价值
+    G = 1000                    # 政府财政
     T = 1000                    # 仿真步长
     avg_coin = (w1+w2)/2        # 平均工资
     avg_update = True           # 实时更新平均工资
@@ -25,10 +26,16 @@ class config:
     move_len = 10               # 随机游走的最长距离
     move_dir = 1                # 随机游走的方向范围，即[0,2π]
     
+    tax = True
+    personal_income_tax = 0.001  # 个人所得税5%
+    consumption_tax = 0.002      # 消费税
+    business_tax = 0.01         # 企业税
+    
     # for CGP
     MUT_PB = 0.7  # mutate probability
     N_COLS = 6   # number of cols (nodes) in a single-row CGP
     LEVEL_BACK = 4  # how many levels back are allowed for inputs in CGP
+    
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2
     LAMBDA = 100
