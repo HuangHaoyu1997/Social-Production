@@ -103,7 +103,12 @@ def most_poor(agent, N):
     '''
     找出最穷的N个人
     '''
-    
+    poor_list = []
+    name_list = []
+    for name in agent:
+        if agent[name].alive:
+            poor_list.append(agent[name].coin)
+            name_list.append(name)
 
 def exploit_ratio(agent, employer):
     '''
