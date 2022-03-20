@@ -27,7 +27,11 @@ class Env:
 
         return [self.E, self.W ,self.U, self.market_V]
     
-    def step(self,action): # 单步执行函数
+    def step(self,t,action):
+        '''
+        单步仿真程序
+
+        '''
         if len(action)!=self.agent_num:
             raise Exception('动作空间必须与智能体数量相同')
 
@@ -46,18 +50,36 @@ class Env:
             mod = round(random.uniform(0,config.move_len),2)
             dir = round(random.uniform(0,config.move_dir),3)
             self.agent_pool[name].move(mod=mod,direction=dir) # 移动
+            
             self.production(name)
             self.hire(name)
             self.exploit(name)
             self.pay(name)
             data = self.consume(name)
+            # self.fire(name)
             data_step.append(data)
+
+            if t % config.redistribution_freq == 0 and config.tax:
+                self.redistribution()
         
         self.E, self.W, self.U = working_state(self.agent_pool)
         
         return data_step
         # 由于nx可视化的错误，暂时取消self.G的更新
         # self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
+
+    def redistribution(self, ):
+        '''
+        对政府的钱再分配
+        '''
+        # 【有可能出现总人数不足300的情况，按比例得出300这个数字会更好】
+        poor_list = most_poor(self.agent_pool, 100)
+        poor_num = len(poor_list)
+        avg_coin = self.gov / poor_num
+        for name in poor_list:
+            self.agent_pool[name].coin += avg_coin
+            self.gov -= avg_coin
+        
 
 
     
@@ -69,6 +91,7 @@ class Env:
         if shortest_dis <= config.product_thr:
             product = (config.product_thr - shortest_dis)*round(random.uniform(0,self.agent_pool[name].skill),2)
             self.agent_pool[name].coin += product
+            # print(name,shortest_dis,product)
 
     def hire(self, name):
         
@@ -114,17 +137,17 @@ class Env:
         elif work == 1: employer = name # 雇主
         elif work == 2: employer = self.agent_pool[name].employer # 被雇佣
 
-        w = np.random.uniform(low=0,high=int(config.danjia*self.market_V)) # 1000
+        w = np.random.uniform(low=0,high=int(config.danjia*self.market_V))
         w = round(w,2) # 四舍五入2位小数
         
         if config.tax:
             tax = w * config.business_tax
-            w = w * (1-config.business_tax) # 扣除企业税
+            w_ = w * (1-config.business_tax) # 扣除企业税
             self.gov += tax
-            print('ex,',tax)
+            # print('ex,',tax)
         
         self.market_V -= w
-        self.agent_pool[employer].coin += w
+        self.agent_pool[employer].coin += w_
         self.agent_pool[employer].exploit += w
 
     '''
@@ -182,7 +205,7 @@ class Env:
                         tax = w * config.personal_income_tax
                         w = w * (1-config.personal_income_tax)
                         self.gov += tax
-                        print('pay,',tax)
+                        # print('pay,',tax)
 
                     self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
@@ -196,7 +219,7 @@ class Env:
                         tax = w * config.personal_income_tax
                         w = w * (1-config.personal_income_tax)
                         self.gov += tax
-                        print('pay,',tax)
+                        # print('pay,',tax)
                     
                     self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
@@ -291,7 +314,7 @@ class Env:
                 tax = m * config.consumption_tax
                 m_ = m * (1-config.consumption_tax)
                 self.gov += tax
-                print('con,',tax)
+                # print('con,',tax)
 
             self.agent_pool[name].hungry = 0 # 要限制，连续饿三天才会死
 

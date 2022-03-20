@@ -103,6 +103,7 @@ def CalDistance(agent:agent,resource:np.ndarray):
 def most_poor(agent, N):
     '''
     找出最穷的N个人
+    out: 最穷的N个人的name,按最穷-->次穷的顺序
     '''
     poor_list = []
     name_list = []

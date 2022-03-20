@@ -2,17 +2,17 @@ class config:
     seed = 1234
     Verbose = False              # 打印破产、解雇等事件
     render = True
-    N = 1000                    # 智能体数量
+    N = 500                    # 智能体数量
     work_state = 0              # 初始工作状态, 0 unemployed, 1 employer, 2 worker
     init_coin = 100             # 初始货币
     random_coin = False          # 初始货币随机分布
     coin_range = [20,100]       # 初始货币随机分布区间,仅random_coin=True生效
-    w1 = 10                     # 最低工资
-    w2 = 90                     # 最高工资
+    w1 = 10                     # 初始最低工资
+    w2 = 90                     # 初始最高工资
     V = 1000                    # 初始市场价值
-    G = 1000                    # 政府财政
+    G = 0                    # 政府财政
     T = 1000                    # 仿真步长
-    avg_coin = (w1+w2)/2        # 平均工资
+    avg_coin = (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
     danjia = 1.0                # 工人向市场出售商品时，最大单价
     consume = 1.0               # 消费比例,即智能体每次消费占其总财产的比例
@@ -29,8 +29,9 @@ class config:
     tax = True
     personal_income_tax = 0.001  # 个人所得税5%
     consumption_tax = 0.002      # 消费税
-    business_tax = 0.01         # 企业税
-    
+    business_tax = 0.15         # 企业税
+    redistribution_freq = 1    # 每10个step进行一次财富再分配
+
     # for CGP
     MUT_PB = 0.7  # mutate probability
     N_COLS = 6   # number of cols (nodes) in a single-row CGP

@@ -24,6 +24,8 @@ for t in range(config.T):
     avg_coin_u, _ = avg_coin(env.agent_pool, env.U)
     avg_coin_t, _ = avg_coin(env.agent_pool, list(env.agent_pool.keys()))
     RateSurplusValue = exploit_ratio(env.agent_pool, env.E)
+    if t%12==0:
+        print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
     print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f'%\
         (t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),coin_a,coin_v,coin_t,avg_coin_u,avg_coin_e,avg_coin_w)
         )
@@ -45,7 +47,7 @@ for t in range(config.T):
     if t > 0: RH.append(len(env.W)/len(env.E))
     
     #### Data storage
-    data_step = env.step(np.zeros((config.N)))
+    data_step = env.step(t, np.zeros((config.N)))
     data.extend(data_step)
     if t % 100 == 0:
         with open('./data/consume_data.pkl','wb') as f:
@@ -97,27 +99,27 @@ for t in range(config.T):
         ax2.set_ylabel('Employment Rate',color='blue')
         fig4.legend(['Rate of Surplus Value','Rate of Employment'],loc=2)
         # plt.legend(['single','total'])
-        
-        '''
         fig5 = plt.figure(5)
         ax1 = fig5.add_subplot(111)
         ax1.cla()
         ax1.imshow(grid)
-
         '''
         
 
         '''
-        # 有问题,会影响figure(4)的显示
-        # TODO 如何动态显示大规模nx.Graph？
-
-
         fig6 = plt.figure(6)
         ax = fig6.add_subplot(111)
         ax.cla()
         p = nx.spring_layout(env.G)
         nx.draw(env.G, pos=p)
         plt.show()
+
+        '''
+        # 有问题,会影响figure(4)的显示
+        # TODO 如何动态显示大规模nx.Graph？
+
+
+        
         '''
         
         plt.pause(0.0001)
