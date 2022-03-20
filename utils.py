@@ -118,6 +118,23 @@ def most_poor(agent, N):
         out.append(name_list[i])
     return out
 
+def most_rich(agent, N):
+    '''
+    找出最富的N个人
+    out: 最富的N个人的name,按最富-->次富的顺序
+    '''
+    rich_list = []
+    name_list = []
+    out = []
+    for name in agent:
+        if agent[name].alive:
+            rich_list.append(agent[name].coin)
+            name_list.append(name)
+    rich_list = np.array(rich_list)
+    idx = rich_list.argsort()[::-1]
+    for i in idx:
+        out.append(name_list[i])
+    return out
 
 def exploit_ratio(agent, employer):
     '''

@@ -59,8 +59,14 @@ class Env:
             # self.fire(name)
             data_step.append(data)
 
-            if t % config.redistribution_freq == 0 and config.tax:
-                self.redistribution()
+        
+        # 征收财产税
+        rich_people = most_rich(self.agent_pool, 50)
+        for name in rich_people:
+            self.gov += self.agent_pool[name].coin * config.property_tax
+        # 财富再分配
+        if t % config.redistribution_freq == 0 and config.tax:
+            self.redistribution()
         
         self.E, self.W, self.U = working_state(self.agent_pool)
         

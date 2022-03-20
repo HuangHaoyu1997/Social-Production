@@ -30,6 +30,7 @@ class config:
     personal_income_tax = 0.001  # 个人所得税5%
     consumption_tax = 0.002      # 消费税
     business_tax = 0.15         # 企业税
+    property_tax = 0.2          # 财产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
 
     # for CGP
