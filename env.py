@@ -46,27 +46,32 @@ class Env:
             
             self.agent_pool[name].exploit = 0
             self.agent_pool[name].labor_cost = 0
-
+            
+            # 随机移动
             mod = round(random.uniform(0,config.move_len),2)
             dir = round(random.uniform(0,config.move_dir),3)
-            self.agent_pool[name].move(mod=mod,direction=dir) # 移动
+            self.agent_pool[name].move(mod=mod,direction=dir)
             
             self.production(name)
             self.hire(name)
             self.exploit(name)
             self.pay(name)
             data = self.consume(name)
-            # self.fire(name)
+            self.fire(name)
+
             data_step.append(data)
 
-        
-        # 征收财产税
-        rich_people = most_rich(self.agent_pool, 50)
-        for name in rich_people:
-            self.gov += self.agent_pool[name].coin * config.property_tax
-        # 财富再分配
-        if t % config.redistribution_freq == 0 and config.tax:
-            self.redistribution()
+        if config.tax:
+            # 征收财产税
+            rich_people = most_rich(self.agent_pool, 50)
+            for name in rich_people:
+                tax = self.agent_pool[name].coin * config.property_tax
+                self.agent_pool[name].coin -= tax
+                self.gov += tax
+
+            # 财富再分配
+            if t % config.redistribution_freq == 0:
+                self.redistribution()
         
         self.E, self.W, self.U = working_state(self.agent_pool)
         
@@ -86,8 +91,6 @@ class Env:
             self.agent_pool[name].coin += avg_coin
             self.gov -= avg_coin
         
-
-
     
     def production(self,name):
         '''
@@ -145,7 +148,7 @@ class Env:
 
         w = np.random.uniform(low=0,high=int(config.danjia*self.market_V))
         w = round(w,2) # 四舍五入2位小数
-        
+        w_ = w
         if config.tax:
             tax = w * config.business_tax
             w_ = w * (1-config.business_tax) # 扣除企业税
@@ -155,38 +158,6 @@ class Env:
         self.market_V -= w
         self.agent_pool[employer].coin += w_
         self.agent_pool[employer].exploit += w
-
-    '''
-        def pay_for_single(self, name):
-
-        # 工作状态
-
-
-        capital = self.agent_pool[name].coin # employer现有资本
-        worker_list = self.agent_pool[name].hire # 雇佣名单
-        random.shuffle(worker_list)
-        for worker in worker_list:
-            # 在最低工资和最高工资之间发工资
-            w = np.random.uniform(config.w1, config.w2); w = np.round(w, 2)
-            if capital >= w:
-                self.agent_pool[worker].coin += w
-                capital -= w
-            # 资本量不足以开出现有工资
-            elif capital < w and capital > config.w1:
-                w = np.random.uniform(config.w1, capital); w = np.round(w, 2) # 降薪发工资
-                self.agent_pool[worker].coin += w
-                capital -= w
-            # 连最低工资也开不出了
-            elif capital <= config.w1:
-                self.agent_pool[worker].coin += capital # 破产发工资
-                capital = 0
-                break
-        
-        if capital <= 0:
-            self.broken(name) # 破产
-            self.E, self.W, self.U = self.working_state() # 更新工作状态
-
-    '''
 
     def pay(self, name):
         '''为agent_pool[name].hire中的worker发工资'''
@@ -260,20 +231,23 @@ class Env:
         assert self.agent_pool[employer].work == 1
         if config.Verbose: print('%s has broken!'%employer)
         self.agent_pool[employer].work = 0 # 失业
+
         for worker in self.agent_pool[employer].hire:
             self.agent_pool[worker].work = 0 # 失业
             self.agent_pool[worker].employer = None
+        
         self.agent_pool[employer].hire = []
         self.agent_pool[employer].employer = None
         self.agent_pool[employer].labor_cost = 0
         self.agent_pool[employer].exploit = 0
-        return None
+        # return None
 
     def fire(self, name):
         '''
         解雇
         '''
         if self.agent_pool[name].work != 1: return None
+        assert self.agent_pool[name].coin >= 0
 
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         
@@ -309,11 +283,13 @@ class Env:
         # agent的钱减少m，市场价值增加m
         
         ma = self.agent_pool[name].coin
+        
         data = [name,config.consume,ma,self.agent_pool[name].hungry]
         if ma > 0: 
-            m = np.random.uniform(0, config.consume*ma)+1
+            m = 0.1*ma
+            # m = np.random.uniform(0, config.consume*ma)
             m_ = m
-            # m = max(0.1*ma, 1)
+            
 
             # 消费税
             if config.tax:
@@ -328,9 +304,15 @@ class Env:
             m = 0; m_ = 0
             self.agent_pool[name].hungry += 1
 
+        
+
         self.agent_pool[name].coin -= m
         self.market_V += m_
-        
+
+        # 资本家消费完了没钱了，就要破产
+        if self.agent_pool[name].coin<=0 and self.agent_pool[name].work == 1:
+            self.broken(name)
+
         data.append(self.agent_pool[name].coin)
         data.append(self.market_V)
         data.append(self.agent_pool[name].hungry)

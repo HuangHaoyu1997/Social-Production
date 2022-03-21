@@ -1,8 +1,11 @@
 class config:
-    seed = 1234
+    seed = 123
     Verbose = False              # 打印破产、解雇等事件
-    render = True
-    N = 500                    # 智能体数量
+    render = False
+    N = 300                    # 智能体数量
+    T = 300                    # 仿真步长
+
+    # for agent
     work_state = 0              # 初始工作状态, 0 unemployed, 1 employer, 2 worker
     init_coin = 100             # 初始货币
     random_coin = False          # 初始货币随机分布
@@ -11,11 +14,11 @@ class config:
     w2 = 90                     # 初始最高工资
     V = 1000                    # 初始市场价值
     G = 0                    # 政府财政
-    T = 1000                    # 仿真步长
+    
     avg_coin = (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
     danjia = 1.0                # 工人向市场出售商品时，最大单价
-    consume = 1.0               # 消费比例,即智能体每次消费占其总财产的比例
+    consume = 1.0               # 消费比例,即智能体每次消费量占其总财产的比例
     die = False                 # 开启死亡机制，从agent_pool,E,W,U中删去
     hungry_days = 3             # 超过3天没钱消费就饿死
     x_range = [0,200]
@@ -26,21 +29,21 @@ class config:
     move_len = 10               # 随机游走的最长距离
     move_dir = 1                # 随机游走的方向范围，即[0,2π]
     
-    tax = True
+    tax = False
     personal_income_tax = 0.001  # 个人所得税5%
     consumption_tax = 0.002      # 消费税
-    business_tax = 0.15         # 企业税
-    property_tax = 0.2          # 财产税
+    business_tax = 0.01         # 企业税
+    property_tax = 0.01          # 财产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
 
     # for CGP
-    MUT_PB = 0.7  # mutate probability
-    N_COLS = 6   # number of cols (nodes) in a single-row CGP
-    LEVEL_BACK = 4  # how many levels back are allowed for inputs in CGP
+    MUT_PB = 0.8  # mutate probability
+    N_COLS = 10   # number of cols (nodes) in a single-row CGP
+    LEVEL_BACK = 8  # how many levels back are allowed for inputs in CGP
     
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2
-    LAMBDA = 100
-    N_GEN = 50  # max number of generations
+    LAMBDA = 20
+    N_GEN = 5000  # max number of generations
 
 

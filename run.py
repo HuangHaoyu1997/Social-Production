@@ -7,6 +7,7 @@ import pickle
 import os
 import time
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:10]
 
 plt.ion()
 
@@ -19,7 +20,7 @@ RSV = []
 RH = [0.] # RH for Rate of Hire
 data = []
 if config.render:
-    fig1 = plt.figure(1,(12,8))
+    fig1 = plt.figure(1,(16,9))
     ax1 = fig1.add_subplot(231)
     ax2 = fig1.add_subplot(232)
     ax3 = fig1.add_subplot(233)
@@ -27,6 +28,8 @@ if config.render:
     ax5 = fig1.add_subplot(234)
     ax6 = fig1.add_subplot(235)
     ax7 = fig1.add_subplot(236)
+
+tick = time.time()
 for t in range(config.T):
     coin_a, coin_v, coin_g, coin_t = total_value(env.agent_pool,env.market_V,env.gov)
     avg_coin_e, _ = avg_coin(env.agent_pool, env.E)
@@ -60,7 +63,7 @@ for t in range(config.T):
     data_step = env.step(t, np.zeros((config.N)))
     data.extend(data_step)
     if t % 100 == 0:
-        with open('./data/consume_data.pkl','wb') as f:
+        with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
             pickle.dump(data, f)
 
     grid = grid_render(env.agent_pool,env.resource)
@@ -93,7 +96,7 @@ for t in range(config.T):
         ax4.cla()
         ax4.plot(RH,'b')
         ax4.set_ylabel('Employment Rate',color='blue')
-        ax4.legend(['Rate of Surplus Value','Rate of Employment'],loc=2)
+        # ax4.legend(['Rate of Surplus Value','Rate of Employment'],loc=2)
         # plt.legend(['single','total'])
         
         ax5.cla()
@@ -124,4 +127,6 @@ for t in range(config.T):
         '''
         
         plt.pause(0.0001)
-        print("tock = ",time.time()-tick)
+        print("tock = %.3f"%(time.time()-tick))
+
+print(time.time()-tick, (time.time()-tick)/config.T)
