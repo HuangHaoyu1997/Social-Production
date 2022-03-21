@@ -38,8 +38,8 @@ class config:
 
     # for CGP
     MUT_PB = 0.8  # mutate probability
-    N_COLS = 10   # number of cols (nodes) in a single-row CGP
-    LEVEL_BACK = 8  # how many levels back are allowed for inputs in CGP
+    N_COLS = 4   # number of cols (nodes) in a single-row CGP
+    LEVEL_BACK = 2  # how many levels back are allowed for inputs in CGP
     
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2

@@ -67,7 +67,7 @@ def pi(a):
 
 def sign(a):
     '''
-    1-sign(x)
+    其实是1-sign(x)
     '''
     if a>0: return 0
     else: return 1
@@ -86,7 +86,7 @@ def uniform(a):
     return np.random.uniform(0,a)
 
 fs = [
-        Function(op.add, 2), 
+        # Function(op.add, 2), 
         Function(op.sub, 2), 
         Function(op.mul, 2), 
         # Function(protected_div, 2), 
@@ -94,11 +94,11 @@ fs = [
         # Function(op.pow, 2),
         # Function(exp, 1),
         # Function(max2, 2),
-        Function(max1, 1),
+        # Function(max1, 1),
         # Function(min2, 2),
         Function(tenth, 1),
         # Function(scaled, 1),
-        Function(sign, 1),
+        # Function(sign, 1),
         # Function(uniform, 1),
         # Function(relu, 1),
         # Function(abs, 1),

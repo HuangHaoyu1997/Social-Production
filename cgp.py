@@ -83,7 +83,7 @@ class Individual:
             # 随机确定node的每个输入端口连接的是前面节点(column)的输出
             # node.i_inputs[i]记录前端父节点的idx
             node.i_inputs[i] = random.randint(max(pos - self.level_back, -self.n_inputs), pos - 1)
-            node.weights[i] = random.uniform(self.weight_range[0], self.weight_range[1])
+            node.weights[i] = 1.0 # random.uniform(self.weight_range[0], self.weight_range[1])
         node.i_output = pos
 
         return node
@@ -160,7 +160,7 @@ class Individual:
                 if node.i_inputs[i] is None or random.random() < mut_rate:  # if the mutated function requires more arguments, then the last ones are None 
                     node.i_inputs[i] = random.randint(max(pos - self.level_back, -self.n_inputs), pos - 1)
                 if node.weights[i] is None or random.random() < mut_rate:
-                    node.weights[i] = random.uniform(self.weight_range[0], self.weight_range[1])
+                    node.weights[i] = 1.0 # random.uniform(self.weight_range[0], self.weight_range[1])
             # initially an individual is not active except the last output node
             node.active = False
         for i in range(1, self.n_outputs + 1):

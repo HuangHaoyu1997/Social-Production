@@ -32,13 +32,16 @@ for d in data:
     hungry_before.append(d[3])
     coin_after.append(d[4])
     hungry_after.append(d[6])
-
+    print(d[2],d[4],(d[2]-d[4])/d[2])
 '''
+
+
+# print(np.max(hungry_before),np.max(hungry_after))
 
 # np.random.seed(123)
 # random.seed(123)
 
-pop = create_population(config.MU+config.LAMBDA,input_dim=3,out_dim=2)
+pop = create_population(config.MU+config.LAMBDA,input_dim=2,out_dim=1)
 best_f = -inf
 best_ff = -inf
 best_ind = None
@@ -48,10 +51,10 @@ def eval(ind):
     loss = 0
     l = len(data[:1000])
     for d in data[:1000]:
-        din = [d[1], d[2], d[3]]
-        dout = [d[4], d[6]]
+        din = [d[1], d[2]] # , d[3]
+        dout = [d[4]] # , d[6]
         out = ind.eval(*din)
-        loss += 0.01*abs(out[0]-dout[0]) + float(out[1]!=dout[1])
+        loss += abs(out-dout[0]) # + float(out[1]!=dout[1])
         # print(abs(out[0]-dout[0]), float(out[1]!=dout[1]))
         
     # y_ = np.array(y_)
@@ -62,10 +65,10 @@ def test(ind):
     loss = 0
     l = len(data[1000:])
     for d in data[1000:]:
-        din = [d[1], d[2], d[3]]
-        dout = [d[4], d[6]]
+        din = [d[1], d[2]] # , d[3]
+        dout = [d[4]] # , d[6]
         out = ind.eval(*din)
-        loss += 0.01*abs(out[0]-dout[0]) + float(out[1]!=dout[1])
+        loss += abs(out-dout[0]) # + float(out[1]!=dout[1])
         
     # y_ = np.array(y_)
     # error = y_ - train_y
@@ -87,7 +90,10 @@ for gen in range(config.N_GEN):
 
     pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
     print(gen,'\t',-pop[0].fitness,test(pop[0])) # ,avg_fit(pop)
+    
     G = extract_computational_subgraph(pop[0])
+    
+    
     plt.clf(); plt.cla()
     pos = nx.circular_layout(G)
     node_labels = nx.get_node_attributes(G, 'func')
