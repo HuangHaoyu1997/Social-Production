@@ -1,10 +1,19 @@
+from __future__ import print_function
 from ast import Global
 import multiprocessing
 from multiprocessing import Process
 import numpy as np
 import time
 import pickle
+import os
+import ctypes, sys
 
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
 
 def func(idx, i,j):
     tmp = []
@@ -32,8 +41,7 @@ if __name__ == "__main__":
             data = pickle.load(f)
             tmp.extend(data)
     print(np.mean(tmp))
+    os.remove('./tmp/')
 
 
     
-
-
