@@ -25,9 +25,7 @@ def func(idx, i,j):
     print(idx,' finished!')
 
 if __name__ == "__main__":
-    '''
     
-    '''
     tick = time.time()
 
     for i in range(10):
