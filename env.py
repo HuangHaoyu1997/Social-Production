@@ -146,6 +146,7 @@ class Env:
         elif work == 1: employer = name # 雇主
         elif work == 2: employer = self.agent_pool[name].employer # 被雇佣
 
+        # 【若employer作为RL智能体,则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
         w = np.random.uniform(low=0,high=int(config.danjia*self.market_V))
         w = round(w,2) # 四舍五入2位小数
         w_ = w

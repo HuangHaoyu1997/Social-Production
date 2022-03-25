@@ -129,4 +129,4 @@ for t in range(config.T):
         plt.pause(0.0001)
         print("tock = %.3f"%(time.time()-tick))
 
-print(time.time()-tick, (time.time()-tick)/config.T)
+print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))

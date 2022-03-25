@@ -8,7 +8,9 @@ class agent:
         self.x = round(np.random.uniform(c.x_range[0],c.x_range[1]),2)
         self.y = round(np.random.uniform(c.y_range[0],c.y_range[1]),2)
         self.skill = round(np.random.uniform(c.skill[0],c.skill[1]),2)
-
+        if c.skill_gaussian:
+            mean = 0.5*(c.skill[0]+c.skill[1])
+            self.skill = round(np.clip(np.random.randn()+mean,c.skill[0],c.skill[1]),3)
         self.alive = True
         self.hungry = 0
         self.name = name
