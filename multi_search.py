@@ -1,4 +1,6 @@
-
+'''
+多进程CGP算法
+'''
 from cmath import inf
 import numpy as np
 from cgp import *

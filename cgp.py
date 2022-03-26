@@ -11,8 +11,8 @@ import numpy as np
 from function import *
 from configuration import config
 
-np.random.seed(123)
-random.seed(123)
+np.random.seed(config.seed)
+random.seed(config.seed)
 
 class Node:
     """

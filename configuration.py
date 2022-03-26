@@ -38,13 +38,16 @@ class config:
     redistribution_freq = 1    # 每10个step进行一次财富再分配
 
     # for CGP
-    MUT_PB = 0.8  # mutate probability
-    N_COLS = 4   # number of cols (nodes) in a single-row CGP
-    LEVEL_BACK = 2  # how many levels back are allowed for inputs in CGP
+    MUT_PB = 0.1  # mutate probability
+    N_COLS = 100   # number of cols (nodes) in a single-row CGP
+    LEVEL_BACK = 80  # how many levels back are allowed for inputs in CGP
     
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2
-    LAMBDA = 20
+    LAMBDA = 20-MU
     N_GEN = 5000  # max number of generations
+    n_process = 40
+    solved = 100
+    Epoch = 100
 
 

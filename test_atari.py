@@ -1,3 +1,7 @@
+'''
+测试CGP个体在Atari游戏上的performance
+'''
+
 import gym
 import pickle
 import numpy as np

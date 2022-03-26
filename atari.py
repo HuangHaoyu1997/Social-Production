@@ -1,3 +1,6 @@
+'''
+使用CGP算法训练Atari policy
+'''
 import multiprocessing
 from multiprocessing import Process
 import numpy as np
