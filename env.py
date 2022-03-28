@@ -1,8 +1,7 @@
 import numpy as np
+from numpy.random import uniform
 from configuration import config
-import random
-import math
-import copy
+import random, math, copy
 from utils import *
 import networkx as nx
 
@@ -25,7 +24,7 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         
         self.G = build_graph(self.agent_pool)
-        self.resource = np.round(np.random.uniform(config.x_range[0],config.x_range[1],[config.resource,2]),2) # 资源坐标
+        self.resource = np.round(uniform(config.x_range[0],config.x_range[1],[config.resource,2]),2) # 资源坐标
 
         return [self.E, self.W ,self.U, self.market_V]
     
@@ -63,8 +62,8 @@ class Env:
             self.agent_pool[name].labor_cost = 0
             
             # 随机移动
-            mod = round(random.uniform(0,config.move_len),2)
-            dir = round(random.uniform(0,config.move_dir),3)
+            mod = round(uniform(0,config.move_len),2)
+            dir = round(uniform(0,config.move_dir),3)
             self.agent_pool[name].move(mod=mod,direction=dir)
             
             self.production(name)
@@ -117,7 +116,7 @@ class Env:
         '''
         shortest_dis = CalDistance(self.agent_pool[name], self.resource)
         if shortest_dis <= config.product_thr:
-            product = (config.product_thr - shortest_dis)*round(random.uniform(0,self.agent_pool[name].skill),2)
+            product = (config.product_thr - shortest_dis)*round(uniform(0,self.agent_pool[name].skill),2)
             self.agent_pool[name].coin += product
             # print(name,shortest_dis,product)
 
@@ -170,8 +169,7 @@ class Env:
         elif work == 2: employer = self.agent_pool[name].employer # 被雇佣
 
         # 【若employer作为RL智能体,则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
-        w = np.random.uniform(low=0,high=int(config.danjia*self.market_V))
-        w = round(w,2) # 四舍五入2位小数
+        w = round(uniform(0,config.danjia*self.market_V) ,2) # 四舍五入2位小数
 
         tax = w * config.business_tax
         w_ = w * (1-config.business_tax) # 扣除企业税
@@ -196,8 +194,7 @@ class Env:
             for worker in worker_list:
                 capital = self.agent_pool[name].coin # employer现有资本
                 # 在最低工资和最高工资之间随机发工资
-                w = np.random.uniform(self.w1, self.w2)
-                w = round(w,2)
+                w = round(uniform(self.w1, self.w2), 2)
                 if capital >= w:
                     capital -= w
 
@@ -210,8 +207,7 @@ class Env:
                     self.agent_pool[name].coin = capital  ## 更新employer
                 # 资本量不足以开出现有工资
                 elif capital < w and capital > self.w1:
-                    w = np.random.uniform(self.w1, capital)
-                    w = round(w,2) # 降薪发工资
+                    w = round(uniform(self.w1, capital) ,2) # 降薪发工资
                     capital -= w
                     
                     # 缴个人所得税
@@ -308,7 +304,7 @@ class Env:
         data = [name,config.consume,ma,self.agent_pool[name].hungry]
         if ma > 0: 
             m = 0.1*ma
-            # m = np.random.uniform(0, config.consume*ma)
+            # m = uniform(0, config.consume*ma)
             
 
             # 消费税
@@ -359,16 +355,43 @@ class Env:
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
         if config.Verbose: print('%s is dead!'%name)
 
-    def event(self, ):
+    def event_simulator(self, event):
         '''
         异常事件发生器
         event目前设计2种事件: GreatDepression, WorldWar
         GreatDepression(大萧条):
-            - E财富减少75%, W财富减少50%, U财富减少25%,
+            - E财富减少50%~75%, W财富减少25%~50%, U财富减少12%~25%,
             - E25%, W25%失业
             - U10%死亡
-        
+        WorldWar(世界大战):
+            - E财富减少75%, W财富减少70%, U财富减少75%,
+            - E25%~50%, W25%~50%失业
+            - 全体10%~30%死亡
         '''
+        self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
+
+        if event == 'GreatDepression':
+            if config.Verbose: print('GreatDepression is coming!')
+            
+            for name in self.agent_pool:
+                if self.agent_pool[name].work == 0:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.12,0.25)
+                elif self.agent_pool[name].work == 1:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.50,0.75)
+                elif self.agent_pool[name].work == 2:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.25,0.50)
+            
+            broken_E = random.sample(self.E, int(0.25*len(self.E)))
+            for name in broken_E:
+                self.broken(name)
+            broken_W = random.sample(self.W, int(0.25*len(self.W)))
+            for name in broken_E:
+                self.broken(name)
+
+        elif event == 'WorldWar':
+            if config.Verbose: print('WorldWar is coming!')
+        else:
+            raise NotImplementedError
 
 
 # env.add_agent()
