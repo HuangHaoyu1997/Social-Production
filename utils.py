@@ -1,11 +1,15 @@
 import numpy as np
 from agent import agent
-from configuration import config
+from configuration import config as c
 import networkx as nx
-import cgp
+import cgp, time
 import matplotlib.pyplot as plt
+from numpy.random import uniform
 
 def max_coin(agent):
+    '''
+    计算指定agent群体中的最大收入
+    '''
     max_income = 0
     for name in agent:
         if agent[name].alive:
@@ -14,8 +18,8 @@ def max_coin(agent):
     return max_income
 
 def grid_render(agent,resource):
-    x = config.x_range[1]
-    y = config.y_range[1]
+    x = c.x_range[1]
+    y = c.y_range[1]
     max_income = max_coin(agent)
 
     grid = np.zeros((x+1,y+1,3),dtype=np.uint8)
@@ -163,10 +167,23 @@ def build_graph(agent):
     return G
 
 def add_agent(N):
+    '''
+    添加智能体
+    '''
     pool = {}
     for i in range(N):
-        name = str(i)
-        pool[name] = agent(name)
+        # 用CPU时钟的小数位命名智能体
+        name = str(i)+str(time.time()).split('.')[1]
+        x = round(uniform(c.x_range[0],c.x_range[1]),2)
+        y = round(uniform(c.y_range[0],c.y_range[1]),2)
+        
+        if c.skill_gaussian:
+            mean = 0.5*(c.skill[0] + c.skill[1])
+            skill = round(np.clip(np.random.randn()+mean, c.skill[0], c.skill[1]),3)
+        else:
+            skill = round(uniform(c.skill[0], c.skill[1]),2)
+        coin = uniform(c.coin_range[0],c.coin_range[1]) if c.random_coin else c.init_coin
+        pool[name] = agent(x, y, name, skill, coin)
     return pool
 
 def alive_num(agent_pool):

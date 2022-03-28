@@ -60,7 +60,7 @@ for t in range(config.T):
     if t > 0: RH.append(len(env.W)/len(env.E))
     
     #### Data storage
-    data_step = env.step(t, np.zeros((config.N)))
+    data_step = env.step(t, ) # np.zeros((config.N1))
     data.extend(data_step)
     if t % 100 == 0:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
@@ -121,12 +121,9 @@ for t in range(config.T):
         '''
         # 有问题,会影响figure(4)的显示
         # TODO 如何动态显示大规模nx.Graph？
-
-
-        
         '''
         
         plt.pause(0.0001)
-        print("tock = %.3f"%(time.time()-tick))
+        # print("tock = %.3f"%(time.time()-tick))
 
 print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))

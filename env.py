@@ -15,8 +15,7 @@ class Env:
         
     def reset(self,):
         self.t = 0 # tick
-        self.agent_num = config.N # 智能体数量
-        self.agent_pool = add_agent(self.agent_num) # 添加智能体
+        self.agent_pool = add_agent(config.N1) # 添加智能体
         self.market_V = config.V # 市场价值
         self.gov = config.G # 政府财政
         
@@ -27,14 +26,18 @@ class Env:
 
         return [self.E, self.W ,self.U, self.market_V]
     
-    def step(self,t,action):
+    
+    def step(self,t,): # action
         '''
         单步仿真程序
 
         '''
-        if len(action)!=self.agent_num:
-            raise Exception('动作空间必须与智能体数量相同')
 
+        '''
+        if len(action) != len(self.agent_pool):
+            raise Exception('动作空间必须与智能体数量相同')
+        '''
+    
         agent_list = list(self.agent_pool.keys())
         random.shuffle(agent_list)
         
@@ -61,18 +64,22 @@ class Env:
 
             data_step.append(data)
 
-        if config.tax:
-            # 征收财产税
-            rich_people = most_rich(self.agent_pool, 50)
-            for name in rich_people:
-                tax = self.agent_pool[name].coin * config.property_tax
-                self.agent_pool[name].coin -= tax
-                self.gov += tax
-
-            # 财富再分配
-            if t % config.redistribution_freq == 0:
-                self.redistribution()
         
+        # 征收财产税
+        rich_people = most_rich(self.agent_pool, 50)
+        for name in rich_people:
+            tax = self.agent_pool[name].coin * config.property_tax
+            self.agent_pool[name].coin -= tax
+            self.gov += tax
+
+        # 财富再分配
+        if config.tax and t % config.redistribution_freq == 0:
+            self.redistribution()
+        
+        # 新增移民,单步增加人口数量不超过当前人口的dN比例(0<dN<1)
+        delta_pop = np.random.randint(0,round(config.dN*len(self.agent_pool)))
+        self.agent_pool.update(add_agent(delta_pop))
+
         self.E, self.W, self.U = working_state(self.agent_pool)
         
         return data_step
@@ -149,12 +156,11 @@ class Env:
         # 【若employer作为RL智能体,则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
         w = np.random.uniform(low=0,high=int(config.danjia*self.market_V))
         w = round(w,2) # 四舍五入2位小数
-        w_ = w
-        if config.tax:
-            tax = w * config.business_tax
-            w_ = w * (1-config.business_tax) # 扣除企业税
-            self.gov += tax
-            # print('ex,',tax)
+
+        tax = w * config.business_tax
+        w_ = w * (1-config.business_tax) # 扣除企业税
+        self.gov += tax
+        # print('ex,',tax)
         
         self.market_V -= w
         self.agent_pool[employer].coin += w_
@@ -179,11 +185,9 @@ class Env:
                     capital -= w
 
                     # 缴个税
-                    if config.tax:
-                        tax = w * config.personal_income_tax
-                        w = w * (1-config.personal_income_tax)
-                        self.gov += tax
-                        # print('pay,',tax)
+                    tax = w * config.personal_income_tax
+                    w = w * (1-config.personal_income_tax)
+                    self.gov += tax
 
                     self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
@@ -192,12 +196,10 @@ class Env:
                     w = np.random.uniform(config.w1, capital); w = round(w,2) # 降薪发工资
                     capital -= w
                     
-                    # 缴个税
-                    if config.tax:
-                        tax = w * config.personal_income_tax
-                        w = w * (1-config.personal_income_tax)
-                        self.gov += tax
-                        # print('pay,',tax)
+                    # 缴个人所得税
+                    tax = w * config.personal_income_tax
+                    w = w * (1-config.personal_income_tax)
+                    self.gov += tax
                     
                     self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
@@ -289,15 +291,13 @@ class Env:
         if ma > 0: 
             m = 0.1*ma
             # m = np.random.uniform(0, config.consume*ma)
-            m_ = m
             
 
             # 消费税
-            if config.tax:
-                tax = m * config.consumption_tax
-                m_ = m * (1-config.consumption_tax)
-                self.gov += tax
-                # print('con,',tax)
+            tax = m * config.consumption_tax
+            m_ = m * (1-config.consumption_tax)
+            self.gov += tax
+            # print('con,',tax)
 
             self.agent_pool[name].hungry = 0 # 要限制，连续饿三天才会死
 
