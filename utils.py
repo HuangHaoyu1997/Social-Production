@@ -26,13 +26,14 @@ def grid_render(agent,resource):
     for rx,ry in resource:
         rx = round(rx)
         ry = round(ry)
-        grid[rx-5:rx+5,ry-5:ry+5,:] = [0,255,0]
+        grid[rx-2:rx+2,ry-2:ry+2,:] = [0,255,0]
 
     for name in agent:
         if agent[name].alive:
             x = round(agent[name].x)
             y = round(agent[name].y)
             coin = agent[name].coin
+            # 灰度值与收入正相关
             pixel_scale = min(coin / max_income,0.2)
             grid[x,y,:] = int(255*pixel_scale)
     return grid
@@ -287,16 +288,18 @@ class OrnsteinUhlenbeckActionNoise:
 
 
 if __name__ == "__main__":
-    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.1)
-    ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.9)
-    plt.figure()
+    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*10,theta=0.5,x0=10)
+    # ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.9)
+    # plt.figure()
     y1 = []
     y2 = [] # np.random.normal(0, 1, 10000)
     t = np.linspace(0, 1000, 10000)
-    for _ in t:
-        y1.append(ou_noise1())
-        y2.append(ou_noise2())
+    for i in range(10):
+        for _ in t:
+            y1.append(ou_noise1())
+            if y1[-1]<=0: print(y1[-1])
+            # y2.append(ou_noise2())
 
-    plt.plot(t, y1, c='r')
-    plt.plot(t, y2, c='b')
-    plt.show()
+    # plt.plot(t, y1, c='r')
+    # plt.plot(t, y2, c='b')
+    # plt.show()

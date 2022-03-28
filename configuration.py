@@ -8,18 +8,18 @@ class config:
 
     # for agent
     work_state = 0              # 初始工作状态, 0 unemployed, 1 employer, 2 worker
-    init_coin = 200             # 初始货币
-    random_coin = False          # 初始货币随机分布
-    coin_range = [20,100]       # 初始货币随机分布区间,仅random_coin=True生效
+    init_coin = 1000             # 初始货币
+    random_coin = True          # 初始货币随机分布
+    coin_range = [900,1100]       # 初始货币随机分布区间,仅random_coin=True生效
     w1 = 10                     # 初始最低工资
-    w2 = 90                     # 初始最高工资
+    w2 = 200                     # 初始最高工资
     
     # for government
     V = 1000                    # 初始市场价值
     G = 0                       # 初始政府财政
     dN = pow(N2/N1, 1/T) - 1    # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
 
-    avg_coin = (w1+w2)/2        # 初始平均工资
+    avg_coin = None # (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
     danjia = 1.0                # 工人向市场出售商品时，最大单价
     consume = 1.0               # 消费比例,即智能体每次消费量占其总财产的比例
@@ -34,7 +34,7 @@ class config:
     move_len = 10               # 随机游走的最长距离
     move_dir = 1                 # 随机游走的方向范围，即[0,2π]
     
-    tax = True
+    tax = False
     personal_income_tax = 0.0001 if tax else 0  # 个人所得税5%
     consumption_tax = 0.2 if tax else 0      # 消费税
     business_tax = 0.001 if tax else 0          # 企业税
