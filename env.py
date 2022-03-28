@@ -248,10 +248,14 @@ class Env:
         assert self.agent_pool[employer].work == 1
         if config.Verbose: print('%s has broken!'%employer)
         self.agent_pool[employer].work = 0 # 失业
+        id = self.E.index(employer)
+        self.E.pop(id)
 
         for worker in self.agent_pool[employer].hire:
             self.agent_pool[worker].work = 0 # 失业
             self.agent_pool[worker].employer = None
+            id = self.W.index(worker)
+            self.W.pop(id)
         
         self.agent_pool[employer].hire = []
         self.agent_pool[employer].employer = None
@@ -289,6 +293,7 @@ class Env:
                 fid = self.agent_pool[name].hire.index(worker)
                 self.agent_pool[name].hire.pop(fid)
                 if config.Verbose: print('%s has been fired by %s'%(worker,name))
+        
         if len(self.agent_pool[name].hire) == 0: # 解雇所有雇员,自己也失业但没有破产
             self.agent_pool[name].work = 0
             self.agent_pool[name].employer = None
@@ -358,13 +363,17 @@ class Env:
     def event_simulator(self, event):
         '''
         异常事件发生器
+        【想法:
+        方案A(目前):event只持续1个step, 对agent的修改是即时生效的, 即大范围失业、贫困和死亡,
+        方案B:让系统处于event较长一段时间, 如10~50个step, 每个step产生一定程度负面影响, 其总和等于
+        目前的设计】
         event目前设计2种事件: GreatDepression, WorldWar
         GreatDepression(大萧条):
             - E财富减少50%~75%, W财富减少25%~50%, U财富减少12%~25%,
             - E25%, W25%失业
             - U10%死亡
         WorldWar(世界大战):
-            - E财富减少75%, W财富减少70%, U财富减少75%,
+            - E财富减少75%, W财富减少50%, U财富减少50%,
             - E25%~50%, W25%~50%失业
             - 全体10%~30%死亡
         '''
@@ -381,17 +390,45 @@ class Env:
                 elif self.agent_pool[name].work == 2:
                     self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.25,0.50)
             
-            broken_E = random.sample(self.E, int(0.25*len(self.E)))
-            for name in broken_E:
-                self.broken(name)
-            broken_W = random.sample(self.W, int(0.25*len(self.W)))
-            for name in broken_E:
+            broken_E = random.sample(self.E, int(0.25*len(self.E))) # 25%的资本家破产
+            for name in broken_E: # 破产即失业
                 self.broken(name)
 
+            broken_W = random.sample(self.W, int(0.25*len(self.W))) # 25%的工人失业
+            for name in broken_W:
+                if self.agent_pool[name].work == 2: # 还没失业，就让他失业
+                    self.agent_pool[name].work = 0
+            
+            dead_U = random.sample(self.U, int(0.10*len(self.U))) # 10%的工人失业
+            for name in dead_U:
+                self.die(name)
+        
         elif event == 'WorldWar':
             if config.Verbose: print('WorldWar is coming!')
+            for name in self.agent_pool:
+                if self.agent_pool[name].work == 0:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.40,0.50)
+                elif self.agent_pool[name].work == 1:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.65,0.75)
+                elif self.agent_pool[name].work == 2:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.30,0.50)
+            
+            broken_ratio = uniform(0.25,0.5)
+            broken_E = random.sample(self.E, int(*len(self.E))) # 25%的资本家破产
+            for name in broken_E: # 破产即失业
+                self.broken(name)
+
+            broken_W = random.sample(self.W, int(0.25*len(self.W))) # 25%的工人失业
+            for name in broken_W:
+                if self.agent_pool[name].work == 2: # 还没失业，就让他失业
+                    self.agent_pool[name].work = 0
+            
+            dead_U = random.sample(self.U, int(0.10*len(self.U))) # 10%的工人失业
+            for name in dead_U:
+                self.die(name)
         else:
             raise NotImplementedError
+        self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
 
 # env.add_agent()
