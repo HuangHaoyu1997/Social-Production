@@ -1,10 +1,9 @@
-from ast import Return
 import numpy as np
-from pandas import array
 from agent import agent
 from configuration import config
 import networkx as nx
 import cgp
+import matplotlib.pyplot as plt
 
 def max_coin(agent):
     max_income = 0
@@ -232,3 +231,55 @@ def update_graph(G:nx.Graph, agent:dict, E, W, U):
                     G.remove_edge(n_adj,name)
     assert worker_num==len(W) and employer_num==len(E)
     return G
+
+
+
+class OrnsteinUhlenbeckActionNoise:
+    def __init__(self, mu, sigma=1.0, theta=0.5, dt=0.01, x0=5.):
+        '''
+        OU过程是均值回归过程,当x_t比均值μ大时,下一步状态值x_{t+△t}就会变小;反之,x_{t+△t}会变大。
+        简单地说就是状态值x_t偏离均值μ时会被拉回。
+        OU过程具有时序相关性,而高斯随机过程的相邻两个时间步前后无关。
+        OU noise往往不会高斯噪声一样相邻的两步的值差别那么大,而是会绕着均值附近正向或负向探索一段距离，
+        就像物价和利率的波动一样，这有利于在一个方向上探索。
+
+        mu: asymptotic mean,渐进均值
+        sigma: 噪声项的大小,OU过程的噪声是一个维纳过程(布朗运动),每一时间间隔内的噪声服从高斯分布
+        theta: how strongly the system reacts to perturbations(the decay-rate or growth-rate),theta越小,波动越大
+        dt: 时间分辨率
+        x0: 状态初始值
+        '''
+        self.theta = theta
+        self.mu = mu
+        self.sigma = sigma
+        self.dt = dt
+        self.x0 = x0
+        self.reset()
+
+    def __call__(self):
+        x = self.x_previous + self.theta * (self.mu - self.x_previous) * self.dt + \
+            self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
+        self.x_previous = x
+        return x
+
+    def reset(self):
+        self.x_previous = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
+
+    def __repr__(self):
+        return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)
+
+
+if __name__ == "__main__":
+    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.1)
+    ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.9)
+    plt.figure()
+    y1 = []
+    y2 = [] # np.random.normal(0, 1, 10000)
+    t = np.linspace(0, 1000, 10000)
+    for _ in t:
+        y1.append(ou_noise1())
+        y2.append(ou_noise2())
+
+    plt.plot(t, y1, c='r')
+    plt.plot(t, y2, c='b')
+    plt.show()

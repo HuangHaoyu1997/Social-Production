@@ -22,15 +22,41 @@ def test_lstm():
 
     # print(output.size(),hn.size(),cn.size(),output.device)
 
-pop = create_population(5,input_dim=10,out_dim=5)
+input_dim = 10
+out_dim = 5
+pop = create_population(5,input_dim,out_dim)
 
-def print_ind(ind:Individual):
+
+def cvt_bit(a,length=6):
+    '''
+    将int a转化为定长二进制str
+    '''
+    return '0'*(length-len(bin(a)[2:]))+bin(a)[2:]
+
+def gene_encoder(ind:Individual):
     '''
     打印个体的节点
     '''
+    gene_before = []
+    gene_after = ''
     for node in ind.nodes:
-        # i_func_bin = bin(node.i_func).replace('0b','')
-        i_func_bin = '0'*(5-len(bin(node.i_func)[2:]))+bin(node.i_func)[2:]
-        print(type(i_func_bin))
+        # print(node.i_func, cvt_bit(node.i_func), int(cvt_bit(node.i_func),2))
+        # print(node.i_inputs[0]+10, cvt_bit(node.i_inputs[0]+10), int(cvt_bit(node.i_inputs[0]+10),2))
+        gene_after += cvt_bit(node.i_func)
+        gene_after += cvt_bit(node.i_inputs[0]+input_dim)
+        
+        gene_before.append(node.i_func)
+        gene_before.append(node.i_inputs[0]+input_dim)
+        
+        if node.i_inputs[1] is not None:
+            # print(node.i_inputs[1]+10, cvt_bit(node.i_inputs[1]+10))
+            gene_after += cvt_bit(node.i_inputs[1]+input_dim)
+            gene_before.append(node.i_inputs[1]+input_dim)
+        '''
+        
+        '''
+    return gene_before, gene_after
 
-print_ind(pop[0])
+g_b, g_a = gene_encoder(pop[0])
+
+# print(cvt_bit(-1))
