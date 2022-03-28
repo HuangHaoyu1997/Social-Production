@@ -15,6 +15,9 @@ class Env:
         
     def reset(self,):
         self.t = 0 # tick
+        self.w1 = config.w1 # 初始最低工资
+        self.w2 = config.w2 # 初始最高工资
+
         self.agent_pool = add_agent(config.N1) # 添加智能体
         self.market_V = config.V # 市场价值
         self.gov = config.G # 政府财政
@@ -26,8 +29,16 @@ class Env:
 
         return [self.E, self.W ,self.U, self.market_V]
     
-    
-    def step(self,t,): # action
+    def update_config(self, action):
+        '''
+        更新仿真超参数,用于实时控制系统
+        '''
+        self.w1 = action[0]
+        self.w2 = action[1]
+        assert self.w1 < self.w2
+
+
+    def step(self, t, action):
         '''
         单步仿真程序
 
@@ -37,7 +48,8 @@ class Env:
         if len(action) != len(self.agent_pool):
             raise Exception('动作空间必须与智能体数量相同')
         '''
-    
+        self.update_config(action)
+
         agent_list = list(self.agent_pool.keys())
         random.shuffle(agent_list)
         
@@ -127,17 +139,21 @@ class Env:
             e = UE[np.random.choice(np.arange(len(prob)),p=prob)]
             if config.avg_update: 
                 config.avg_coin = avg_coin(self.agent_pool,self.W+self.U)[0] # 更新平均工资
+            
             if self.agent_pool[e].coin >= config.avg_coin and name!=e:
-                # 给name设置雇主e,修改工作状态
-                self.agent_pool[name].employer = e
-                self.agent_pool[name].work = 2 # 2 for worker
-                self.W.append(name)
-                u_idx = self.U.index(name); self.U.pop(u_idx)
-                # 给雇主e添加员工u,修改工作状态
-                self.agent_pool[e].employer = e
-                self.agent_pool[e].hire.append(name)
-                self.agent_pool[e].work = 1 # 1 for employer
-                if e not in self.E: self.E.append(e)
+                
+                # 考虑个体的就业意愿,100%
+                if random.random() <= config.employment_intention:
+                    # 给name设置雇主e,修改工作状态
+                    self.agent_pool[name].employer = e
+                    self.agent_pool[name].work = 2 # 2 for worker
+                    self.W.append(name)
+                    u_idx = self.U.index(name); self.U.pop(u_idx)
+                    # 给雇主e添加员工u,修改工作状态
+                    self.agent_pool[e].employer = e
+                    self.agent_pool[e].hire.append(name)
+                    self.agent_pool[e].work = 1 # 1 for employer
+                    if e not in self.E: self.E.append(e)
         elif work == 1: # 雇佣者
             pass
         elif work == 2: # 被雇佣者
@@ -180,7 +196,8 @@ class Env:
             for worker in worker_list:
                 capital = self.agent_pool[name].coin # employer现有资本
                 # 在最低工资和最高工资之间随机发工资
-                w = np.random.uniform(config.w1, config.w2); w = round(w,2)
+                w = np.random.uniform(self.w1, self.w2)
+                w = round(w,2)
                 if capital >= w:
                     capital -= w
 
@@ -192,8 +209,9 @@ class Env:
                     self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
                 # 资本量不足以开出现有工资
-                elif capital < w and capital > config.w1:
-                    w = np.random.uniform(config.w1, capital); w = round(w,2) # 降薪发工资
+                elif capital < w and capital > self.w1:
+                    w = np.random.uniform(self.w1, capital)
+                    w = round(w,2) # 降薪发工资
                     capital -= w
                     
                     # 缴个人所得税
@@ -203,7 +221,7 @@ class Env:
                     
                     self.agent_pool[worker].coin += w
                     self.agent_pool[name].coin = capital  ## 更新employer
-                elif capital <= config.w1:
+                elif capital <= self.w1:
                     self.agent_pool[worker].coin += capital # 破产发工资
                     capital = 0
                     
@@ -341,5 +359,7 @@ class Env:
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
         if config.Verbose: print('%s is dead!'%name)
 
+    def event(self, ):
+        pass
 
 # env.add_agent()
