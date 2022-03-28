@@ -37,7 +37,7 @@ class Env:
         assert self.w1 < self.w2
 
 
-    def step(self, t, action):
+    def step(self, t, action=None):
         '''
         单步仿真程序
 
@@ -47,7 +47,7 @@ class Env:
         if len(action) != len(self.agent_pool):
             raise Exception('动作空间必须与智能体数量相同')
         '''
-        self.update_config(action)
+        # self.update_config(action)
 
         agent_list = list(self.agent_pool.keys())
         random.shuffle(agent_list)
@@ -74,6 +74,10 @@ class Env:
             self.fire(name)
 
             data_step.append(data)
+            
+            if config.die: 
+                if self.agent_pool[name].hungry >= config.hungry_days:
+                    self.die(name) # 饥饿超过5步就死掉
 
         
         # 征收财产税
@@ -305,47 +309,37 @@ class Env:
         # agent的钱减少m，市场价值增加m
         
         ma = self.agent_pool[name].coin
-        
-        data = [name,config.consume,ma,self.agent_pool[name].hungry]
-        if ma > 0: 
-            m = 0.1*ma
-            # m = uniform(0, config.consume*ma)
+        data = [name, config.consume, ma, self.agent_pool[name].hungry]
+        if ma > 0: # 有钱就消费,消费要纳税
+            # m = 0.1*ma
+            m = uniform(0, config.consume*ma)
             
-
-            # 消费税
-            tax = m * config.consumption_tax
+            tax = m * config.consumption_tax # 消费税
             m_ = m * (1-config.consumption_tax)
             self.gov += tax
-            # print('con,',tax)
 
             self.agent_pool[name].hungry = 0 # 要限制，连续饿三天才会死
 
-        elif ma <= 0: 
+        elif ma <= 0: # 没钱不消费,饥饿度+1
             m = 0; m_ = 0
             self.agent_pool[name].hungry += 1
-
         
-
         self.agent_pool[name].coin -= m
         self.market_V += m_
 
-        # 资本家消费完了没钱了，就要破产
+        # 资本家消费完了没钱了，也要破产
         if self.agent_pool[name].coin<=0 and self.agent_pool[name].work == 1:
             self.broken(name)
 
         data.append(self.agent_pool[name].coin)
         data.append(self.market_V)
         data.append(self.agent_pool[name].hungry)
-
-        if config.die: 
-            if self.agent_pool[name].hungry >= config.hungry_days:
-                self.die(name) # 饥饿超过5步就死掉
         
         return data
     
     def die(self, name):
         '''死亡'''
-        assert self.agent_pool[name].coin <= 0
+        # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)
         if self.agent_pool[name].work == 1:
             self.broken(name)
@@ -359,18 +353,34 @@ class Env:
         if name in self.U: idx = self.U.index(name); self.U.pop(idx)
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
         if config.Verbose: print('%s is dead!'%name)
+    
+    def jobless(self, worker):
+        '''
+        Worker失业函数
+        强制修改Worker及其雇佣者的相关属性
+        '''
+        self.agent_pool[worker].work = 0
+        e = self.agent_pool[worker].employer
+        self.agent_pool[worker].employer = None
+
+        id = self.agent_pool[e].hire.index(worker)
+        self.agent_pool[e].hire.pop(id) # 从雇佣者的雇佣名单中除名
+        
+        if len(self.agent_pool[e].hire)==0: # 若Worker是其最后一个工人,则老板也失业
+            self.broken(e)
 
     def event_simulator(self, event):
         '''
         异常事件发生器
         【想法:
-        方案A(目前):event只持续1个step, 对agent的修改是即时生效的, 即大范围失业、贫困和死亡,
-        方案B:让系统处于event较长一段时间, 如10~50个step, 每个step产生一定程度负面影响, 其总和等于
-        目前的设计】
+        方案A(目前):event只持续1个step, 对agent的负面影响是即时生效的, 即大范围失业、贫困和死亡,
+        方案B:让系统处于event较长一段时间, 如10~50个step, 每个step产生一定程度负面影响, 其总和等于方案A的影响
+        哪种更好一些？】
+
         event目前设计2种事件: GreatDepression, WorldWar
         GreatDepression(大萧条):
-            - E财富减少50%~75%, W财富减少25%~50%, U财富减少12%~25%,
-            - E25%, W25%失业
+            - E财富减少25%~50%, W财富减少25%~30%, U财富减少12%~25%,
+            - E25%, W75%失业
             - U10%死亡
         WorldWar(世界大战):
             - E财富减少75%, W财富减少50%, U财富减少50%,
@@ -386,22 +396,23 @@ class Env:
                 if self.agent_pool[name].work == 0:
                     self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.12,0.25)
                 elif self.agent_pool[name].work == 1:
-                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.50,0.75)
-                elif self.agent_pool[name].work == 2:
                     self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.25,0.50)
+                elif self.agent_pool[name].work == 2:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.25,0.30)
             
             broken_E = random.sample(self.E, int(0.25*len(self.E))) # 25%的资本家破产
             for name in broken_E: # 破产即失业
                 self.broken(name)
 
-            broken_W = random.sample(self.W, int(0.25*len(self.W))) # 25%的工人失业
+            broken_W = random.sample(self.W, int(0.75*len(self.W))) # 25%的工人失业
             for name in broken_W:
                 if self.agent_pool[name].work == 2: # 还没失业，就让他失业
-                    self.agent_pool[name].work = 0
+                    self.jobless(name)
             
-            dead_U = random.sample(self.U, int(0.10*len(self.U))) # 10%的工人失业
+            dead_U = random.sample(self.U, int(0.10*len(self.U))) # 10%的失业者死亡
             for name in dead_U:
-                self.die(name)
+                if self.agent_pool[name].alive:
+                    self.die(name)
         
         elif event == 'WorldWar':
             if config.Verbose: print('WorldWar is coming!')
@@ -413,19 +424,21 @@ class Env:
                 elif self.agent_pool[name].work == 2:
                     self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.30,0.50)
             
-            broken_ratio = uniform(0.25,0.5)
-            broken_E = random.sample(self.E, int(*len(self.E))) # 25%的资本家破产
+            broken_ratio = uniform(0.25,0.50)
+            broken_E = random.sample(self.E, int(broken_ratio*len(self.E))) # 25%~50%的资本家破产
             for name in broken_E: # 破产即失业
                 self.broken(name)
 
-            broken_W = random.sample(self.W, int(0.25*len(self.W))) # 25%的工人失业
+            broken_W = random.sample(self.W, int(broken_ratio*len(self.W))) # 25%~50%的工人失业
             for name in broken_W:
                 if self.agent_pool[name].work == 2: # 还没失业，就让他失业
-                    self.agent_pool[name].work = 0
+                    self.jobless(name)
             
-            dead_U = random.sample(self.U, int(0.10*len(self.U))) # 10%的工人失业
+            dead_ratio = uniform(0.10,0.30)
+            dead_U = random.sample(self.U+self.E+self.W, int(dead_ratio*len(self.U))) # 10%~30%的人死亡
             for name in dead_U:
-                self.die(name)
+                if self.agent_pool[name].alive:
+                    self.die(name)
         else:
             raise NotImplementedError
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态

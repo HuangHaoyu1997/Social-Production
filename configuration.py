@@ -1,10 +1,15 @@
 class config:
+    '''
+    w1,w2与init_coin的比例很大程度上决定了雇佣率的高低
+    如果两者数量相当,则工人和失业者数量相近,工人略高
+    如果w2远小于init_coin,则会出现少量资本家-少量失业者-大量工人的情况
+    '''
     seed = 123
     Verbose = False             # 打印破产、解雇等事件
     render = True
     N1 = 300                    # 初始人口
-    N2 = 1500                   # 目标人口,即经过T步仿真后人口
-    T = 300                     # 仿真步长
+    N2 = 3000                   # 目标人口,即经过T步仿真后人口
+    T = 600                     # 仿真步长
 
     # for agent
     work_state = 0              # 初始工作状态, 0 unemployed, 1 employer, 2 worker
@@ -12,10 +17,10 @@ class config:
     random_coin = True          # 初始货币随机分布
     coin_range = [900,1100]       # 初始货币随机分布区间,仅random_coin=True生效
     w1 = 10                     # 初始最低工资
-    w2 = 200                     # 初始最高工资
+    w2 = 90                     # 初始最高工资
     employment_intention = 1.0  # 就业意愿
     # for government
-    V = 1000                    # 初始市场价值
+    V = 100                    # 初始市场价值
     G = 0                       # 初始政府财政
     dN = pow(N2/N1, 1/T) - 1    # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
 
@@ -29,14 +34,14 @@ class config:
     y_range = [0,200]
     skill = [0,1]               # 技能水平，实数
     skill_gaussian = True       # 技能水平服从截断高斯分布
-    resource = 5
+    resource = 10
     product_thr = 10            # 与资源最小距离＜10则会有产出
     move_len = 10               # 随机游走的最长距离
     move_dir = 1                 # 随机游走的方向范围，即[0,2π]
     
     tax = False
     personal_income_tax = 0.0001 if tax else 0  # 个人所得税5%
-    consumption_tax = 0.2 if tax else 0      # 消费税
+    consumption_tax = 0.002 if tax else 0      # 消费税
     business_tax = 0.001 if tax else 0          # 企业税
     property_tax = 0.001 if tax else 0          # 财产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配

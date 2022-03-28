@@ -61,6 +61,8 @@ for t in range(config.T):
     
     #### Data storage
     data_step = env.step(t, ) # np.zeros((config.N1))
+    if t==100: # t%100 == 99:
+        env.event_simulator('GreatDepression')
     data.extend(data_step)
     if t % 100 == 0:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
