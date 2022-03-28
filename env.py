@@ -360,6 +360,15 @@ class Env:
         if config.Verbose: print('%s is dead!'%name)
 
     def event(self, ):
-        pass
+        '''
+        异常事件发生器
+        event目前设计2种事件: GreatDepression, WorldWar
+        GreatDepression(大萧条):
+            - E财富减少75%, W财富减少50%, U财富减少25%,
+            - E25%, W25%失业
+            - U10%死亡
+        
+        '''
+
 
 # env.add_agent()
