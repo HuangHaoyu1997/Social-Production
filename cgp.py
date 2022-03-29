@@ -103,7 +103,7 @@ class Individual:
                 for i in range(self.function_set[node.i_func].arity):
                     # i_input是该node的第i的输入端口所连接的父节点的index
                     i_input = node.i_inputs[i]
-                    if i_input >= 0:  # >=0表示node的父节点是一个节点，而非input点
+                    if i_input >= 0:  # >=0表示node的父节点是一个hidden节点，而非input节点
                         # 该节点的父节点也设置为“激活”
                         self.nodes[i_input].active = True
         if config.Verbose:
