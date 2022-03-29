@@ -36,17 +36,18 @@ class Individual:
     An individual (chromosome, genotype, etc.) in evolution
     
     """
-    function_set = None
-    weight_range = [-1, 1]
+    
     max_arity = 3
     
     n_cols = config.N_COLS # number of cols (nodes) in a single-row CGP
     level_back = config.LEVEL_BACK # 后面的节点可以最远连接的前面节点的相对位置
     fitness = None
 
-    def __init__(self,input_dim,out_dim):
+    def __init__(self,input_dim,out_dim,function_set=fs):
+        self.function_set = function_set
         self.n_inputs = input_dim
         self.n_outputs = out_dim # 输出维度
+        self.weight_range = [-1, 1]
         self.nodes = []
         for pos in range(self.n_cols):
             self.nodes.append(self._create_random_node(pos))
