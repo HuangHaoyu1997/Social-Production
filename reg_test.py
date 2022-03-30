@@ -3,16 +3,17 @@ import matplotlib.pyplot as plt
 from typing import Dict, Generator, List, Optional, Set, Tuple, Type
 import time
 from configuration import config
-config.seed = 123# int(time.time())
+config.seed = 123 # int(time.time())
 from cgp import *
 from postprocessing import *
 
 def obj_fun(x):
-    return x**2+2*x+1
+    return x*x + 2*x + 1
+
 
 def gen_data():
     y = []
-    x = np.linspace(-3,1,200)
+    x = np.linspace(-10,10,500) # 数据量太少、定义域太窄，会搜索到错误解，但奇怪的是错误解依然满足loss=0
     for i in x:
         y.append(obj_fun(i))
     return x, np.array(y)
@@ -26,6 +27,9 @@ def NRMSE(y:np.ndarray, y_pred:np.ndarray):
     return 1/(1+nrMSE)
 
 x,y = gen_data()
+plt.figure()
+plt.plot(x,y)
+plt.show()
 
 pop = create_population(config.MU+config.LAMBDA, input_dim=1, out_dim=1)
 
@@ -53,9 +57,7 @@ def print_ind(ind:Individual):
 g = extract_computational_subgraph(pop[0])
 formula = simplify(g, ['x'])
 formula = round_expr(formula, config.PP_FORMULA_NUM_DIGITS)
-print(formula)
-visualize(g, "./results/graph.jpg", input_names=['x'], operator_map=DEFAULT_SYMBOLIC_FUNCTION_MAP)
-#plt.figure()
-#plt.plot(x,y)
-#plt.show()
+print(pop[0].fitness, formula)
+visualize(g, "./results/xx+2x+1.jpg", input_names=['x'], operator_map=DEFAULT_SYMBOLIC_FUNCTION_MAP)
+
 # print(x,y)

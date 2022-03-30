@@ -173,7 +173,7 @@ class Env:
         elif work == 2: employer = self.agent_pool[name].employer # 被雇佣
 
         # 【若employer作为RL智能体,则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
-        w = round(uniform(0,config.danjia*self.market_V) ,2) # 四舍五入2位小数
+        w = round(uniform(0, config.danjia*self.market_V) ,2) # 四舍五入2位小数
 
         tax = w * config.business_tax
         w_ = w * (1-config.business_tax) # 扣除企业税

@@ -8,6 +8,9 @@ Reference
 1. [`geppy.support.simplification`](https://geppy.readthedocs.io/en/latest/geppy.support.html#module-geppy.support.simplification).
 2. [Binary expression tree](https://en.wikipedia.org/wiki/Binary_expression_tree). Note that the operators are not required
 to be binary though.
+
+需要安装pygraphviz, https://www.lfd.uci.edu/~gohlke/pythonlibs/#pygraphviz
+需要安装graphviz, https://graphviz.org/download/, 将路径下/bin/加入系统变量, 重启系统, 才不会报错"ValueError: Program neato not found in path."
 """
 import cgp
 import sympy as sp
@@ -21,13 +24,10 @@ from function import *
 
 def extract_computational_subgraph(ind: cgp.Individual) -> nx.MultiDiGraph:
     """Extract a computational subgraph of the CGP graph `ind`, which only contains active nodes.
-
     Args:
         ind (cgp.Individual): an individual in CGP  
-
     Returns:
         nx.DiGraph: a acyclic directed graph denoting a computational graph
-
     See https://www.deepideas.net/deep-learning-from-scratch-i-computational-graphs/ and 
     http://www.cs.columbia.edu/~mcollins/ff2.pdf for knowledge of computational graphs.
     """
@@ -103,12 +103,16 @@ def simplify(g: nx.MultiDiGraph, input_names: Sequence = None, symbolic_function
 
 
 def round_expr(expr, num_digits):
+    '''
+    对符号表达式四舍五入
+    '''
     # https://stackoverflow.com/questions/48491577/printing-the-output-rounded-to-3-decimals-in-sympy
     return expr.xreplace({n: round(n, num_digits) for n in expr.atoms(sp.Number)})
 
 
 def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, operator_map: Dict = None):
-    """Visualize an acyclic graph `g`.
+    """
+    Visualize an acyclic graph `g`.无环图的可视化
 
     Args:
         g (nx.MultiDiGraph): a graph
@@ -121,7 +125,8 @@ def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, op
 
     from networkx.drawing.nx_agraph import to_agraph
     import pygraphviz
-    layout = 'dot'
+    layout = 'dot' # 'neato' # 会改变graph的样式
+
     # label each function node with an operator
     if operator_map is None:
         operator_map = {operator.add.__name__: '+',
@@ -133,18 +138,23 @@ def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, op
         attr = g.nodes[n]
         if n >= 0:  # function node
             if attr['func'] not in operator_map:
-                print(
-                    f"Operator notation of '{attr['func']}'' is not available. The node id is shown instead.")
-            attr['label'] = operator_map.get(attr['func'], n)
+                print(f"Operator notation of '{attr['func']}'' is not available. The node id is shown instead.")
+            
+            # operator_map.get(attr['func'], n)返回的是该函数的哈希
+            # attr['label'] = operator_map.get(attr['func'], n)
+
+            # attr['func']是该函数的str名字
+            attr['label'] = attr['func']
+            # print(attr['func'], attr['label'], n)
+            
             if g.out_degree(n) == 0:  # the unique output node
-                attr['color'] = 'red'
-        else:  # input node
+                attr['color'] = 'red' # 输出节点用红色表示
+        
+        else:  # 输入节点用绿色表示
             attr['color'] = 'green'
-            attr['label'] = input_names[-n -
-                                        1] if input_names is not None else f'v{-n}'
+            attr['label'] = input_names[-n-1] if input_names is not None else f'v{-n}'
 
     ag: pygraphviz.agraph.AGraph = to_agraph(g)
     ag.layout(layout)
-    # ag.layout()
     ag.draw(to_file)
     

@@ -47,7 +47,7 @@ class config:
     redistribution_freq = 1    # 每10个step进行一次财富再分配
 
     # for CGP
-    MUT_PB = 0.1  # mutate probability
+    MUT_PB = 0.45  # mutate probability
     N_COLS = 15   # number of cols (nodes) in a single-row CGP
     LEVEL_BACK = 80  # how many levels back are allowed for inputs in CGP
     
@@ -64,6 +64,6 @@ class config:
     # computational graph will be visualized into files under the `pp` directory
     PP_FORMULA = True
     PP_FORMULA_NUM_DIGITS = 5
-    PP_FORMULA_SIMPLIFICATION = False
+    PP_FORMULA_SIMPLIFICATION = True
     PP_GRAPH_VISUALIZATION = True
 
