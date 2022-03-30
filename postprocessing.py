@@ -121,7 +121,7 @@ def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, op
 
     from networkx.drawing.nx_agraph import to_agraph
     import pygraphviz
-    # layout = 'dot'
+    layout = 'dot'
     # label each function node with an operator
     if operator_map is None:
         operator_map = {operator.add.__name__: '+',
@@ -144,7 +144,7 @@ def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, op
                                         1] if input_names is not None else f'v{-n}'
 
     ag: pygraphviz.agraph.AGraph = to_agraph(g)
-    # ag.layout(layout)
-    ag.layout()
+    ag.layout(layout)
+    # ag.layout()
     ag.draw(to_file)
     
