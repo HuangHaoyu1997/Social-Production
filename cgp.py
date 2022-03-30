@@ -1,7 +1,6 @@
 """
 Cartesian genetic programming
 """
-from ast import Lambda
 
 import random
 import copy
@@ -44,6 +43,7 @@ class Individual:
     fitness = None
 
     def __init__(self,input_dim,out_dim,function_set=fs):
+        # 【创新点：给不同位置的node设置不同的function set,人的先验知识可以起作用，可能需要给node class设置一个fun_set】
         self.function_set = function_set
         self.n_inputs = input_dim
         self.n_outputs = out_dim # 输出维度

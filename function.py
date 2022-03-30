@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import operator as op
-
+import sympy as sp
 
 class Function:
     """
@@ -143,6 +143,26 @@ fs = [
         # Function(sqrt, 1),
         # Function(inv, 1),
     ]
+
+# Map Python functions to sympy counterparts for symbolic simplification.
+DEFAULT_SYMBOLIC_FUNCTION_MAP = {
+    op.and_.__name__: sp.And,
+    op.or_.__name__: sp.Or,
+    op.not_.__name__: sp.Not,
+    op.add.__name__: op.add,
+    op.sub.__name__: op.sub,
+    op.mul.__name__: op.mul,
+    op.neg.__name__: op.neg,
+    op.pow.__name__: op.pow,
+    op.abs.__name__: op.abs,
+    op.floordiv.__name__: op.floordiv,
+    op.truediv.__name__: op.truediv,
+    'protected_div': op.truediv,
+    math.log.__name__: sp.log,
+    math.sin.__name__: sp.sin,
+    math.cos.__name__: sp.cos,
+    math.tan.__name__: sp.tan,
+}
 
 if __name__ == '__main__':
     

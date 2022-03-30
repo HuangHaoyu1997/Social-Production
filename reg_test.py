@@ -41,7 +41,13 @@ def cgp_regressor(pop, data, N_gen, terminate_fit, fitness_function=NRMSE):
         if pop[0].fitness >= terminate_fit:
             break
     return pop
-cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
+
+pop = cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
+def print_ind(ind:Individual):
+    for node in ind.nodes:
+        if node.active:
+            print(fs[node.i_func].name)
+print_ind(pop[0])
 #plt.figure()
 #plt.plot(x,y)
 #plt.show()

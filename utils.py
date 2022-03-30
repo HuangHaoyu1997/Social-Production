@@ -287,6 +287,11 @@ class OrnsteinUhlenbeckActionNoise:
         return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)
 
 
+
+
+
+
+
 if __name__ == "__main__":
     ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*10,theta=0.5,x0=10)
     # ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.9)

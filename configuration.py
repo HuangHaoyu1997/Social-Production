@@ -59,4 +59,11 @@ class config:
     solved = 100
     Epoch = 100
 
+    # for CGP visualization Postprocessing
+    # if True, then the evolved math formula will be simplified and the corresponding
+    # computational graph will be visualized into files under the `pp` directory
+    PP_FORMULA = True
+    PP_FORMULA_NUM_DIGITS = 5
+    PP_FORMULA_SIMPLIFICATION = True
+    PP_GRAPH_VISUALIZATION = True
 
