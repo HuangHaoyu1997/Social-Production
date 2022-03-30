@@ -162,8 +162,8 @@ DEFAULT_SYMBOLIC_FUNCTION_MAP = {
     math.sin.__name__:      sp.sin,
     math.cos.__name__:      sp.cos,
     math.tan.__name__:      sp.tan,
-    'const_1':               const_1,
-    'const_5':               const_5,
+    'const_1':              const_1,
+    'const_5':              const_5,
     'const_tenth':          const_tenth,
 
 }

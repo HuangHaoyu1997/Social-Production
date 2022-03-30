@@ -48,11 +48,13 @@ def print_ind(ind:Individual):
     for node in ind.nodes:
         if node.active:
             print(fs[node.i_func].name)
-print_ind(pop[0])
+# print_ind(pop[0])
+
 g = extract_computational_subgraph(pop[0])
 formula = simplify(g, ['x'])
 formula = round_expr(formula, config.PP_FORMULA_NUM_DIGITS)
 print(formula)
+visualize(g, "./results/graph.jpg", input_names=['x'], operator_map=DEFAULT_SYMBOLIC_FUNCTION_MAP)
 #plt.figure()
 #plt.plot(x,y)
 #plt.show()

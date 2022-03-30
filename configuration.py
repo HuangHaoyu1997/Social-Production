@@ -64,6 +64,6 @@ class config:
     # computational graph will be visualized into files under the `pp` directory
     PP_FORMULA = True
     PP_FORMULA_NUM_DIGITS = 5
-    PP_FORMULA_SIMPLIFICATION = True
+    PP_FORMULA_SIMPLIFICATION = False
     PP_GRAPH_VISUALIZATION = True
 

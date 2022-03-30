@@ -44,6 +44,7 @@ def extract_computational_subgraph(ind: cgp.Individual) -> nx.MultiDiGraph:
             g.add_node(i, func=f.name)
             order = 1
             for j in range(f.arity):
+                # print('name:',f.name)
                 i_input = node.i_inputs[j] # 找父节点连接
                 w = node.weights[j]
                 g.add_edge(i_input, i, weight=w, order=order)
@@ -91,7 +92,7 @@ def simplify(g: nx.MultiDiGraph, input_names: Sequence = None, symbolic_function
                     inputs.append(
                         (input_node_id, attr["weight"], attr["order"]))
             inputs.sort(key=operator.itemgetter(2))
-            
+
             args = (ip[1] * d[ip[0]] for ip in inputs)
             func = g.nodes[node_id]["func"]
             sym_func = symbolic_function_map[func]
@@ -120,7 +121,7 @@ def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, op
 
     from networkx.drawing.nx_agraph import to_agraph
     import pygraphviz
-    layout = 'dot'
+    # layout = 'dot'
     # label each function node with an operator
     if operator_map is None:
         operator_map = {operator.add.__name__: '+',
@@ -143,5 +144,7 @@ def visualize(g: nx.MultiDiGraph, to_file: str, input_names: Sequence = None, op
                                         1] if input_names is not None else f'v{-n}'
 
     ag: pygraphviz.agraph.AGraph = to_agraph(g)
-    ag.layout(layout)
+    # ag.layout(layout)
+    ag.layout()
     ag.draw(to_file)
+    
