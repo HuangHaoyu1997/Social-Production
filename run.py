@@ -86,6 +86,8 @@ for t in range(config.T):
         ax2.plot(agent_coin[2])
         ax2.plot(agent_coin[3])
         ax2.grid(); ax2.set_xlabel('T'); ax2.set_ylabel('Coin')
+        ax2.set_yscale('log')
+        ax2.set_title('avg_coin')
         ax2.legend(['Unemployed','Employer','Worker','Total'],loc=2)
 
 
@@ -107,6 +109,7 @@ for t in range(config.T):
         ax5.plot(total_coin[2])
         ax5.plot(total_coin[3])
         ax5.grid(); ax5.set_xlabel('T'); ax5.set_ylabel('Coin')
+        ax5.set_yscale('log')
         ax5.set_title('total coin')
         ax5.legend(['agent','market','government','Total'],loc=2)
 
