@@ -24,14 +24,14 @@ def grid_render(agent,resource):
 
     grid = np.zeros((x+1,y+1,3),dtype=np.uint8)
     for rx,ry in resource:
-        rx = round(rx)
-        ry = round(ry)
+        rx = int(round(rx))
+        ry = int(round(ry))
         grid[rx-2:rx+2,ry-2:ry+2,:] = [0,255,0]
 
     for name in agent:
         if agent[name].alive:
-            x = round(agent[name].x)
-            y = round(agent[name].y)
+            x = int(round(agent[name].x))
+            y = int(round(agent[name].y))
             coin = agent[name].coin
             # 灰度值与收入正相关
             pixel_scale = min(coin / max_income,0.2)
@@ -235,10 +235,10 @@ class OrnsteinUhlenbeckActionNoise:
         x0: 状态初始值
         '''
         self.theta = theta
-        self.mu = mu
+        self.mu = np.array(mu) # np.array允许mu是实数,而不仅len>=2的向量
         self.sigma = sigma
         self.dt = dt
-        self.x0 = x0
+        self.x0 = np.array(x0)
         self.reset()
 
     def __call__(self):
@@ -260,7 +260,7 @@ class OrnsteinUhlenbeckActionNoise:
 
 
 if __name__ == "__main__":
-    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*10,theta=0.5,x0=10)
+    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=10,theta=0.5,x0=10)
     # ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.9)
     # plt.figure()
     y1 = []
@@ -269,9 +269,9 @@ if __name__ == "__main__":
     for i in range(10):
         for _ in t:
             y1.append(ou_noise1())
-            if y1[-1]<=0: print(y1[-1])
+            # if y1[-1]<=0: print(y1[-1])
             # y2.append(ou_noise2())
 
-    # plt.plot(t, y1, c='r')
+    plt.plot(t, y1, c='r')
     # plt.plot(t, y2, c='b')
-    # plt.show()
+    plt.show()

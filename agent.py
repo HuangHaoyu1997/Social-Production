@@ -18,7 +18,8 @@ class agent:
         # self.coin = np.random.randint(low=50,high=100)
         self.hire = [] # 雇佣工人集合
         self.employer = None # 雇佣者
-        
+        self.throughput = 1.0 # 若agent为employer,该项生效,决定其worker的产量,未来应当作为agent的动作输出
+
         # special attributes for employers
         self.labor_cost = 0 # 人力成本 per timestep
         self.exploit = 0    # 剥削所得 per timestep

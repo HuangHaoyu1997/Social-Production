@@ -8,14 +8,14 @@ class config:
     Verbose = False             # 打印破产、解雇等事件
     render = True
     N1 = 300                    # 初始人口
-    N2 = 3000                   # 目标人口,即经过T步仿真后人口
-    T = 600                     # 仿真步长
+    N2 = 6000                   # 目标人口,即经过T步仿真后人口
+    T = 1200                     # 仿真步长
 
     # for agent
     work_state = 0              # 初始工作状态, 0 unemployed, 1 employer, 2 worker
-    init_coin = 1000             # 初始货币
+    init_coin = 100             # 初始货币
     random_coin = True          # 初始货币随机分布
-    coin_range = [900,1100]       # 初始货币随机分布区间,仅random_coin=True生效
+    coin_range = [50,150]       # 初始货币随机分布区间,仅random_coin=True生效
     w1 = 10                     # 初始最低工资
     w2 = 90                     # 初始最高工资
     employment_intention = 1.0  # 就业意愿

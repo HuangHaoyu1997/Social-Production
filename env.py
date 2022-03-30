@@ -26,15 +26,19 @@ class Env:
         self.G = build_graph(self.agent_pool)
         self.resource = np.round(uniform(config.x_range[0],config.x_range[1],[config.resource,2]),2) # 资源坐标
 
+        self.w1_OU_noise = OrnsteinUhlenbeckActionNoise(mu=config.w1, theta=0.2, x0=config.w1)
         return [self.E, self.W ,self.U, self.market_V]
     
-    def update_config(self, action):
+    def update_config(self, action=None):
         '''
         更新仿真超参数,用于实时控制系统
         '''
-        self.w1 = action[0]
-        self.w2 = action[1]
-        assert self.w1 < self.w2
+        scale_factor = uniform(2,5)
+        self.w1 = self.w1_OU_noise()
+        self.w2 = scale_factor * self.w1
+        # self.w1 = action[0]
+        # self.w2 = action[1]
+        # assert self.w1 < self.w2
 
 
     def step(self, t, action=None):
@@ -47,7 +51,7 @@ class Env:
         if len(action) != len(self.agent_pool):
             raise Exception('动作空间必须与智能体数量相同')
         '''
-        # self.update_config(action)
+        self.update_config(action)
 
         agent_list = list(self.agent_pool.keys())
         random.shuffle(agent_list)
@@ -171,9 +175,10 @@ class Env:
         if work == 0: return None # 失业
         elif work == 1: employer = name # 雇主
         elif work == 2: employer = self.agent_pool[name].employer # 被雇佣
+        throughput = self.agent_pool[employer].throughput
 
-        # 【若employer作为RL智能体,则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
-        w = round(uniform(0, *self.market_V) ,2) # 四舍五入2位小数
+        # 【若employer作为RL智能体, 则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
+        w = round(uniform(0, skill*throughput*self.market_V) ,2) # 四舍五入2位小数
 
         tax = w * config.business_tax
         w_ = w * (1-config.business_tax) # 扣除企业税
