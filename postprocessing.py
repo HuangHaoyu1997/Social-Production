@@ -80,17 +80,18 @@ def simplify(g: nx.MultiDiGraph, input_names: Sequence = None, symbolic_function
     ts = list(nx.topological_sort(g))
     d = dict()
     for node_id in ts:
-        if node_id < 0:  # inputs in CGP
+        if node_id < 0:  # input nodes in CGP
             d[node_id] = sp.Symbol(f"v{-node_id}" if input_names is None else input_names[-node_id - 1])
         else:  # a function node
             inputs = []
             # print(g.in_edges(node_id))
-            for input_node_id in g.predecessors(node_id):
+            for input_node_id in g.predecessors(node_id): # predecessors(n)得到n的父节点
                 # possibly parallel edges
                 for attr in g.get_edge_data(input_node_id, node_id).values():
                     inputs.append(
                         (input_node_id, attr["weight"], attr["order"]))
             inputs.sort(key=operator.itemgetter(2))
+            
             args = (ip[1] * d[ip[0]] for ip in inputs)
             func = g.nodes[node_id]["func"]
             sym_func = symbolic_function_map[func]

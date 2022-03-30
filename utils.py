@@ -38,39 +38,6 @@ def grid_render(agent,resource):
             grid[x,y,:] = int(255*pixel_scale)
     return grid
 
-def extract_computational_subgraph(ind: cgp.Individual) -> nx.MultiDiGraph:
-    """Extract a computational subgraph of the CGP graph `ind`, which only contains active nodes.
-
-    Args:
-        ind (cgp.Individual): an individual in CGP  
-
-    Returns:
-        nx.DiGraph: a acyclic directed graph denoting a computational graph
-
-    See https://www.deepideas.net/deep-learning-from-scratch-i-computational-graphs/ and 
-    http://www.cs.columbia.edu/~mcollins/ff2.pdf for knowledge of computational graphs.
-    """
-    # make sure that active nodes have been confirmed
-    if not ind._active_determined:
-        ind._determine_active_nodes()
-        ind._active_determined = True
-    # in the digraph, each node is identified by its index in `ind.nodes`
-    # if node i depends on node j, then there is an edge j->i
-    g = nx.MultiDiGraph()  # possibly duplicated edges
-    for i, node in enumerate(ind.nodes):
-        if node.active:
-            f = ind.function_set[node.i_func]
-            g.add_node(i, func=f.name)
-            order = 1
-            for j in range(f.arity):
-                i_input = node.i_inputs[j]
-                w = node.weights[j]
-                if i_input == -3: i_input = 'consume'
-                if i_input == -2: i_input = 'coin_before'
-                if i_input == -1: i_input = 'hungry_before'
-                g.add_edge(i_input, i, weight=w, order=order)
-                order += 1
-    return g
 
 def softmax(x):
     return np.exp(x)/(np.exp(x)).sum()

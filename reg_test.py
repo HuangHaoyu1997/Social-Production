@@ -5,6 +5,7 @@ import time
 from configuration import config
 config.seed = 123# int(time.time())
 from cgp import *
+from postprocessing import *
 
 def obj_fun(x):
     return x**2+2*x+1
@@ -48,6 +49,10 @@ def print_ind(ind:Individual):
         if node.active:
             print(fs[node.i_func].name)
 print_ind(pop[0])
+g = extract_computational_subgraph(pop[0])
+formula = simplify(g, ['x'])
+formula = round_expr(formula, config.PP_FORMULA_NUM_DIGITS)
+print(formula)
 #plt.figure()
 #plt.plot(x,y)
 #plt.show()
