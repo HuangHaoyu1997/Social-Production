@@ -26,7 +26,7 @@ class config:
 
     avg_coin = None # (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
-    danjia = 1.0                # 工人向市场出售商品时，最大单价
+    # danjia = 1.0                # 工人向市场出售商品时，最大单价
     consume = 1.0               # 消费比例,即智能体每次消费量占其总财产的比例
     die = False                 # 开启死亡机制，从agent_pool,E,W,U中删去
     hungry_days = 3             # 超过3天没钱消费就饿死
