@@ -191,7 +191,9 @@ class Env:
         self.agent_pool[employer].exploit += w
 
     def pay(self, name):
-        '''为agent_pool[name].hire中的worker发工资'''
+        '''
+        为agent_pool[name].hire中的worker发工资
+        '''
         if self.agent_pool[name].work != 1: return None
         
         coin_before = self.agent_pool[name].coin # 发工资之前的资本
@@ -213,19 +215,21 @@ class Env:
                     tax = w * config.personal_income_tax; self.gov += tax # 缴个税
                     w_after_tax = w * (1-config.personal_income_tax)
                     self.agent_pool[worker].coin += w_after_tax
+                    continue
                     # self.agent_pool[name].coin = capital  ## 更新employer
                 
                 # 【情况2】资本量不足以开出现有工资，在最低工资和现有资本量之间开工资
-                elif self.agent_pool[name].coin < w and self.agent_pool[name].coin > self.w1:
+                if self.agent_pool[name].coin < w and self.agent_pool[name].coin > self.w1:
                     w = uniform(self.w1, self.agent_pool[name].coin) # 降薪发工资
                     self.agent_pool[name].coin -= w
                     tax = w * config.personal_income_tax; self.gov += tax # 缴个人所得税
                     w_after_tax = w * (1-config.personal_income_tax)
                     self.agent_pool[worker].coin += w_after_tax
+                    continue
                     # self.agent_pool[name].coin = capital  ## 更新employer
                 
                 # 【情况3】资本量少于最低工资，将全部资本用于发工资，然后破产
-                elif self.agent_pool[name].coin <= self.w1:
+                if self.agent_pool[name].coin <= self.w1:
                     self.agent_pool[worker].coin += self.agent_pool[name].coin # 破产发工资
                     self.agent_pool[name].coin = 0
                     
