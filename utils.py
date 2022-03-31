@@ -220,7 +220,7 @@ def update_graph(G:nx.Graph, agent:dict, E, W, U):
 
 
 class OrnsteinUhlenbeckActionNoise:
-    def __init__(self, mu, sigma=1.0, theta=0.5, dt=0.01, x0=5.):
+    def __init__(self, mu, sigma=1.0, theta=0.1, dt=0.1, x0=5.):
         '''
         OU过程是均值回归过程,当x_t比均值μ大时,下一步状态值x_{t+△t}就会变小;反之,x_{t+△t}会变大。
         简单地说就是状态值x_t偏离均值μ时会被拉回。
@@ -229,9 +229,9 @@ class OrnsteinUhlenbeckActionNoise:
         就像物价和利率的波动一样，这有利于在一个方向上探索。
 
         mu: asymptotic mean,渐进均值
-        sigma: 噪声项的大小,OU过程的噪声是一个维纳过程(布朗运动),每一时间间隔内的噪声服从高斯分布
-        theta: how strongly the system reacts to perturbations(the decay-rate or growth-rate),theta越小,波动越大
-        dt: 时间分辨率
+        sigma: 噪声强度, 越大波动越大, 曲线毛刺越多, OU过程的噪声是一个维纳过程(布朗运动), 每一时间间隔内的噪声服从高斯分布
+        theta: how strongly the system reacts to perturbations(the decay-rate or growth-rate), 向均值回归的速度, theta越小,波动越大
+        dt: 时间分辨率/时间尺度, 值越小, 变化越慢。
         x0: 状态初始值
         '''
         self.theta = theta
@@ -260,18 +260,19 @@ class OrnsteinUhlenbeckActionNoise:
 
 
 if __name__ == "__main__":
-    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=10,theta=0.5,x0=10)
-    # ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=np.ones(1)*5,theta=0.9)
+    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=c.w1,theta=0.1,sigma=5,x0=10,dt=0.1)
+    ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=c.w1,theta=0.1,sigma=5,x0=10,dt=0.1)
     # plt.figure()
     y1 = []
     y2 = [] # np.random.normal(0, 1, 10000)
-    t = np.linspace(0, 1000, 10000)
-    for i in range(10):
-        for _ in t:
-            y1.append(ou_noise1())
-            # if y1[-1]<=0: print(y1[-1])
-            # y2.append(ou_noise2())
+    # t = np.linspace(0, 1000, 10000)
+    
+    for _ in range(1200):
+        y1.append(ou_noise1())
+        y2.append(ou_noise2())
+        # if y1[-1]<=0: print(y1[-1])
+        # y2.append(ou_noise2())
 
-    plt.plot(t, y1, c='r')
-    # plt.plot(t, y2, c='b')
+    plt.plot(y1, c='r')
+    plt.plot(y2, c='b')
     plt.show()

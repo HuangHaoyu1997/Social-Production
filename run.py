@@ -14,20 +14,22 @@ plt.ion()
 env = Env()
 env.reset()
 total_coin = [[],[],[],[]]
-agent_num = [[],[],[]]
+agent_num = [[],[],[],[]]
 agent_coin = [[],[],[],[]]
+w = [[],[]]
 RSV = []
 RH = [0.] # RH for Rate of Hire
 data = []
 if config.render:
-    fig1 = plt.figure(1,(16,9))
-    ax1 = fig1.add_subplot(231)
-    ax2 = fig1.add_subplot(232)
-    ax3 = fig1.add_subplot(233)
-    ax4 = ax3.twinx()
-    ax5 = fig1.add_subplot(234)
-    ax6 = fig1.add_subplot(235)
-    ax7 = fig1.add_subplot(236)
+    fig1 = plt.figure(1,(20,9))
+    ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
+    ax2 = fig1.add_subplot(242) # 各部平均财富图
+    ax3 = fig1.add_subplot(243) # 剥削率
+    ax4 = ax3.twinx()           # 雇佣率
+    ax5 = fig1.add_subplot(244) # 各子系统总财富变化图
+    ax6 = fig1.add_subplot(245) # Grid可视化
+    ax7 = fig1.add_subplot(246) # Graph可视化
+    ax8 = fig1.add_subplot(247) # 最低工资、最高工资变化趋势图
 
 tick = time.time()
 for t in range(config.T):
@@ -50,19 +52,25 @@ for t in range(config.T):
     agent_num[0].append(len(env.U))
     agent_num[1].append(len(env.E))
     agent_num[2].append(len(env.W))
+    agent_num[3].append(alive_num(env.agent_pool))
 
     agent_coin[0].append(avg_coin_u)
     agent_coin[1].append(avg_coin_e)
     agent_coin[2].append(avg_coin_w)
     agent_coin[3].append(avg_coin_t)
 
+    w[0].append(env.w1)
+    w[1].append(env.w2)
+
     RSV.append(RateSurplusValue)
     if t > 0: RH.append(len(env.W)/len(env.E))
     
     #### Data storage
     data_step = env.step(t, ) # np.zeros((config.N1))
-    if t==100: # t%100 == 99:
+
+    if t >= 100 and t < 100+config.event_duration: # t%100 == 99:
         env.event_simulator('GreatDepression')
+
     data.extend(data_step)
     if t % 100 == 0:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
@@ -77,8 +85,9 @@ for t in range(config.T):
         ax1.plot(agent_num[0])
         ax1.plot(agent_num[1])
         ax1.plot(agent_num[2])
+        ax1.plot(agent_num[3])
         ax1.grid(); ax1.set_xlabel('T'); ax1.set_ylabel('Population')
-        ax1.legend(['Unemployed','Employer','Worker'],loc=2)
+        ax1.legend(['Unemployed','Employer','Worker','Total'],loc=2)
 
         ax2.cla()
         ax2.plot(agent_coin[0])
@@ -117,18 +126,24 @@ for t in range(config.T):
         ax6.cla()
         ax6.imshow(grid)
 
-
         ax7.cla()
+        ax7.plot(w[0])
+        ax7.plot(w[1])
+        ax7.grid(); ax7.set_xlabel('T'); ax7.set_ylabel('Salary')
+        ax7.set_title('Top and bottom salary')
+        ax7.legend(['bottom','top'],loc=2)
+
+        ax8.cla()
         p = nx.spring_layout(env.G)
         nx.draw(env.G, pos=p)
         plt.show()
-
         '''
         # 有问题,会影响figure(4)的显示
-        # TODO 如何动态显示大规模nx.Graph？
+        # TODO 如何动态显示大规模nx.Graph?
         '''
         
         plt.pause(0.0001)
         # print("tock = %.3f"%(time.time()-tick))
 
+time.sleep(7200)
 print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))

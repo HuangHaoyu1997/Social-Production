@@ -26,7 +26,7 @@ class Env:
         self.G = build_graph(self.agent_pool)
         self.resource = np.round(uniform(config.x_range[0],config.x_range[1],[config.resource,2]),2) # 资源坐标
 
-        self.w1_OU_noise = OrnsteinUhlenbeckActionNoise(mu=config.w1, theta=0.2, x0=config.w1)
+        self.w1_OU_noise = OrnsteinUhlenbeckActionNoise(mu=config.w1, theta=0.1, sigma=5, x0=10, dt=0.1) # config.w1
         return [self.E, self.W ,self.U, self.market_V]
     
     def update_config(self, action=None):
@@ -44,7 +44,6 @@ class Env:
     def step(self, t, action=None):
         '''
         单步仿真程序
-
         '''
 
         '''
@@ -66,8 +65,8 @@ class Env:
             self.agent_pool[name].labor_cost = 0
             
             # 随机移动
-            mod = round(uniform(0,config.move_len),2)
-            dir = round(uniform(0,config.move_dir),3)
+            mod = round(uniform(0,config.move_len),2) # 向量的模
+            dir = round(uniform(0,config.move_dir),3) # 向量的角度
             self.agent_pool[name].move(mod=mod,direction=dir)
             
             self.production(name)
@@ -95,8 +94,9 @@ class Env:
         if config.tax and t % config.redistribution_freq == 0:
             self.redistribution()
         
-        # 新增移民,单步增加人口数量不超过当前人口的dN比例(0<dN<1)
-        delta_pop = np.random.randint(0,round(config.dN*len(self.agent_pool)))
+        # 新增移民,
+        # 单步增加人口数量不超过当前人口的dN比例(0<dN<1)
+        delta_pop = np.random.randint( 0, min(round(config.dN*len(self.agent_pool)), 1) )
         self.agent_pool.update(add_agent(delta_pop))
 
         self.E, self.W, self.U = working_state(self.agent_pool)
@@ -203,7 +203,7 @@ class Env:
             for worker in worker_list:
                 capital = self.agent_pool[name].coin # employer现有资本
                 # 在最低工资和最高工资之间随机发工资
-                w = round(uniform(self.w1, self.w2), 2)
+                w = uniform(self.w1, self.w2)
                 if capital >= w:
                     capital -= w
 
@@ -216,7 +216,7 @@ class Env:
                     self.agent_pool[name].coin = capital  ## 更新employer
                 # 资本量不足以开出现有工资
                 elif capital < w and capital > self.w1:
-                    w = round(uniform(self.w1, capital) ,2) # 降薪发工资
+                    w = uniform(self.w1, capital) # 降薪发工资
                     capital -= w
                     
                     # 缴个人所得税
@@ -288,6 +288,7 @@ class Env:
         # 最大工人数量=货币量/平均工资
         config.avg_coin = avg_coin(self.agent_pool, self.W+self.U)[0]
         max_num = np.floor(capital / config.avg_coin)
+        
         # 工人数量
         num_worker = len(worker_list)
         fire_num = int(max(num_worker-max_num, 0)) # 解雇数量
@@ -397,24 +398,30 @@ class Env:
         if event == 'GreatDepression':
             if config.Verbose: print('GreatDepression is coming!')
             
+            # 财产损失
             for name in self.agent_pool:
                 if self.agent_pool[name].work == 0:
-                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.12,0.25)
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.02,0.05) # 0.12,0.25
                 elif self.agent_pool[name].work == 1:
-                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.25,0.50)
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.03,0.07) # 0.25,0.50
                 elif self.agent_pool[name].work == 2:
-                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.25,0.30)
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.04,0.09) # 0.25,0.30
             
-            broken_E = random.sample(self.E, int(0.25*len(self.E))) # 25%的资本家破产
+            # 破产
+            broken_rate = uniform(0.1, 0.2)
+            broken_E = random.sample(self.E, int(broken_rate*len(self.E))) # 25%的资本家破产
             for name in broken_E: # 破产即失业
                 self.broken(name)
-
-            broken_W = random.sample(self.W, int(0.75*len(self.W))) # 25%的工人失业
+            
+            jobless_rate = uniform(0.2, 0.3)
+            broken_W = random.sample(self.W, int(jobless_rate*len(self.W))) # 25%的工人失业
             for name in broken_W:
                 if self.agent_pool[name].work == 2: # 还没失业，就让他失业
                     self.jobless(name)
             
-            dead_U = random.sample(self.U, int(0.10*len(self.U))) # 10%的失业者死亡
+            # 死亡
+            death_rate = uniform(0.03, 0.05)
+            dead_U = random.sample(self.U, int(death_rate*len(self.U))) # 10%的失业者死亡
             for name in dead_U:
                 if self.agent_pool[name].alive:
                     self.die(name)
