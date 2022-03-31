@@ -2,7 +2,7 @@ import numpy as np
 from agent import agent
 from configuration import config as c
 import networkx as nx
-import cgp, time
+import time
 import matplotlib.pyplot as plt
 from numpy.random import uniform
 

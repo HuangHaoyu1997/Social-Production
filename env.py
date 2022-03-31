@@ -17,6 +17,7 @@ class Env:
         self.w1 = config.w1 # 初始最低工资
         self.w2 = config.w2 # 初始最高工资
 
+        # TODO【想法】开局不一定全部是unemployment，可以有UWE之分，每个人初始coin也可以不一样
         self.agent_pool = add_agent(config.N1) # 添加智能体
         self.market_V = config.V # 市场价值
         self.gov = config.G # 政府财政
@@ -195,47 +196,45 @@ class Env:
         
         coin_before = self.agent_pool[name].coin # 发工资之前的资本
         
-        if coin_before <= 0:
-            self.broken(name) # 破产
+        if coin_before <= 0: # 破产
+            self.broken(name); print(f'{name} is broken before payment')
+            
         else:
             worker_list = self.agent_pool[name].hire # 雇佣名单
             random.shuffle(worker_list)
             for worker in worker_list:
-                capital = self.agent_pool[name].coin # employer现有资本
-                # 在最低工资和最高工资之间随机发工资
+                # if not self.agent_pool[worker].alive: print(worker)
+                # capital = self.agent_pool[name].coin # employer现有资本
+                
+                # 【情况1】在最低工资和最高工资之间随机发工资
                 w = uniform(self.w1, self.w2)
-                if capital >= w:
-                    capital -= w
-
-                    # 缴个税
-                    tax = w * config.personal_income_tax
-                    w = w * (1-config.personal_income_tax)
-                    self.gov += tax
-
-                    self.agent_pool[worker].coin += w
-                    self.agent_pool[name].coin = capital  ## 更新employer
-                # 资本量不足以开出现有工资
-                elif capital < w and capital > self.w1:
-                    w = uniform(self.w1, capital) # 降薪发工资
-                    capital -= w
-                    
-                    # 缴个人所得税
-                    tax = w * config.personal_income_tax
-                    w = w * (1-config.personal_income_tax)
-                    self.gov += tax
-                    
-                    self.agent_pool[worker].coin += w
-                    self.agent_pool[name].coin = capital  ## 更新employer
-                elif capital <= self.w1:
-                    self.agent_pool[worker].coin += capital # 破产发工资
-                    capital = 0
+                if self.agent_pool[name].coin >= w:
+                    self.agent_pool[name].coin -= w
+                    tax = w * config.personal_income_tax; self.gov += tax # 缴个税
+                    w_after_tax = w * (1-config.personal_income_tax)
+                    self.agent_pool[worker].coin += w_after_tax
+                    # self.agent_pool[name].coin = capital  ## 更新employer
+                
+                # 【情况2】资本量不足以开出现有工资，在最低工资和现有资本量之间开工资
+                elif self.agent_pool[name].coin < w and self.agent_pool[name].coin > self.w1:
+                    w = uniform(self.w1, self.agent_pool[name].coin) # 降薪发工资
+                    self.agent_pool[name].coin -= w
+                    tax = w * config.personal_income_tax; self.gov += tax # 缴个人所得税
+                    w_after_tax = w * (1-config.personal_income_tax)
+                    self.agent_pool[worker].coin += w_after_tax
+                    # self.agent_pool[name].coin = capital  ## 更新employer
+                
+                # 【情况3】资本量少于最低工资，将全部资本用于发工资，然后破产
+                elif self.agent_pool[name].coin <= self.w1:
+                    self.agent_pool[worker].coin += self.agent_pool[name].coin # 破产发工资
+                    self.agent_pool[name].coin = 0
                     
                     # 低于最低工资，不交税
-                    self.agent_pool[name].coin = capital  ## 更新employer
+                    # self.agent_pool[name].coin = capital  ## 更新employer
                     break
             coin_after = self.agent_pool[name].coin
         
-            # 【保持configuration.py不变，程序运行628步后报错】
+            # 【保持configuration.py不变，程序运行若干步后报错】
             if (coin_before - coin_after)<0: print(name, coin_before - coin_after)
             assert (coin_before - coin_after)>=0
         
