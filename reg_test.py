@@ -39,27 +39,30 @@ def cgp_regressor(pop, data, N_gen, terminate_fit, fitness_function=NRMSE):
     pop: popuplation
     data: 拟合数据
     N_gen: 进化代数
-    
+    terminate_fit: 停止搜索条件, ≥terminate_fit即停止
+    fitness_function: 适应度计算函数
+
+    return: 进化后的pop, best_fit
     '''
     for i in range(N_gen):
+        
         for ind in pop:
+
             y_pred = []
             for sample in data[0]:
-                y_pred.append(ind.eval(sample))
+                # print(sample)
+                y_pred.append(ind.eval(*[sample]))
             fit = fitness_function(data[1], y_pred)
             ind.fitness = fit
         pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
         print(i,pop[0].fitness)
+        
         if pop[0].fitness >= terminate_fit:
             break
-    return pop
 
-pop = cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
-def print_ind(ind:Individual):
-    for node in ind.nodes:
-        if node.active:
-            print(fs[node.i_func].name)
-# print_ind(pop[0])
+    return pop, pop[0].fitness
+
+pop, best_fit = cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
 
 g = extract_computational_subgraph(pop[0])
 formula = simplify(g, ['x'])
