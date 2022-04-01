@@ -34,6 +34,13 @@ plt.show()
 pop = create_population(config.MU+config.LAMBDA, input_dim=1, out_dim=1)
 
 def cgp_regressor(pop, data, N_gen, terminate_fit, fitness_function=NRMSE):
+    '''
+    CGP数据拟合学习器
+    pop: popuplation
+    data: 拟合数据
+    N_gen: 进化代数
+    
+    '''
     for i in range(N_gen):
         for ind in pop:
             y_pred = []
