@@ -401,7 +401,9 @@ class Env:
             - E25%~50%, W25%~50%失业
             - 全体10%~30%死亡
         PandemicInfluenza(大流感):
-            -
+            - E死亡1%~3%, W死亡8%~10%, U死亡10%~12%
+            - 全体失业1%~3%
+            - 全体财富减少2%~5%
         '''
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
@@ -461,9 +463,31 @@ class Env:
             for name in dead_U:
                 if self.agent_pool[name].alive:
                     self.die(name)
-                    
+
         elif event == 'PandemicInfluenza':
-            raise NotImplementedError
+            if config.Verbose: print('Pandemic Influenza is coming!')
+            for name in self.agent_pool:
+                self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.02,0.05)
+                '''
+                if self.agent_pool[name].work == 0:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.02,0.05)
+                elif self.agent_pool[name].work == 1:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.02,0.05)
+                elif self.agent_pool[name].work == 2:
+                    self.agent_pool[name].coin -= self.agent_pool[name].coin*uniform(0.02,0.05)
+                '''
+                
+            broken_ratio = uniform(0.01,0.03)
+            broken_A = random.sample(list(self.agent_pool.keys()), int(broken_ratio*len(self.agent_pool)))
+            for name in broken_A:
+                self.broken(name)
+            
+            dead_ratio = uniform(0.06,0.08)
+            dead_U = random.sample(self.U+self.E+self.W, int(dead_ratio*len(self.U))) # 10%~30%的人死亡
+            for name in dead_U:
+                if self.agent_pool[name].alive:
+                    self.die(name)
+        
         else:
             raise NotImplementedError
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
