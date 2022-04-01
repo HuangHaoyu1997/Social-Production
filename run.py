@@ -21,15 +21,7 @@ RSV = []
 RH = [0.] # RH for Rate of Hire
 data = []
 if config.render:
-    fig1 = plt.figure(1,(20,9))
-    ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
-    ax2 = fig1.add_subplot(242) # 各部平均财富图
-    ax3 = fig1.add_subplot(243) # 剥削率
-    ax4 = ax3.twinx()           # 雇佣率
-    ax5 = fig1.add_subplot(244) # 各子系统总财富变化图
-    ax6 = fig1.add_subplot(245) # Grid可视化
-    ax7 = fig1.add_subplot(246) # Graph可视化
-    ax8 = fig1.add_subplot(247) # 最低工资、最高工资变化趋势图
+    pass
 
 tick = time.time()
 for t in range(config.T):
@@ -78,8 +70,18 @@ for t in range(config.T):
 
     grid = grid_render(env.agent_pool,env.resource)
     #### Render
-    if config.render:
+    if t%100==99 and config.render:
         tick = time.time()
+        fig1 = plt.figure(1,(25,10))
+        ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
+        ax2 = fig1.add_subplot(242) # 各部平均财富图
+        ax3 = fig1.add_subplot(243) # 剥削率
+        ax4 = ax3.twinx()           # 雇佣率
+        ax5 = fig1.add_subplot(244) # 各子系统总财富变化图
+        ax6 = fig1.add_subplot(245) # Grid可视化
+        ax7 = fig1.add_subplot(246) # Graph可视化
+        ax8 = fig1.add_subplot(247) # 最低工资、最高工资变化趋势图
+        
         
         ax1.cla()
         ax1.plot(agent_num[0])
@@ -136,7 +138,7 @@ for t in range(config.T):
         ax8.cla()
         p = nx.spring_layout(env.G)
         nx.draw(env.G, pos=p)
-        plt.show()
+        # plt.show()
         '''
         # 有问题,会影响figure(4)的显示
         # TODO 如何动态显示大规模nx.Graph?
@@ -144,6 +146,7 @@ for t in range(config.T):
         
         plt.pause(0.0001)
         # print("tock = %.3f"%(time.time()-tick))
-
+        plt.savefig('./results/'+str(t)+'.png')
+        plt.close()
 time.sleep(7200)
 print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))

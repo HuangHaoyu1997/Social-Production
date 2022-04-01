@@ -35,7 +35,7 @@ class Env:
         更新仿真超参数,用于实时控制系统
         '''
         scale_factor = uniform(2,5)
-        self.w1 = self.w1_OU_noise()
+        self.w1 = max(self.w1_OU_noise(), 1)
         self.w2 = scale_factor * self.w1
         # self.w1 = action[0]
         # self.w2 = action[1]
@@ -56,8 +56,8 @@ class Env:
         agent_list = list(self.agent_pool.keys())
         random.shuffle(agent_list)
         
+        ########### 单步执行
         data_step = []
-        
         for name in agent_list:
             # 必须活着
             if self.agent_pool[name].alive is not True: continue
@@ -84,20 +84,20 @@ class Env:
                     self.die(name) # 饥饿超过5步就死掉
 
         
-        # 征收财产税
+        ########### 征收财产税
         rich_people = most_rich(self.agent_pool, 50)
         for name in rich_people:
             tax = self.agent_pool[name].coin * config.property_tax
             self.agent_pool[name].coin -= tax
             self.gov += tax
 
-        # 财富再分配
+        ########### 财富再分配
         if config.tax and t % config.redistribution_freq == 0:
             self.redistribution()
         
-        # 新增移民,
+        ########### 新增人口
         # 单步增加人口数量不超过当前人口的dN比例(0<dN<1)
-        delta_pop = np.random.randint( 0, min(round(config.dN*len(self.agent_pool)), 1) )
+        delta_pop = np.random.randint( 0, max(round(config.dN*len(self.agent_pool)), 2) )
         self.agent_pool.update(add_agent(delta_pop))
 
         self.E, self.W, self.U = working_state(self.agent_pool)
@@ -150,7 +150,7 @@ class Env:
             
             if self.agent_pool[e].coin >= config.avg_coin and name!=e:
                 
-                # 考虑个体的就业意愿,100%
+                # TODO 考虑个体的就业意愿,100%
                 if random.random() <= config.employment_intention:
                     # 给name设置雇主e,修改工作状态
                     self.agent_pool[name].employer = e
@@ -204,12 +204,16 @@ class Env:
         else:
             worker_list = self.agent_pool[name].hire # 雇佣名单
             random.shuffle(worker_list)
+            
+            # TODO 通盘考虑所有工人，先在w1-w2之间开工资，如不行，整体降薪调整，如还不行，随机挑一个人减薪，工资考虑skill
+            
             for worker in worker_list:
                 # if not self.agent_pool[worker].alive: print(worker)
                 # capital = self.agent_pool[name].coin # employer现有资本
                 
                 # 【情况1】在最低工资和最高工资之间随机发工资
                 w = uniform(self.w1, self.w2)
+                # print(name,w,self.agent_pool[name].coin)
                 if self.agent_pool[name].coin >= w:
                     self.agent_pool[name].coin -= w
                     tax = w * config.personal_income_tax; self.gov += tax # 缴个税
@@ -395,6 +399,8 @@ class Env:
             - E财富减少75%, W财富减少50%, U财富减少50%,
             - E25%~50%, W25%~50%失业
             - 全体10%~30%死亡
+        PandemicInfluenza(大流感):
+            -
         '''
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
@@ -454,6 +460,9 @@ class Env:
             for name in dead_U:
                 if self.agent_pool[name].alive:
                     self.die(name)
+                    
+        elif event == 'PandemicInfluenza':
+            raise NotImplementedError
         else:
             raise NotImplementedError
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态

@@ -4,9 +4,9 @@ class config:
     如果两者数量相当,则工人和失业者数量相近,工人略高
     如果w2远小于init_coin,则会出现少量资本家-少量失业者-大量工人的情况
     '''
-    seed = 1245
+    seed = 123
     Verbose = False             # 打印破产、解雇等事件
-    render = False
+    render = True
     N1 = 200                    # 初始人口
     N2 = 12000                   # 目标人口,即经过T步仿真后人口
     T = 10000                     # 仿真步长
@@ -28,7 +28,7 @@ class config:
     avg_update = True           # 实时更新平均工资
     # danjia = 1.0                # 工人向市场出售商品时，最大单价
     consume = 1.0               # 消费比例,即智能体每次消费量占其总财产的比例
-    die = False                 # 开启死亡机制，从agent_pool,E,W,U中删去
+    die = True                 # 开启死亡机制，从agent_pool,E,W,U中删去
     hungry_days = 3             # 超过3天没钱消费就饿死
     x_range = [0,200]
     y_range = [0,200]
@@ -45,7 +45,7 @@ class config:
     business_tax = 0.001 if tax else 0          # 企业税
     property_tax = 0.001 if tax else 0          # 财产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
-    event_duration = 2         # 负面事件的持续时间
+    event_duration = 30         # 负面事件的持续时间
     # for CGP
     MUT_PB = 0.45  # mutate probability
     N_COLS = 15   # number of cols (nodes) in a single-row CGP

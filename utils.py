@@ -89,6 +89,21 @@ def most_poor(agent, N):
         out.append(name_list[i])
     return out
 
+def coin_sort(agent):
+    '''
+    【under test】
+    根据coin数量进行从低到高排序
+    input: agent是agent_pool
+    output: list of sorted lists i.e. [ [name1,coin1],[name2,coin2],... ]
+    '''
+    coin_list = np.array([agent[name].coin for name in agent])
+    name_list = [name for name in agent]
+    idx = coin_list.argsort()
+    coin_list = coin_list[idx]
+    name_list = [name_list[i] for i in idx]
+    return name_list,coin_list
+
+
 def most_rich(agent, N):
     '''
     找出最富的N个人
@@ -128,6 +143,9 @@ def exploit_ratio(agent, employer):
     return total_ex / total_la # total_ratio / count, 
 
 def build_graph(agent):
+    '''
+    建立关系网络, 用于reset()函数
+    '''
     G = nx.Graph()
     for name in agent:
         if agent[name].alive:
@@ -214,6 +232,10 @@ def update_graph(G:nx.Graph, agent:dict, E, W, U):
             elif agent[name].work == 0:
                 for n_adj in list(G[name]): # G[name]得到name的邻居
                     G.remove_edge(n_adj,name)
+            
+            # TODO 
+            # 【想法】根据agent的资本量建立edge，将其[-20%,20%]范围内的智能体建立连接
+            
     assert worker_num==len(W) and employer_num==len(E)
     return G
 
