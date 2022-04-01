@@ -97,6 +97,7 @@ class Env:
         
         ########### 新增人口
         # 单步增加人口数量不超过当前人口的dN比例(0<dN<1)
+        # TODO 目前增长速度正比于人口数量，应该开发logistic增长（S型增长曲线）
         delta_pop = np.random.randint( 0, max(round(config.dN*len(self.agent_pool)), 2) )
         self.agent_pool.update(add_agent(delta_pop))
 
