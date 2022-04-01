@@ -62,6 +62,7 @@ def cgp_regressor(pop, data, N_gen, terminate_fit, fitness_function=NRMSE):
 
     return pop, pop[0].fitness
 
+
 pop, best_fit = cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
 
 g = extract_computational_subgraph(pop[0])
