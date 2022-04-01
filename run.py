@@ -20,8 +20,7 @@ w = [[],[]]
 RSV = []
 RH = [0.] # RH for Rate of Hire
 data = []
-if config.render:
-    pass
+
 
 tick = time.time()
 for t in range(config.T):

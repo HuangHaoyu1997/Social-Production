@@ -16,8 +16,8 @@ class config:
     init_coin = 100             # 初始货币
     random_coin = True          # 初始货币随机分布
     coin_range = [50,150]       # 初始货币随机分布区间,仅random_coin=True生效
-    w1 = 10                     # 初始最低工资
-    w2 = 90                     # 初始最高工资
+    w1 = 50                     # 初始最低工资
+    w2 = 150                     # 初始最高工资
     employment_intention = 1.0  # 就业意愿
     # for government
     V = 100                    # 初始市场价值
