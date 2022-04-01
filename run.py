@@ -25,11 +25,8 @@ data = []
 
 tick = time.time()
 for t in range(config.T):
-    coin_a, coin_v, coin_g, coin_t = total_value(env.agent_pool,env.market_V,env.gov)
-    avg_coin_e, _ = avg_coin(env.agent_pool, env.E)
-    avg_coin_w, _ = avg_coin(env.agent_pool, env.W)
-    avg_coin_u, _ = avg_coin(env.agent_pool, env.U)
-    avg_coin_t, _ = avg_coin(env.agent_pool, list(env.agent_pool.keys()))
+    
+    
     RateSurplusValue = exploit_ratio(env.agent_pool, env.E)
     if t%12==0:
         print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')

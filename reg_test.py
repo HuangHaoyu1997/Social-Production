@@ -63,12 +63,18 @@ def cgp_regressor(pop, data, N_gen, terminate_fit, fitness_function=NRMSE):
     return pop, pop[0].fitness
 
 
-pop, best_fit = cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
+# pop, best_fit = cgp_regressor(pop, [x,y], config.N_GEN, 1.0)
+import pickle
+with open('./results/best-100.pkl', 'rb') as f:
+    pop = pickle.load(f)
+print(pop[0].fitness)
 
+# 生成解析式和计算图
 g = extract_computational_subgraph(pop[0])
-formula = simplify(g, ['x'])
-formula = round_expr(formula, config.PP_FORMULA_NUM_DIGITS)
-print(pop[0].fitness, formula)
-visualize(g, "./results/xx+2x+1.jpg", input_names=['x'], operator_map=DEFAULT_SYMBOLIC_FUNCTION_MAP)
+# formula = simplify(g, ) # ['x']
+# formula = round_expr(formula, config.PP_FORMULA_NUM_DIGITS)
+# print(pop[0].fitness, formula, type(formula.__str__))
+visualize(g, "./results/lunarlander.jpg", operator_map=DEFAULT_SYMBOLIC_FUNCTION_MAP)
+
 
 # print(x,y)

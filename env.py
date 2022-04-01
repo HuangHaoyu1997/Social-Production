@@ -57,7 +57,7 @@ class Env:
         random.shuffle(agent_list)
         
         ########### 单步执行
-        data_step = []
+        # data_step = [] for policy symbolic regression
         for name in agent_list:
             # 必须活着
             if self.agent_pool[name].alive is not True: continue
@@ -77,7 +77,7 @@ class Env:
             data = self.consume(name)
             self.fire(name)
 
-            data_step.append(data)
+            # data_step.append(data)
             
             if config.die: 
                 if self.agent_pool[name].hungry >= config.hungry_days:
@@ -103,9 +103,42 @@ class Env:
 
         self.E, self.W, self.U = working_state(self.agent_pool)
         
-        return data_step
-        # 由于nx可视化的错误，暂时取消self.G的更新
-        # self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
+        # 更新Graph
+        self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
+        info = {}
+        
+        # 各部分人群的总财富
+        coin_a, coin_v, coin_g, coin_t = total_value(self.agent_pool, self.market_V, self.gov)
+        info['coin_a'] = coin_a
+        info['coin_v'] = coin_v
+        info['coin_g'] = coin_g
+        info['coin_t'] = coin_t
+
+        # 各部分人群的平均财富
+        avg_coin_e, std_coin_e = avg_coin(self.agent_pool, self.E)
+        avg_coin_w, std_coin_w = avg_coin(self.agent_pool, self.W)
+        avg_coin_u, std_coin_u = avg_coin(self.agent_pool, self.U)
+        avg_coin_t, std_coin_t = avg_coin(self.agent_pool, list(self.agent_pool.keys()))
+        
+        info['avg_coin_e'] = avg_coin_e; info['std_coin_e'] = std_coin_e
+        info['avg_coin_w'] = avg_coin_w; info['std_coin_w'] = std_coin_w
+        info['avg_coin_u'] = avg_coin_u; info['std_coin_u'] = std_coin_u
+        info['avg_coin_t'] = avg_coin_t; info['std_coin_t'] = std_coin_t
+
+        # 各部分人口
+        info['Upop'] = len(self.U); info['Wpop'] = len(self.W); info['Epop'] = len(self.E); info['Tpop'] = alive_num(self.agent_pool)
+
+        # 失业率
+        info['jobless_rate'] = info['Upop'] / info['Tpop']
+
+        
+
+
+
+
+        return info, # data_step
+        
+        
 
     def redistribution(self, ):
         '''
@@ -482,11 +515,20 @@ class Env:
             for name in broken_A:
                 self.broken(name)
             
-            dead_ratio = uniform(0.06,0.08)
-            dead_U = random.sample(self.U+self.E+self.W, int(dead_ratio*len(self.U))) # 10%~30%的人死亡
+            dead_ratio = uniform(0.01,0.02)
+            dead_E = random.sample(self.E, int(dead_ratio*len(self.E))) # 10%~30%的人死亡
+            for name in dead_E:
+                if self.agent_pool[name].alive: self.die(name)
+            
+            dead_ratio = uniform(0.08,0.10)
+            dead_W = random.sample(self.W, int(dead_ratio*len(self.W))) # 10%~30%的人死亡
+            for name in dead_W:
+                if self.agent_pool[name].alive: self.die(name)
+            
+            dead_ratio = uniform(0.10,0.12)
+            dead_U = random.sample(self.U, int(dead_ratio*len(self.U))) # 10%~30%的人死亡
             for name in dead_U:
-                if self.agent_pool[name].alive:
-                    self.die(name)
+                if self.agent_pool[name].alive: self.die(name)
         
         else:
             raise NotImplementedError
