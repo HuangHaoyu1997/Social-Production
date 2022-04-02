@@ -120,6 +120,7 @@ class Env:
         avg_coin_u, std_coin_u = avg_coin(self.agent_pool, self.U)
         avg_coin_t, std_coin_t = avg_coin(self.agent_pool, list(self.agent_pool.keys()))
         
+        
         info['avg_coin_e'] = avg_coin_e; info['std_coin_e'] = std_coin_e
         info['avg_coin_w'] = avg_coin_w; info['std_coin_w'] = std_coin_w
         info['avg_coin_u'] = avg_coin_u; info['std_coin_u'] = std_coin_u
