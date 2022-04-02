@@ -27,7 +27,7 @@ tick = time.time()
 for t in range(config.T):
     
     
-    RateSurplusValue = exploit_ratio(env.agent_pool, env.E)
+    
     if t%12==0:
         print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
     print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f'%\
