@@ -105,6 +105,12 @@ class Env:
         
         # 更新Graph
         self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
+        info = self.ouput_info()
+        
+        return info
+        
+
+    def ouput_info(self,):
         info = {}
         
         # 各部分人群的总财富
@@ -133,9 +139,6 @@ class Env:
         info['jobless_rate'] = info['Upop'] / info['Tpop']
         # 剩余价值率
         info['RSV'] = exploit_ratio(self.agent_pool, self.E)
-        
-
-
 
 
         return info, # data_step
