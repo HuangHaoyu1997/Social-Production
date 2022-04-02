@@ -139,7 +139,10 @@ class Env:
         info['jobless_rate'] = info['Upop'] / info['Tpop']
         # 剩余价值率
         info['RSV'] = exploit_ratio(self.agent_pool, self.E)
-
+        # 工资标准
+        info['w1'] = self.w1
+        info['w2'] = self.w2
+        
 
         return info, # data_step
         

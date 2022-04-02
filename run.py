@@ -26,38 +26,39 @@ data = []
 tick = time.time()
 for t in range(config.T):
     
+    info = env.step(t, ) # np.zeros((config.N1))
     
     
     if t%12==0:
         print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
+    
     print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f'%\
-        (t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),coin_a,coin_v,coin_t,avg_coin_u,avg_coin_e,avg_coin_w)
+        (t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),
+        info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
         )
-    total_coin[0].append(coin_a)
-    total_coin[1].append(coin_v)
-    total_coin[2].append(coin_g)
-    total_coin[3].append(coin_t)
+    total_coin[0].append(info['coin_a'])
+    total_coin[1].append(info['coin_v'])
+    total_coin[2].append(info['coin_g'])
+    total_coin[3].append(info['coin_t'])
     
     agent_num[0].append(len(env.U))
     agent_num[1].append(len(env.E))
     agent_num[2].append(len(env.W))
     agent_num[3].append(alive_num(env.agent_pool))
 
-    JoblossRate.append(agent_num[0][-1] / agent_num[3][-1])
+    JoblossRate.append(info['jobless_rate'])
 
-    agent_coin[0].append(avg_coin_u)
-    agent_coin[1].append(avg_coin_e)
-    agent_coin[2].append(avg_coin_w)
-    agent_coin[3].append(avg_coin_t)
+    agent_coin[0].append(info['avg_coin_u'])
+    agent_coin[1].append(info['avg_coin_e'])
+    agent_coin[2].append(info['avg_coin_w'])
+    agent_coin[3].append(info['avg_coin_t'])
 
     w[0].append(env.w1)
     w[1].append(env.w2)
 
-    RSV.append(RateSurplusValue)
+    RSV.append(info['RateSurplusValue'])
     if t > 0: RH.append(len(env.W)/len(env.E))
     
-    #### Data storage
-    data_step = env.step(t, ) # np.zeros((config.N1))
 
     if t >= 100 and t < 100+config.event_duration: # t%100 == 99:
         env.event_simulator('GreatDepression')
