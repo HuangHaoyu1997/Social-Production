@@ -7,6 +7,7 @@ class config:
     seed = 123
     Verbose = False             # 打印破产、解雇等事件
     render = True
+    render_freq = 100           # 每100step保存figure
     N1 = 200                    # 初始人口
     N2 = 12000                   # 目标人口,即经过T步仿真后人口
     T = 10000                     # 仿真步长
@@ -16,13 +17,16 @@ class config:
     init_coin = 100             # 初始货币
     random_coin = True          # 初始货币随机分布
     coin_range = [50,150]       # 初始货币随机分布区间,仅random_coin=True生效
-    w1 = 50                     # 初始最低工资
-    w2 = 150                     # 初始最高工资
     employment_intention = 1.0  # 就业意愿
+    move_len = 10               # 随机游走的最长距离
+    move_dir = 1                 # 随机游走的方向范围，即[0,2π]
+
     # for government
     V = 100                    # 初始市场价值
     G = 0                       # 初始政府财政
     dN = pow(N2/N1, 1/1000) - 1    # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
+    w1 = 50                     # 初始最低工资
+    w2 = 150                     # 初始最高工资
 
     avg_coin = None # (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
@@ -36,8 +40,7 @@ class config:
     skill_gaussian = True       # 技能水平服从截断高斯分布
     resource = 10
     product_thr = 10            # 与资源最小距离＜10则会有产出
-    move_len = 10               # 随机游走的最长距离
-    move_dir = 1                 # 随机游走的方向范围，即[0,2π]
+    
     
     tax = False
     personal_income_tax = 0.0001 if tax else 0  # 个人所得税5%
@@ -46,6 +49,11 @@ class config:
     property_tax = 0.001 if tax else 0          # 财产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
     event_duration = 30         # 负面事件的持续时间
+
+    # for reward function
+    target_RJ = 0.1             # 目标失业率小于10%
+
+
     # for CGP
     MUT_PB = 0.45  # mutate probability
     N_COLS = 15   # number of cols (nodes) in a single-row CGP

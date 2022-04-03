@@ -1,3 +1,4 @@
+from typing_extensions import runtime
 import matplotlib.pyplot as plt
 import numpy as np
 from configuration import config
@@ -7,6 +8,7 @@ import pickle
 import os
 import time
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+# 运行时间e.g."2022-04-01"
 run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:10]
 
 plt.ion()
@@ -24,15 +26,17 @@ data = []
 
 
 tick = time.time()
-for t in range(config.T):
+done = False
+while not done:
     
-    info = env.step(t, ) # np.zeros((config.N1))
+    info, reward, done = env.step( ) # np.zeros((config.N1))
     
-    if t%12==0:
+    if env.t%12==0:
         print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
     
     print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f' % \
-        (t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
+        (env.t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),\
+        info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
         )
     total_coin[0].append(info['coin_a'])
     total_coin[1].append(info['coin_v'])
@@ -55,20 +59,20 @@ for t in range(config.T):
     w[1].append(info['w2'])
 
     RSV.append(info['RSV'])
-    if t > 0: RH.append(info['RH'])
+    if env.t > 0: RH.append(info['RH'])
     
 
-    if t >= 100 and t < 100+config.event_duration: # t%100 == 99:
+    if env.t >= 100 and env.t < 100+config.event_duration: # t%100 == 99:
         env.event_simulator('GreatDepression')
 
     # data.extend(data_step)
-    if t % 100 == 0:
+    if env.t % 100 == 0:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
             pickle.dump(data, f)
 
     grid = grid_render(env.agent_pool,env.resource)
     #### Render
-    if t%100==99 and config.render:
+    if env.t % config.render_freq == config.render_freq-1 and config.render:
         tick = time.time()
         fig1 = plt.figure(1,(25,10))
         ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
@@ -133,8 +137,6 @@ for t in range(config.T):
         ax7.set_title('Top and bottom salary')
         ax7.legend(['bottom','top'],loc=2)
 
-        
-
         ax8.cla()
         ax8.plot(JoblossRate)
         ax8.grid(); ax8.set_xlabel('T'); ax8.set_ylabel('Jobless Rate')
@@ -151,7 +153,7 @@ for t in range(config.T):
         
         plt.pause(0.0001)
         # print("tock = %.3f"%(time.time()-tick))
-        plt.savefig('./results/'+str(t)+'.png')
+        plt.savefig('./results/'+runtime+'_'+str(env.t)+'.png')
         plt.close()
 time.sleep(7200)
 print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))

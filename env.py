@@ -16,6 +16,8 @@ class Env:
         self.t = 0 # tick
         self.w1 = config.w1 # 初始最低工资
         self.w2 = config.w2 # 初始最高工资
+        self.target_RJ = config.target_RJ # 失业率控制线
+
 
         # TODO【想法】开局不一定全部是unemployment，可以有UWE之分，每个人初始coin也可以不一样
         self.agent_pool = add_agent(config.N1) # 添加智能体
@@ -34,9 +36,14 @@ class Env:
         '''
         更新仿真超参数,用于实时控制系统
         '''
-        scale_factor = uniform(2,5)
-        self.w1 = max(self.w1_OU_noise(), 1)
-        self.w2 = scale_factor * self.w1
+        if action is None:
+            scale_factor = uniform(2,5)
+            self.w1 = max(self.w1_OU_noise(), 1)
+            self.w2 = scale_factor * self.w1
+        else:
+            self.w1 = action[0]
+            self.w2 = action[1]
+            
         # self.w1 = action[0]
         # self.w2 = action[1]
         # assert self.w1 < self.w2
@@ -106,11 +113,21 @@ class Env:
         # 更新Graph
         self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
         info = self.ouput_info()
-        
+        reward = self.reward_function(info)
         self.t += 1
         done = False if self.t<config.T else True
-        return info, done
         
+        return info, reward, done
+        
+
+    def reward_function(self, info:dict):
+        '''
+        output: Reward Scalar
+        '''
+        reward_RJ = min(self.target_RJ - info['RJ'], 0) # 扣分项
+
+        reward = reward_RJ
+        return reward
 
     def ouput_info(self,):
         info = {}
