@@ -107,7 +107,9 @@ class Env:
         self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
         info = self.ouput_info()
         
-        return info
+        self.t += 1
+        done = False if self.t<config.T else True
+        return info, done
         
 
     def ouput_info(self,):
@@ -135,16 +137,18 @@ class Env:
         # 各部分人口
         info['Upop'] = len(self.U); info['Wpop'] = len(self.W); info['Epop'] = len(self.E); info['Tpop'] = alive_num(self.agent_pool)
 
-        # 失业率
-        info['jobless_rate'] = info['Upop'] / info['Tpop']
-        # 剩余价值率
+        # 失业率Rate of Jobless
+        info['RJ'] = info['Upop'] / info['Tpop']
+        # 剩余价值率Rate of Surplus Value
         info['RSV'] = exploit_ratio(self.agent_pool, self.E)
-        # 工资标准
+        # 平均雇佣人数Rate of Hire
+        info['RH'] = info['Wpop'] / info['Epop']
+        # 最低/最高工资标准
         info['w1'] = self.w1
         info['w2'] = self.w2
         
 
-        return info, # data_step
+        return info # data_step
         
         
 

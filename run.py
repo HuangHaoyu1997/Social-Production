@@ -28,42 +28,40 @@ for t in range(config.T):
     
     info = env.step(t, ) # np.zeros((config.N1))
     
-    
     if t%12==0:
         print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
     
-    print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f'%\
-        (t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),
-        info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
+    print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f' % \
+        (t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
         )
     total_coin[0].append(info['coin_a'])
     total_coin[1].append(info['coin_v'])
     total_coin[2].append(info['coin_g'])
     total_coin[3].append(info['coin_t'])
     
-    agent_num[0].append(len(env.U))
-    agent_num[1].append(len(env.E))
-    agent_num[2].append(len(env.W))
-    agent_num[3].append(alive_num(env.agent_pool))
+    agent_num[0].append(info['Upop'])
+    agent_num[1].append(info['Epop'])
+    agent_num[2].append(info['Wpop'])
+    agent_num[3].append(info['Tpop'])
 
-    JoblossRate.append(info['jobless_rate'])
+    JoblossRate.append(info['RJ'])
 
     agent_coin[0].append(info['avg_coin_u'])
     agent_coin[1].append(info['avg_coin_e'])
     agent_coin[2].append(info['avg_coin_w'])
     agent_coin[3].append(info['avg_coin_t'])
 
-    w[0].append(env.w1)
-    w[1].append(env.w2)
+    w[0].append(info['w1'])
+    w[1].append(info['w2'])
 
-    RSV.append(info['RateSurplusValue'])
-    if t > 0: RH.append(len(env.W)/len(env.E))
+    RSV.append(info['RSV'])
+    if t > 0: RH.append(info['RH'])
     
 
     if t >= 100 and t < 100+config.event_duration: # t%100 == 99:
         env.event_simulator('GreatDepression')
 
-    data.extend(data_step)
+    # data.extend(data_step)
     if t % 100 == 0:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
             pickle.dump(data, f)
