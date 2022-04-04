@@ -62,7 +62,8 @@ def func(idx, pop):
                 # 'avg_age',]
                 action = p.eval(*s)
                 action = np.min(np.max(action, 0), 200)
-                s,r,done,_ = env.step(action)
+                info, r, done = env.step(action)
+                s = info_parser(info)
                 r_epoch += r
             r_ind += r_epoch
         r_ind /= config.Epoch
@@ -107,23 +108,23 @@ for g in range(config.N_GEN):
     pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
     print(g,'time:',time.time()-tick, pop[0].fitness)
     if pop[0].fitness > config.solved:
-        with open('./results/best-100.pkl','wb') as f:
+        with open('./results/SP-best-10.pkl','wb') as f:
             pickle.dump(pop,f)
         break
 
-env = gym.make('LunarLander-v2')
+env = Env()
 rr = 0
 for i in range(100):
     r_e = 0
     done = False
-    s = env.reset()
+    s = info_parser(env.reset())
     while not done:
         action = pop[0].eval(*s)
-        action = np.exp(action)/np.exp(action).sum()
-        action = np.argmax(action)
+        action = np.min(np.max(action, 0), 200)
         # action = np.random.choice(4,p=action)
-        s,r,done,_ = env.step(action)
+        info, r, done = env.step(action)
+        s = info_parser(info)
         r_e += r
     rr += r_e
-    print(i,r_e)
+    print(i, r_e)
 print(rr/100)
