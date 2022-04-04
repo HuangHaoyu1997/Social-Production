@@ -4,7 +4,7 @@ from configuration import config as c
 import networkx as nx
 import time
 import matplotlib.pyplot as plt
-from numpy.random import uniform
+from numpy.random import uniform, randint
 
 def max_coin(agent):
     '''
@@ -169,7 +169,8 @@ def add_agent(N):
         else:
             skill = round(uniform(c.skill[0], c.skill[1]),2)
         coin = uniform(c.coin_range[0],c.coin_range[1]) if c.random_coin else c.init_coin
-        pool[name] = agent(x, y, name, skill, coin)
+        age = randint(c.age[0], c.age[1])
+        pool[name] = agent(x, y, name, skill, coin, age)
     return pool
 
 def alive_num(agent_pool):

@@ -43,7 +43,7 @@ class Env:
         else:
             self.w1 = action[0]
             self.w2 = action[1]
-            
+
         # self.w1 = action[0]
         # self.w2 = action[1]
         # assert self.w1 < self.w2
@@ -85,10 +85,21 @@ class Env:
             self.fire(name)
 
             # data_step.append(data)
-            
+
+            # 更新年龄
+            self.agent_pool[name].age += config.delta_age
+
+
+            # 饿死或老死
             if config.die: 
                 if self.agent_pool[name].hungry >= config.hungry_days:
                     self.die(name) # 饥饿超过5步就死掉
+                else:
+                    if self.agent_pool[name].age >= config.death_age \
+                        and uniform()<=0.25+0.02*(self.agent_pool[name].age-config.death_age):
+                        self.die(name)
+            
+            
 
         
         ########### 征收财产税
@@ -414,21 +425,40 @@ class Env:
         return data
     
     def die(self, name):
-        '''死亡'''
+        '''
+        死亡
+        
+        '''
         # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)
+        
+        # 资本家死前先破产
         if self.agent_pool[name].work == 1:
             self.broken(name)
+        
+        # 工人死前先失业
         if self.agent_pool[name].work == 2:
             employer = self.agent_pool[name].employer
-            idx = self.agent_pool[employer].hire.index(name)
+            idx = self.agent_pool[employer].hire.index(name) # 从用工名单中删除
             self.agent_pool[employer].hire.pop(idx)
 
         self.agent_pool[name].alive = False
         if name in self.E: idx = self.E.index(name); self.E.pop(idx)
         if name in self.U: idx = self.U.index(name); self.U.pop(idx)
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
-        if config.Verbose: print('%s is dead!'%name)
+
+        # 遗产继承
+        # 随机选一个活人，把遗产给他，要交税
+        if self.agent_pool[name].coin > 0:
+            inheritor = random.sample(self.E+self.W+self.U, 1)
+            coin = self.agent_pool[name].coin
+            tax = config.death_tax * coin; self.gov += tax
+            coin_after_tax = coin * (1-config.death_tax)
+            self.agent_pool[inheritor].coin += coin_after_tax
+            self.agent_pool[name].coin = 0
+        
+
+        if config.Verbose: print('%s is dead at %d years old!'%(name, round(self.agent_pool[name].age)))
     
     def jobless(self, worker):
         '''

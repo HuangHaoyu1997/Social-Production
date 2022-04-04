@@ -9,8 +9,9 @@ class config:
     render = True
     render_freq = 100           # 每100step保存figure
     N1 = 200                    # 初始人口
-    N2 = 12000                   # 目标人口,即经过T步仿真后人口
-    T = 10000                     # 仿真步长
+    N2 = 12000                  # 目标人口,即经过T步仿真后人口
+    T = 1200                    # 仿真步长
+    Year = 100                  # 仿真100年
 
     # for agent
     work_state = 0              # 初始工作状态, 0 unemployed, 1 employer, 2 worker
@@ -19,14 +20,18 @@ class config:
     coin_range = [50,150]       # 初始货币随机分布区间,仅random_coin=True生效
     employment_intention = 1.0  # 就业意愿
     move_len = 10               # 随机游走的最长距离
-    move_dir = 1                 # 随机游走的方向范围，即[0,2π]
+    move_dir = 1                # 随机游走的方向范围，即[0,2π]
+    age = [18,28]               # 初始年龄
+    delta_age = Year / T        # 1 step = 100/1200 year = 1 month
+    death_age = 75              # 年龄超过75岁,每个step都有25%的概率死亡
+    death_prob = 0.25           # 自然死亡概率基准,每长1岁,加0.02
 
     # for government
-    V = 100                    # 初始市场价值
-    G = 0                       # 初始政府财政
-    dN = pow(N2/N1, 1/1000) - 1    # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
+    V = 100                     # 初始市场价值
+    budget = 0                  # 初始政府财政
+    dN = pow(N2/N1, 1/1000) - 1 # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
     w1 = 50                     # 初始最低工资
-    w2 = 150                     # 初始最高工资
+    w2 = 150                    # 初始最高工资
 
     avg_coin = None # (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
@@ -47,6 +52,7 @@ class config:
     consumption_tax = 0.002 if tax else 0      # 消费税
     business_tax = 0.001 if tax else 0          # 企业税
     property_tax = 0.001 if tax else 0          # 财产税
+    death_tax = 0.25 if tax else 0              # 遗产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
     event_duration = 30         # 负面事件的持续时间
 

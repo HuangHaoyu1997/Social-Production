@@ -4,7 +4,7 @@ from configuration import config as c
 np.random.seed(c.seed)
 
 class agent:
-    def __init__(self, x, y, name, skill, coin) -> None:
+    def __init__(self, x, y, name, skill, coin, age) -> None:
         self.x = x
         self.y = y
         
@@ -13,6 +13,7 @@ class agent:
         self.alive = True
         self.hungry = 0
         self.name = name
+        self.age = age
         self.work = c.work_state # 工作状态
         self.coin = coin # 货币量
         # self.coin = np.random.randint(low=50,high=100)
