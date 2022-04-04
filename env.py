@@ -124,7 +124,7 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool)
         
         # 更新Graph
-        self.G = update_graph(self.G, self.agent_pool, self.E, self.W, self.U)
+        # self.G = update_graph(self.G, self.agent_pool, self.E, self.W, self.U)
         info = self.ouput_info()
         reward = self.reward_function(info)
         self.t += 1
