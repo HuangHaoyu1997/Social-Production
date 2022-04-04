@@ -6,10 +6,41 @@ import time
 import matplotlib.pyplot as plt
 from numpy.random import uniform, randint
 
-def max_coin(agent):
+def coin_sort(agent:dict):
+    '''
+    【under test】
+    根据coin数量进行从低到高排序
+    input: agent是agent_pool
+    output: list of sorted lists i.e. [ [name1,coin1],[name2,coin2],... ]
+    '''
+    coin_list, name_list = [], []
+    for name in agent:
+        if agent[name].alive:
+            coin_list.append(agent[name].coin)
+            name_list.append(name)
+    coin_list = np.array([agent[name].coin for name in agent])
+    name_list = [name for name in agent]
+    idx = coin_list.argsort()
+    coin_list = coin_list[idx]
+    name_list = [name_list[i] for i in idx]
+    return name_list, coin_list
+
+def avg_coin(agent_pool:dict, agent:list):
+    '''
+    计算指定agent群体的财富均值与方差
+    '''
+    if len(agent)==0: return 0., 0.
+    count = []
+    for name in agent:
+        if agent_pool[name].alive:
+            count.append(agent_pool[name].coin)
+    count = np.array(count)
+    return np.round(count.mean(),2), np.round(count.std(),2)
+def financial_statistics(agent):
     '''
     计算指定agent群体中的最大收入
     '''
+    coin_list = []
     max_income = 0
     for name in agent:
         if agent[name].alive:
@@ -17,10 +48,15 @@ def max_coin(agent):
                 max_income = agent[name].coin
     return max_income
 
-def grid_render(agent,resource):
+def grid_render(agent, resource):
+    '''
+    Grid可视化
+    agent: env.agent_pool
+    resource: 资源点的坐标
+    '''
     x = c.x_range[1]
     y = c.y_range[1]
-    max_income = max_coin(agent)
+    max_income = financial_statistics(agent) # 最大财富值
 
     grid = np.zeros((x+1,y+1,3),dtype=np.uint8)
     for rx,ry in resource:
@@ -42,17 +78,7 @@ def grid_render(agent,resource):
 def softmax(x):
     return np.exp(x)/(np.exp(x)).sum()
 
-def avg_coin(agent_pool:dict, agent:list):
-    '''
-    计算指定agent群体的财富均值与方差
-    '''
-    if len(agent)==0: return 0., 0.
-    count = []
-    for name in agent:
-        if agent_pool[name].alive:
-            count.append(agent_pool[name].coin)
-    count = np.array(count)
-    return np.round(count.mean(),2), np.round(count.std(),2)
+
 
 def total_value(agent_pool, V, G):
     '''
@@ -89,19 +115,7 @@ def most_poor(agent, N):
         out.append(name_list[i])
     return out
 
-def coin_sort(agent):
-    '''
-    【under test】
-    根据coin数量进行从低到高排序
-    input: agent是agent_pool
-    output: list of sorted lists i.e. [ [name1,coin1],[name2,coin2],... ]
-    '''
-    coin_list = np.array([agent[name].coin for name in agent])
-    name_list = [name for name in agent]
-    idx = coin_list.argsort()
-    coin_list = coin_list[idx]
-    name_list = [name_list[i] for i in idx]
-    return name_list, coin_list
+
 
 
 def most_rich(agent, N):

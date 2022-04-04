@@ -1,27 +1,24 @@
 '''
-使用CGP算法训练Atari policy
+多进程CGP算法训练Atari policy
 '''
-import multiprocessing
 from multiprocessing import Process
 import numpy as np
 import time, os, shutil, random, pickle, gym
 from cmath import inf
 from cgp import *
-import cgp
 import matplotlib.pyplot as plt
 from configuration import config
 import networkx as nx
 import warnings
-from utils import extract_computational_subgraph
 warnings.filterwarnings('ignore')
 
 np.random.seed(config.seed)
 random.seed(config.seed)
 
 
-
 def func(idx, pop):
     '''
+    子进程所执行的函数
     idx: 进程号
     pop: 种群
     '''

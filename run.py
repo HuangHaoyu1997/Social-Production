@@ -29,26 +29,8 @@ done = False
 while not done:
     
     info, reward, done = env.step( ) # np.zeros((config.N1))
-    
-    if env.t%12==0:
-        print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
-    
-    print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f' % \
-        (env.t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),\
-        info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
-        )
-    
-    total_coin[0].append(info['coin_a']); total_coin[1].append(info['coin_v']); total_coin[2].append(info['coin_g']); total_coin[3].append(info['coin_t'])
-    agent_num[0].append(info['Upop']); agent_num[1].append(info['Epop']); agent_num[2].append(info['Wpop']); agent_num[3].append(info['Tpop'])
-    JoblossRate.append(info['RJ'])
-    agent_coin[0].append(info['avg_coin_u']); agent_coin[1].append(info['avg_coin_e']); agent_coin[2].append(info['avg_coin_w']); agent_coin[3].append(info['avg_coin_t'])
-    w[0].append(info['w1']); w[1].append(info['w2'])
-    RSV.append(info['RSV'])
-    if env.t > 0: RH.append(info['RH'])
-    
     for event_point in config.event_point:
         if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
-            print(env.t, event_point)
             env.event_simulator('GreatDepression')
 
     '''
@@ -61,7 +43,16 @@ while not done:
     grid = grid_render(env.agent_pool,env.resource)
     #### Render
     if env.t % config.render_freq == config.render_freq-1 and config.render:
-        tick = time.time()
+        # 收集数据
+        total_coin[0].append(info['coin_a']); total_coin[1].append(info['coin_v']); total_coin[2].append(info['coin_g']); total_coin[3].append(info['coin_t'])
+        agent_num[0].append(info['Upop']); agent_num[1].append(info['Epop']); agent_num[2].append(info['Wpop']); agent_num[3].append(info['Tpop'])
+        JoblossRate.append(info['RJ'])
+        agent_coin[0].append(info['avg_coin_u']); agent_coin[1].append(info['avg_coin_e']); agent_coin[2].append(info['avg_coin_w']); agent_coin[3].append(info['avg_coin_t'])
+        w[0].append(info['w1']); w[1].append(info['w2'])
+        RSV.append(info['RSV'])
+        if env.t > 0: RH.append(info['RH'])
+        
+        # 可视化
         fig1 = plt.figure(1,(25,10))
         ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
         ax2 = fig1.add_subplot(242) # 各部平均财富图
@@ -143,5 +134,5 @@ while not done:
         # print("tock = %.3f"%(time.time()-tick))
         plt.savefig('./results/'+run_time+'_'+str(env.t)+'.png')
         plt.close()
-time.sleep(7200)
 print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))
+time.sleep(7200)

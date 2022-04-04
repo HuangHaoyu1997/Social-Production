@@ -129,7 +129,13 @@ class Env:
         reward = self.reward_function(info)
         self.t += 1
         done = False if self.t<config.T else True
-        
+        if config.print_log:
+            if self.t % 12 == 0:
+                print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
+            print('%d,\t%d,\t%d,\t%d,\t%d,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f,\t%.2f' % \
+                (self.t, len(self.E),len(self.U),len(self.W),alive_num(self.agent_pool),\
+                info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
+                )
         return info, reward, done
         
 
@@ -181,7 +187,6 @@ class Env:
         
 
         return info # data_step
-        
         
 
     def redistribution(self, ):

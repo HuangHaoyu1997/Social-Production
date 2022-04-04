@@ -7,6 +7,7 @@ class config:
     seed = 123
     Verbose = False             # 打印破产、解雇等事件
     render = True
+    print_log = True
     render_freq = 100           # 每100step保存figure
     N1 = 200                    # 初始人口
     N2 = 12000                  # 目标人口,即经过T步仿真后人口
