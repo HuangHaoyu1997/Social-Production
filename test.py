@@ -38,9 +38,30 @@ def func(idx, pop):
             r_epoch = 0
             done = False
             while not done:
+                # ['coin_a', 
+                # 'coin_v', 
+                # 'coin_g', 
+                # 'coin_t', 
+                # 'avg_coin_e', 
+                # 'std_coin_e', 
+                # 'avg_coin_w', 
+                # 'std_coin_w', 
+                # 'avg_coin_u', 
+                # 'std_coin_u', 
+                # 'avg_coin_t', 
+                # 'std_coin_t', 
+                # 'Upop', 
+                # 'Wpop', 
+                # 'Epop', 
+                # 'Tpop', 
+                # 'RJ', 
+                # 'RSV', 
+                # 'RH', 
+                # 'w1', 
+                # 'w2',
+                # 'avg_age',]
                 action = p.eval(*s)
-                
-                # action = np.random.choice(4,p=action)
+                action = np.min(np.max(action, 0), 200)
                 s,r,done,_ = env.step(action)
                 r_epoch += r
             r_ind += r_epoch
@@ -52,7 +73,7 @@ def func(idx, pop):
         pickle.dump(reward_pop,f)
     # print(idx,' finished!')
 
-pop = create_population(config.MU+config.LAMBDA,input_dim=8,out_dim=4)
+pop = create_population(config.MU+config.LAMBDA,input_dim=22,out_dim=1)
 best_f = -inf
 best_ff = -inf
 best_ind = None
