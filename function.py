@@ -99,26 +99,27 @@ def const_5():
     '''常数5.0'''
     return 5.0
 
-def const_tenth():
+def const_01():
     '''常数0.1'''
     return 0.1
 
-def unif():
-    '''
-    [0,1]均匀分布
-    '''
+def beta(a,b):
+    '''Beta分布,[0,1]区间'''
+    return np.random.beta(a,b)
+
+
+def uniform(a,b):
+    '''[a,b]均匀分布'''
+    return np.random.uniform(a,b)
+
+def uniform01():
+    '''[0,1]均匀分布'''
     return np.random.uniform(0,1)
-
-def 
-
-def uniform(a):
-    if a<=0: return 0
-    return np.random.uniform(0,a)
 
 fs = [
         Function(const_1, 0),
         # Function(const_5, 0),
-        # Function(const_tenth, 0),
+        # Function(const_01, 0),
 
         Function(op.add, 2), 
         # Function(op.sub, 2), 
@@ -138,7 +139,8 @@ fs = [
         # Function(tenth, 1),
         # Function(scaled, 1),
         # Function(sign, 1),
-        # Function(uniform, 1),
+        # Function(uniform, 2),
+        # Function(uniform01, 0),
         # Function(relu, 1),
         # Function(sin, 1),
         # Function(pi,1)

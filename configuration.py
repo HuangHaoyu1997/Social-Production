@@ -10,7 +10,7 @@ class config:
     render_freq = 100           # 每100step保存figure
     N1 = 200                    # 初始人口
     N2 = 12000                  # 目标人口,即经过T步仿真后人口
-    T = 1200                    # 仿真步长
+    T = 200                     # 仿真步长
     Year = 100                  # 仿真100年
 
     # for agent
@@ -18,10 +18,11 @@ class config:
     init_coin = 100             # 初始货币
     random_coin = True          # 初始货币随机分布
     coin_range = [50,150]       # 初始货币随机分布区间,仅random_coin=True生效
-    employment_intention = 1.0  # 就业意愿
+    employment_intention = 1.0  # 初始就业意愿
     move_len = 10               # 随机游走的最长距离
     move_dir = 1                # 随机游走的方向范围，即[0,2π]
-    age = [18,28]               # 初始年龄
+    age = 15                    # 初始年龄
+    retire_age = 65             # 退休年龄, 超过退休年龄, 就业意愿就开始下降
     delta_age = Year / T        # 1 step = 100/1200 year = 1 month
     death_age = 75              # 年龄超过75岁,每个step都有25%的概率死亡
     death_prob = 0.25           # 自然死亡概率基准,每长1岁,加0.02
@@ -42,7 +43,6 @@ class config:
     x_range = [0,200]
     y_range = [0,200]
     skill = [0,1]               # 技能水平，实数
-    skill_gaussian = True       # 技能水平服从截断高斯分布
     resource = 10
     product_thr = 10            # 与资源最小距离＜10则会有产出
     

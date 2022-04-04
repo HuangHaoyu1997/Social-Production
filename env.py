@@ -22,7 +22,7 @@ class Env:
         # TODO【想法】开局不一定全部是unemployment，可以有UWE之分，每个人初始coin也可以不一样
         self.agent_pool = add_agent(config.N1) # 添加智能体
         self.market_V = config.V # 市场价值
-        self.gov = config.G # 政府财政
+        self.gov = config.budget # 政府财政
         
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         
@@ -30,7 +30,8 @@ class Env:
         self.resource = np.round(uniform(config.x_range[0],config.x_range[1],[config.resource,2]),2) # 资源坐标
 
         self.w1_OU_noise = OrnsteinUhlenbeckActionNoise(mu=config.w1, theta=0.1, sigma=5, x0=10, dt=0.1) # config.w1
-        return [self.E, self.W ,self.U, self.market_V]
+        info = self.ouput_info()
+        return info
     
     def update_config(self, action=None):
         '''
@@ -49,7 +50,7 @@ class Env:
         # assert self.w1 < self.w2
 
 
-    def step(self, t, action=None):
+    def step(self, action=None):
         '''
         单步仿真程序
         '''
@@ -86,8 +87,9 @@ class Env:
 
             # data_step.append(data)
 
-            # 更新年龄
+            # 更新年龄,更新自身状态,即就业意愿
             self.agent_pool[name].age += config.delta_age
+            self.agent_pool[name].update_self_state()
 
 
             # 饿死或老死
@@ -110,7 +112,7 @@ class Env:
             self.gov += tax
 
         ########### 财富再分配
-        if config.tax and t % config.redistribution_freq == 0:
+        if config.tax and self.t % config.redistribution_freq == 0:
             self.redistribution()
         
         ########### 新增人口
@@ -141,6 +143,9 @@ class Env:
         return reward
 
     def ouput_info(self,):
+        '''
+        生成单步仿真的info数据,充当gym-like observation
+        '''
         info = {}
         
         # 各部分人群的总财富
@@ -156,7 +161,6 @@ class Env:
         avg_coin_u, std_coin_u = avg_coin(self.agent_pool, self.U)
         avg_coin_t, std_coin_t = avg_coin(self.agent_pool, list(self.agent_pool.keys()))
         
-        
         info['avg_coin_e'] = avg_coin_e; info['std_coin_e'] = std_coin_e
         info['avg_coin_w'] = avg_coin_w; info['std_coin_w'] = std_coin_w
         info['avg_coin_u'] = avg_coin_u; info['std_coin_u'] = std_coin_u
@@ -170,7 +174,7 @@ class Env:
         # 剩余价值率Rate of Surplus Value
         info['RSV'] = exploit_ratio(self.agent_pool, self.E)
         # 平均雇佣人数Rate of Hire
-        info['RH'] = info['Wpop'] / info['Epop']
+        info['RH'] = info['Wpop'] / info['Epop'] if info['Epop']>0 else 0
         # 最低/最高工资标准
         info['w1'] = self.w1
         info['w2'] = self.w2
@@ -225,7 +229,7 @@ class Env:
             if self.agent_pool[e].coin >= config.avg_coin and name!=e:
                 
                 # TODO 考虑个体的就业意愿,100%
-                if random.random() <= config.employment_intention:
+                if random.random() <= self.agent_pool[name].employment_intention:
                     # 给name设置雇主e,修改工作状态
                     self.agent_pool[name].employer = e
                     self.agent_pool[name].work = 2 # 2 for worker
@@ -448,13 +452,12 @@ class Env:
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
 
         # 遗产继承
-        # 随机选一个活人，把遗产给他，要交税
         if self.agent_pool[name].coin > 0:
-            inheritor = random.sample(self.E+self.W+self.U, 1)
+            inheritor = random.sample(self.E+self.W+self.U, 1)[0] # 随机选继承人
             coin = self.agent_pool[name].coin
-            tax = config.death_tax * coin; self.gov += tax
+            tax = config.death_tax * coin; self.gov += tax # 缴税给政府
             coin_after_tax = coin * (1-config.death_tax)
-            self.agent_pool[inheritor].coin += coin_after_tax
+            self.agent_pool[inheritor].coin += coin_after_tax # 继承人继承税后遗产
             self.agent_pool[name].coin = 0
         
 

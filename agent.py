@@ -4,7 +4,7 @@ from configuration import config as c
 np.random.seed(c.seed)
 
 class agent:
-    def __init__(self, x, y, name, skill, coin, age) -> None:
+    def __init__(self, x, y, name, skill, coin, age, intention) -> None:
         self.x = x
         self.y = y
         
@@ -14,6 +14,8 @@ class agent:
         self.hungry = 0
         self.name = name
         self.age = age
+        self.employment_intention = intention
+
         self.work = c.work_state # 工作状态
         self.coin = coin # 货币量
         # self.coin = np.random.randint(low=50,high=100)
@@ -25,7 +27,19 @@ class agent:
         self.labor_cost = 0 # 人力成本 per timestep
         self.exploit = 0    # 剥削所得 per timestep
     
-    def move(self,mod,direction):
+    def update_self_state(self,):
+        '''
+        目前的自身状态只有*就业意愿*一项
+        就业意愿完全取决于self.age
+        '''
+        if self.age < 18:
+            self.employment_intention = 0
+        elif self.age >= 18 and self.age < c.retire_age:
+            self.employment_intention = 1.0
+        if self.age >= c.retire_age:
+            self.employment_intention = max(self.employment_intention-0.02, 0.1)
+
+    def move(self, mod, direction):
         '''
         智能体移动
         mod:位移向量的模,[0,max_mod]

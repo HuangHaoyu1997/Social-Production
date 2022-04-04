@@ -163,15 +163,33 @@ def add_agent(N):
         x = round(uniform(c.x_range[0],c.x_range[1]),2)
         y = round(uniform(c.y_range[0],c.y_range[1]),2)
         
-        if c.skill_gaussian:
-            mean = 0.5*(c.skill[0] + c.skill[1])
-            skill = round(np.clip(np.random.randn()+mean, c.skill[0], c.skill[1]),3)
-        else:
-            skill = round(uniform(c.skill[0], c.skill[1]),2)
+        # [0,1]均匀分布
+        # skill = round(uniform(c.skill[0], c.skill[1]),2)
+        # [0,1]区间,均值0.5,标准差0.2的截断高斯分布
+        # mean = 0.5*(c.skill[0] + c.skill[1])
+        # skill = round(np.clip(np.random.randn()*0.2+mean, c.skill[0], c.skill[1]),3)
+        
+        # [0,1]之间,均值0.5的Beta分布,mean=a/(a+b),a=b越小分布越均匀
+        skill = round(np.random.beta(a=5,b=5))
+
+        
         coin = uniform(c.coin_range[0],c.coin_range[1]) if c.random_coin else c.init_coin
-        age = randint(c.age[0], c.age[1])
-        pool[name] = agent(x, y, name, skill, coin, age)
+        
+        # 初始年龄分布是[15,75]之间,均值38,标准差10的截断高斯分布,中美两国平均年龄均38岁
+        age = np.clip((np.random.randn()*10+38), 15, 100)
+        intention = c.employment_intention if age>=18 and age<c.retire_age else 0
+        pool[name] = agent(x, y, name, skill, coin, age, intention)
     return pool
+
+def avg_age(agent_pool):
+    '''
+    统计活人的平均年龄
+    '''
+    count = []
+    for name in agent_pool:
+        if agent_pool[name].alive:
+            count.append(agent_pool[name].age)
+    return np.mean(count)
 
 def alive_num(agent_pool):
     count = 0

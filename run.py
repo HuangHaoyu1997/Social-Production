@@ -38,26 +38,12 @@ while not done:
         (env.t, len(env.E),len(env.U),len(env.W),alive_num(env.agent_pool),\
         info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
         )
-    total_coin[0].append(info['coin_a'])
-    total_coin[1].append(info['coin_v'])
-    total_coin[2].append(info['coin_g'])
-    total_coin[3].append(info['coin_t'])
     
-    agent_num[0].append(info['Upop'])
-    agent_num[1].append(info['Epop'])
-    agent_num[2].append(info['Wpop'])
-    agent_num[3].append(info['Tpop'])
-
+    total_coin[0].append(info['coin_a']); total_coin[1].append(info['coin_v']); total_coin[2].append(info['coin_g']); total_coin[3].append(info['coin_t'])
+    agent_num[0].append(info['Upop']); agent_num[1].append(info['Epop']); agent_num[2].append(info['Wpop']); agent_num[3].append(info['Tpop'])
     JoblossRate.append(info['RJ'])
-
-    agent_coin[0].append(info['avg_coin_u'])
-    agent_coin[1].append(info['avg_coin_e'])
-    agent_coin[2].append(info['avg_coin_w'])
-    agent_coin[3].append(info['avg_coin_t'])
-
-    w[0].append(info['w1'])
-    w[1].append(info['w2'])
-
+    agent_coin[0].append(info['avg_coin_u']); agent_coin[1].append(info['avg_coin_e']); agent_coin[2].append(info['avg_coin_w']); agent_coin[3].append(info['avg_coin_t'])
+    w[0].append(info['w1']); w[1].append(info['w2'])
     RSV.append(info['RSV'])
     if env.t > 0: RH.append(info['RH'])
     
