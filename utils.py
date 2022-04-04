@@ -27,27 +27,20 @@ def coin_sort(agent_pool:dict, agent:list):
 
 def avg_coin(agent_pool:dict, agent:list):
     '''
-    计算指定agent群体的财富均值与方差
+    计算指定agent群体的coin均值与方差
     '''
     if len(agent)==0: return 0., 0.
-    count = []
-    for name in agent:
-        if agent_pool[name].alive:
-            count.append(agent_pool[name].coin)
-    count = np.array(count)
-    return np.round(count.mean(),2), np.round(count.std(),2)
+    _, _, mean, std, _ = financial_statistics(agent_pool, agent)
+    return mean, std
     
-def financial_statistics(agent):
+def financial_statistics(agent_pool, agent):
     '''
-    计算指定agent群体中的最大收入
+    计算指定agent群体的coin最大数, 最小数, 平均数, 标准差, 中位数, 
     '''
-    coin_list = []
-    max_income = 0
-    for name in agent:
-        if agent[name].alive:
-            if agent[name].coin >= max_income:
-                max_income = agent[name].coin
-    return max_income
+    if len(agent)==0: return 0., 0., 0., 0., 0.
+    _, coin_list = coin_sort(agent_pool, agent)
+
+    return coin_list[-1], coin_list[0], coin_list.mean(), coin_list.std(), np.median(coin_list)
 
 def grid_render(agent, resource):
     '''
@@ -57,7 +50,7 @@ def grid_render(agent, resource):
     '''
     x = c.x_range[1]
     y = c.y_range[1]
-    max_income = financial_statistics(agent) # 最大财富值
+    max_coin, min_coin, avg_coin, _, _ = financial_statistics(agent, list(agent.keys())) # 最大财富值
 
     grid = np.zeros((x+1,y+1,3),dtype=np.uint8)
     for rx,ry in resource:
@@ -71,7 +64,7 @@ def grid_render(agent, resource):
             y = int(round(agent[name].y))
             coin = agent[name].coin
             # 灰度值与收入正相关
-            pixel_scale = min(coin / max_income,0.2)
+            pixel_scale = min(coin / max_coin,0.2)
             grid[x,y,:] = int(255*pixel_scale)
     return grid
 

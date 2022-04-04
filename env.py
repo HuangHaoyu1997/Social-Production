@@ -162,10 +162,10 @@ class Env:
         info['coin_t'] = coin_t
 
         # 各部分人群的平均财富
-        avg_coin_e, std_coin_e = avg_coin(self.agent_pool, self.E)
-        avg_coin_w, std_coin_w = avg_coin(self.agent_pool, self.W)
-        avg_coin_u, std_coin_u = avg_coin(self.agent_pool, self.U)
-        avg_coin_t, std_coin_t = avg_coin(self.agent_pool, list(self.agent_pool.keys()))
+        _, _, avg_coin_e, std_coin_e, _ = financial_statistics(self.agent_pool, self.E)
+        _, _, avg_coin_w, std_coin_w, _ = financial_statistics(self.agent_pool, self.W)
+        _, _, avg_coin_u, std_coin_u, _ = financial_statistics(self.agent_pool, self.U)
+        _, _, avg_coin_t, std_coin_t, _ = financial_statistics(self.agent_pool, list(self.agent_pool.keys()))
         
         info['avg_coin_e'] = avg_coin_e; info['std_coin_e'] = std_coin_e
         info['avg_coin_w'] = avg_coin_w; info['std_coin_w'] = std_coin_w
@@ -229,7 +229,7 @@ class Env:
             prob = np.array(potential_e) / np.array(potential_e).sum()
             e = UE[np.random.choice(np.arange(len(prob)),p=prob)]
             if config.avg_update: 
-                config.avg_coin = avg_coin(self.agent_pool,self.W+self.U)[0] # 更新平均工资
+                config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
             
             if self.agent_pool[e].coin >= config.avg_coin and name!=e:
                 
@@ -376,8 +376,9 @@ class Env:
         # 雇工名单
         worker_list = self.agent_pool[name].hire
         # 最大工人数量=货币量/平均工资
-        config.avg_coin = avg_coin(self.agent_pool, self.W+self.U)[0]
+        config.avg_coin = financial_statistics(self.agent_pool, self.W+self.U)[2]
         max_num = np.floor(capital / config.avg_coin)
+        # max_num = np.ceil(capital / config.avg_coin)
         
         # 工人数量
         num_worker = len(worker_list)

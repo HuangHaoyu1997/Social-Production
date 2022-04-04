@@ -9,11 +9,11 @@ import time
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 # 运行时间e.g."2022-04-01"
 run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:10]
-
 plt.ion()
 
 env = Env()
 env.reset()
+
 total_coin = [[],[],[],[]]
 agent_num = [[],[],[],[]]
 agent_coin = [[],[],[],[]]
@@ -39,18 +39,17 @@ while not done:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
             pickle.dump(data, f)
     '''
-    
+    # 收集数据
     grid = grid_render(env.agent_pool,env.resource)
+    total_coin[0].append(info['coin_a']); total_coin[1].append(info['coin_v']); total_coin[2].append(info['coin_g']); total_coin[3].append(info['coin_t'])
+    agent_num[0].append(info['Upop']); agent_num[1].append(info['Epop']); agent_num[2].append(info['Wpop']); agent_num[3].append(info['Tpop'])
+    JoblossRate.append(info['RJ'])
+    agent_coin[0].append(info['avg_coin_u']); agent_coin[1].append(info['avg_coin_e']); agent_coin[2].append(info['avg_coin_w']); agent_coin[3].append(info['avg_coin_t'])
+    w[0].append(info['w1']); w[1].append(info['w2'])
+    RSV.append(info['RSV'])
+    if env.t > 0: RH.append(info['RH'])
     #### Render
     if env.t % config.render_freq == config.render_freq-1 and config.render:
-        # 收集数据
-        total_coin[0].append(info['coin_a']); total_coin[1].append(info['coin_v']); total_coin[2].append(info['coin_g']); total_coin[3].append(info['coin_t'])
-        agent_num[0].append(info['Upop']); agent_num[1].append(info['Epop']); agent_num[2].append(info['Wpop']); agent_num[3].append(info['Tpop'])
-        JoblossRate.append(info['RJ'])
-        agent_coin[0].append(info['avg_coin_u']); agent_coin[1].append(info['avg_coin_e']); agent_coin[2].append(info['avg_coin_w']); agent_coin[3].append(info['avg_coin_t'])
-        w[0].append(info['w1']); w[1].append(info['w2'])
-        RSV.append(info['RSV'])
-        if env.t > 0: RH.append(info['RH'])
         
         # 可视化
         fig1 = plt.figure(1,(25,10))

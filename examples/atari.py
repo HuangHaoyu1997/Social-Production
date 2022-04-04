@@ -55,8 +55,6 @@ best_ff = -inf
 best_ind = None
 
 
-
-
 total_agent = config.MU + config.LAMBDA
 
 agent_p = int(total_agent/config.n_process)
