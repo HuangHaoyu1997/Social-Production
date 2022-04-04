@@ -118,27 +118,27 @@ def uniform01():
 
 fs = [
         Function(const_1, 0),
-        # Function(const_5, 0),
-        # Function(const_01, 0),
+        Function(const_5, 0),
+        Function(const_01, 0),
 
         Function(op.add, 2), 
-        # Function(op.sub, 2), 
+        Function(op.sub, 2), 
         Function(op.mul, 2), 
-        # Function(protected_div, 2),
-        # Function(op.neg, 1),
-        # Function(op.abs, 1),
+        Function(protected_div, 2),
+        Function(op.neg, 1),
+        Function(op.abs, 1),
         # Function(op.ge, 2),
         # Function(op.le, 2),
         
         # Function(op.pow, 2),
         # Function(exp, 1),
-        # Function(max1, 1),
-        # Function(min1, 1),
-        # Function(max2, 2),
-        # Function(min2, 2),
-        # Function(tenth, 1),
-        # Function(scaled, 1),
-        # Function(sign, 1),
+        Function(max1, 1),
+        Function(min1, 1),
+        Function(max2, 2),
+        Function(min2, 2),
+        Function(tenth, 1),
+        Function(scaled, 1),
+        Function(sign, 1),
         # Function(uniform, 2),
         # Function(uniform01, 0),
         # Function(relu, 1),
@@ -174,7 +174,7 @@ DEFAULT_SYMBOLIC_FUNCTION_MAP = {
     math.tan.__name__:      sp.tan,
     'const_1':              const_1,
     'const_5':              const_5,
-    'const_tenth':          const_tenth,
+    'const_tenth':          const_01,
 }
 
 
@@ -203,7 +203,7 @@ LUNARLANDER_SYMBOLIC_FUNCTION_MAP = {
     # math.tan.__name__:      sp.tan,
     # 'const_1':              const_1,
     # 'const_5':              const_5,
-    # 'const_tenth':          const_tenth,
+    # 'const_tenth':          const_01,
 }
 if __name__ == '__main__':
     
