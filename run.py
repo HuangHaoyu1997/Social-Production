@@ -1,11 +1,13 @@
+'''
+Social Production的运行示例
+'''
 import matplotlib.pyplot as plt
 import numpy as np
 from configuration import config
 from utils import *
 from env import Env
-import pickle
-import os
-import time
+import pickle, os, time
+
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 # 运行时间e.g."2022-04-01"
 run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:10]

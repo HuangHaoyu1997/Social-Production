@@ -184,6 +184,8 @@ class Env:
         # 最低/最高工资标准
         info['w1'] = self.w1
         info['w2'] = self.w2
+        # 平均年龄
+        info['avg_age'] = avg_age(self.agent_pool)
         
 
         return info # data_step

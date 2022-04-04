@@ -68,6 +68,10 @@ def grid_render(agent, resource):
             grid[x,y,:] = int(255*pixel_scale)
     return grid
 
+def info_parser(info):
+    '''将env.reset()和env.step()输出的info字典解析为list,供CGP使用'''
+    tmp = [info[name] for name in info]
+    return tmp
 
 def softmax(x):
     return np.exp(x)/(np.exp(x)).sum()

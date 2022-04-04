@@ -48,12 +48,10 @@ def func(idx, pop):
         pickle.dump(reward_pop,f)
     # print(idx,' finished!')
 
-
 pop = create_population(config.MU+config.LAMBDA,input_dim=8,out_dim=4)
 best_f = -inf
 best_ff = -inf
 best_ind = None
-
 
 total_agent = config.MU + config.LAMBDA
 
@@ -69,7 +67,6 @@ for g in range(config.N_GEN):
 
     [p.start() for p in process]
     [p.join() for p in process]
-
 
     fitness = []
     for i in range(config.n_process):
