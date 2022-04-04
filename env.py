@@ -128,7 +128,7 @@ class Env:
         info = self.ouput_info()
         reward = self.reward_function(info)
         self.t += 1
-        done = False if self.t<config.T else True
+        done = self.is_terminate()
         if config.print_log:
             if self.t % 12 == 0:
                 print('t,\tem,\tun,\two,\talive,\tagt_c,\tmkt_c,\tttl_c,\tavg_u,\tavg_e,\tavg_w')
@@ -138,7 +138,14 @@ class Env:
                 )
         return info, reward, done
         
-
+    def is_terminate(self,):
+        if self.t >= config.T:
+            return True
+        elif alive_num(self.agent_pool) <= 0:
+            return True
+        else:
+            return False
+        
     def reward_function(self, info:dict):
         '''
         output: Reward Scalar
@@ -443,7 +450,7 @@ class Env:
         '''
         # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)
-        
+        # self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         if config.Verbose: print('%s is dead at %d years old with %f coins!'%(name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
         
         # 资本家死前先破产
@@ -452,9 +459,10 @@ class Env:
         
         # 工人死前先失业
         if self.agent_pool[name].work == 2:
-            employer = self.agent_pool[name].employer
-            idx = self.agent_pool[employer].hire.index(name) # 从用工名单中删除
-            self.agent_pool[employer].hire.pop(idx)
+            self.jobless(name)
+            # employer = self.agent_pool[name].employer
+            # idx = self.agent_pool[employer].hire.index(name) # 从用工名单中删除
+            # self.agent_pool[employer].hire.pop(idx)
 
         self.agent_pool[name].alive = False
         if name in self.E: idx = self.E.index(name); self.E.pop(idx)
@@ -462,15 +470,14 @@ class Env:
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
 
         # 遗产继承
-        if self.agent_pool[name].coin > 0:
+        if self.agent_pool[name].coin > 0 and len(self.E+self.W+self.U)>0:
+            # print(alive_num(self.agent_pool),len(self.E+self.W+self.U),alive_num(self.agent_pool)==len(self.E+self.W+self.U))
             inheritor = random.sample(self.E+self.W+self.U, 1)[0] # 随机选继承人
             coin = self.agent_pool[name].coin
             tax = config.death_tax * coin; self.gov += tax # 缴税给政府
             coin_after_tax = coin * (1-config.death_tax)
             self.agent_pool[inheritor].coin += coin_after_tax # 继承人继承税后遗产
             self.agent_pool[name].coin = 0
-        
-
         
     
     def jobless(self, worker):

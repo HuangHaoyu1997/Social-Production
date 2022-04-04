@@ -35,7 +35,6 @@ class Individual:
     An individual (chromosome, genotype, etc.) in evolution
     
     """
-    
     max_arity = 3
     
     n_cols = config.N_COLS # number of cols (nodes) in a single-row CGP

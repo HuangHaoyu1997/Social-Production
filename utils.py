@@ -152,7 +152,7 @@ def exploit_ratio(agent, employer):
         total_la += agent[name].labor_cost
         # total_ratio += ratio
         # count += 1
-    return total_ex / total_la # total_ratio / count, 
+    return total_ex / total_la if total_la>0 else 0 # total_ratio / count, 
 
 def build_graph(agent):
     '''

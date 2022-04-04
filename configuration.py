@@ -6,8 +6,8 @@ class config:
     '''
     seed = 123
     Verbose = False             # 打印破产、解雇等事件
-    render = True
-    print_log = True
+    render = False
+    print_log = False
     render_freq = 100           # 每100step保存figure
     N1 = 200                    # 初始人口
     N2 = 12000                  # 目标人口,即经过T步仿真后人口
@@ -69,7 +69,7 @@ class config:
     
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2
-    LAMBDA = 20-MU
+    LAMBDA = 1000-MU
     N_GEN = 5000  # max number of generations
     n_process = 40
     solved = 100
