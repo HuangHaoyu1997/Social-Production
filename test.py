@@ -80,8 +80,7 @@ best_ff = -inf
 best_ind = None
 
 total_agent = config.MU + config.LAMBDA
-
-agent_p = int(total_agent/config.n_process)
+agent_p = int(total_agent/config.n_process) # 平均每个进程分到的agent数量
 
 for g in range(config.N_GEN):
     if not os.path.exists('./tmp'):
