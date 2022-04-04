@@ -6,23 +6,23 @@ import time
 import matplotlib.pyplot as plt
 from numpy.random import uniform, randint
 
-def coin_sort(agent:dict):
+def coin_sort(agent_pool:dict, agent:list):
     '''
-    【under test】
-    根据coin数量进行从低到高排序
-    input: agent是agent_pool
-    output: list of sorted lists i.e. [ [name1,coin1],[name2,coin2],... ]
+    计算指定agent群体的coin
+    根据coin数量从低到高排序
+    input: agent_pool是全体, agent是指定统计名单
+    output: name_list, coin_list
     '''
     coin_list, name_list = [], []
     for name in agent:
-        if agent[name].alive:
-            coin_list.append(agent[name].coin)
+        if agent_pool[name].alive:
+            coin_list.append(agent_pool[name].coin)
             name_list.append(name)
-    coin_list = np.array([agent[name].coin for name in agent])
-    name_list = [name for name in agent]
+    coin_list = np.array(coin_list)
     idx = coin_list.argsort()
     coin_list = coin_list[idx]
     name_list = [name_list[i] for i in idx]
+    
     return name_list, coin_list
 
 def avg_coin(agent_pool:dict, agent:list):
@@ -36,6 +36,7 @@ def avg_coin(agent_pool:dict, agent:list):
             count.append(agent_pool[name].coin)
     count = np.array(count)
     return np.round(count.mean(),2), np.round(count.std(),2)
+    
 def financial_statistics(agent):
     '''
     计算指定agent群体中的最大收入

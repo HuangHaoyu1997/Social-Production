@@ -32,7 +32,7 @@ while not done:
     for event_point in config.event_point:
         if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
             env.event_simulator('GreatDepression')
-
+    
     '''
     data.extend(data_step)
     if env.t % 100 == 0:
