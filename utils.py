@@ -101,7 +101,7 @@ def coin_sort(agent):
     idx = coin_list.argsort()
     coin_list = coin_list[idx]
     name_list = [name_list[i] for i in idx]
-    return name_list,coin_list
+    return name_list, coin_list
 
 
 def most_rich(agent, N):
