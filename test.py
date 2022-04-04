@@ -6,7 +6,7 @@ import numpy as np
 import time, os, shutil, random, pickle, gym
 from cmath import inf
 
-from scipy.misc import info
+
 from cgp import *
 import matplotlib.pyplot as plt
 from configuration import config
