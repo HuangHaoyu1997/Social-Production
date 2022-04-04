@@ -29,6 +29,7 @@ from cmath import inf
                 # 'w2',
                 # 'avg_age',]
                 
+
 from cgp import *
 import matplotlib.pyplot as plt
 from configuration import config
