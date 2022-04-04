@@ -242,6 +242,7 @@ def update_graph(G:nx.Graph, agent:dict, E, W, U):
                 employer_num += 1
                 for worker in agent[name].hire:
                     assert agent[worker].alive is True
+                    assert agent[worker].work == 2
                     worker_num += 1
                     # 若该worker及其雇佣者之间没有edge
                     if not G.has_edge(name,worker):

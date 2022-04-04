@@ -124,7 +124,7 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool)
         
         # 更新Graph
-        self.G = update_graph(self.G,self.agent_pool,self.E,self.W,self.U)
+        self.G = update_graph(self.G, self.agent_pool, self.E, self.W, self.U)
         info = self.ouput_info()
         reward = self.reward_function(info)
         self.t += 1
@@ -436,6 +436,8 @@ class Env:
         # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)
         
+        if config.Verbose: print('%s is dead at %d years old with %f coins!'%(name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
+        
         # 资本家死前先破产
         if self.agent_pool[name].work == 1:
             self.broken(name)
@@ -461,7 +463,7 @@ class Env:
             self.agent_pool[name].coin = 0
         
 
-        if config.Verbose: print('%s is dead at %d years old!'%(name, round(self.agent_pool[name].age)))
+        
     
     def jobless(self, worker):
         '''

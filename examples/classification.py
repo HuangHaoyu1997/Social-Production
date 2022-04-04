@@ -1,4 +1,6 @@
-
+'''
+CGP for Classification Examples
+'''
 from cmath import inf
 import numpy as np
 from cgp import *
@@ -10,6 +12,7 @@ import random
 import pickle
 import warnings
 from utils import *
+from postprocessing import *
 warnings.filterwarnings('ignore')
 
 with open('./data/consume_data.pkl','rb') as f:

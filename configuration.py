@@ -10,7 +10,7 @@ class config:
     render_freq = 100           # 每100step保存figure
     N1 = 200                    # 初始人口
     N2 = 12000                  # 目标人口,即经过T步仿真后人口
-    T = 200                     # 仿真步长
+    T = 300                     # 仿真步长
     Year = 100                  # 仿真100年
 
     # for agent
@@ -25,12 +25,12 @@ class config:
     retire_age = 65             # 退休年龄, 超过退休年龄, 就业意愿就开始下降
     delta_age = Year / T        # 1 step = 100/1200 year = 1 month
     death_age = 75              # 年龄超过75岁,每个step都有25%的概率死亡
-    death_prob = 0.25           # 自然死亡概率基准,每长1岁,加0.02
+    death_prob = 0.15           # 自然死亡概率基准,每长1岁,加0.02
 
     # for government
     V = 100                     # 初始市场价值
     budget = 0                  # 初始政府财政
-    dN = pow(N2/N1, 1/1000) - 1 # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
+    dN = pow(N2/N1, 1/T) - 1 # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
     w1 = 50                     # 初始最低工资
     w2 = 150                    # 初始最高工资
 
@@ -43,7 +43,7 @@ class config:
     x_range = [0,200]
     y_range = [0,200]
     skill = [0,1]               # 技能水平，实数
-    resource = 10
+    resource = 20
     product_thr = 10            # 与资源最小距离＜10则会有产出
     
     
@@ -54,7 +54,8 @@ class config:
     property_tax = 0.001 if tax else 0          # 财产税
     death_tax = 0.25 if tax else 0              # 遗产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
-    event_duration = 30         # 负面事件的持续时间
+    event_point = []     # 两次event,在point前后各持续2step
+    event_duration = 1         # 负面事件的持续时间
 
     # for reward function
     target_RJ = 0.1             # 目标失业率小于10%

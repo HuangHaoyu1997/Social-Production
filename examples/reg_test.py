@@ -1,3 +1,6 @@
+'''
+CGP for Symbolic Regression Examples
+'''
 import numpy as np
 import matplotlib.pyplot as plt 
 from typing import Dict, Generator, List, Optional, Set, Tuple, Type

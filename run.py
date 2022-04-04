@@ -1,4 +1,3 @@
-from typing_extensions import runtime
 import matplotlib.pyplot as plt
 import numpy as np
 from configuration import config
@@ -47,15 +46,18 @@ while not done:
     RSV.append(info['RSV'])
     if env.t > 0: RH.append(info['RH'])
     
+    for event_point in config.event_point:
+        if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
+            print(env.t, event_point)
+            env.event_simulator('GreatDepression')
 
-    if env.t >= 100 and env.t < 100+config.event_duration: # t%100 == 99:
-        env.event_simulator('GreatDepression')
-
-    # data.extend(data_step)
+    '''
+    data.extend(data_step)
     if env.t % 100 == 0:
         with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
             pickle.dump(data, f)
-
+    '''
+    
     grid = grid_render(env.agent_pool,env.resource)
     #### Render
     if env.t % config.render_freq == config.render_freq-1 and config.render:
@@ -139,7 +141,7 @@ while not done:
         
         plt.pause(0.0001)
         # print("tock = %.3f"%(time.time()-tick))
-        plt.savefig('./results/'+runtime+'_'+str(env.t)+'.png')
+        plt.savefig('./results/'+run_time+'_'+str(env.t)+'.png')
         plt.close()
 time.sleep(7200)
 print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))
