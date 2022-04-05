@@ -246,9 +246,9 @@ class Env:
                 config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
             
             # 如果e.coin大于平均工资
-            if self.agent_pool[e].coin >= config.avg_coin and name!=e:
+            if self.agent_pool[e].alive and self.agent_pool[e].coin >= config.avg_coin and name!=e:
                 
-                # TODO 考虑个体的就业意愿,100%
+                # 考虑个体的就业意愿
                 if random.random() <= self.agent_pool[name].employment_intention:
                     # 给name设置雇主e,修改工作状态
                     self.agent_pool[name].employer = e
