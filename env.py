@@ -278,18 +278,19 @@ class Env:
         if work == 0: return None # 失业
         elif work == 1: employer = name # name是雇主
         elif work == 2: employer = self.agent_pool[name].employer # name被雇佣
-        throughput = self.agent_pool[employer].throughput
+        assert self.agent_pool[employer].alive is True
+        throughput = self.agent_pool[employer].throughput # employer决定throughput产量
 
         # 【若employer作为RL智能体, 则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
         w = round(uniform(0, skill*throughput*self.market_V) ,2) # 四舍五入2位小数
 
         tax = w * config.business_tax
-        w_ = w * (1-config.business_tax) # 扣除企业税
+        w_after_tax = w * (1 - config.business_tax) # 扣除企业税
         self.gov += tax
         # print('ex,',tax)
         
         self.market_V -= w
-        self.agent_pool[employer].coin += w_
+        self.agent_pool[employer].coin += w_after_tax
         self.agent_pool[employer].exploit += w
 
     def pay(self, name):
@@ -356,7 +357,7 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新工作状态
         return None
 
-    def broken(self,employer):
+    def broken(self, employer):
         '''
         雇佣者及其雇工都失业,加入U集合,从E和W集合中删除对应agent
         被雇者的雇主设置为0,修改其工作状态
