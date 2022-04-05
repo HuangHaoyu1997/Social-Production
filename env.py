@@ -115,7 +115,7 @@ class Env:
             self.redistribution()
         
         ########### 新增人口
-        # 单步增加人口数量不超过当前人口的dN比例(0<dN<1)
+        # 单步增加人口数量不超过当前人数的dN比例(0<dN<1)
         # TODO 目前增长速度正比于人口数量，应该开发logistic增长（S型增长曲线）
         delta_pop = np.random.randint( 0, max(round(config.dN*len(self.agent_pool)), 2) )
         self.agent_pool.update(add_agent(delta_pop))
@@ -202,7 +202,7 @@ class Env:
         对政府的钱再分配
         '''
         # 【有可能出现总人数不足300的情况，按比例得出300这个数字会更好】
-        poor_list = most_poor(self.agent_pool, 100)
+        poor_list = most_poor(self.agent_pool, config.distribution_num)
         poor_num = len(poor_list)
         avg_coin = self.gov / poor_num
         for name in poor_list:

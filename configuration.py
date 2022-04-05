@@ -55,7 +55,8 @@ class config:
     property_tax = 0.001 if tax else 0          # 财产税
     death_tax = 0.25 if tax else 0              # 遗产税
     redistribution_freq = 1    # 每10个step进行一次财富再分配
-    property_tax_num = 50       # 财产税征收人数,即Top50
+    property_tax_num = 50       # 财产税征收人数,即Top50富裕
+    distribution_num = 100      # 政府税收再分配的人数,即Top100贫穷
     event_point = []     # 两次event,在point前后各持续2step
     event_duration = 1         # 负面事件的持续时间
 
