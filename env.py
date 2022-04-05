@@ -117,7 +117,7 @@ class Env:
         ########### 新增人口
         # 单步增加人口数量不超过当前人数的dN比例(0<dN<1)
         # TODO 目前增长速度正比于人口数量，应该开发logistic增长（S型增长曲线）
-        delta_pop = np.random.randint( 0, max(round(config.dN*len(self.agent_pool)), 2) )
+        delta_pop = np.random.randint( 0, max(round(config.dN*alive_num(self.agent_pool)), 2) )
         self.agent_pool.update(add_agent(delta_pop))
 
         self.E, self.W, self.U = working_state(self.agent_pool)
@@ -126,7 +126,6 @@ class Env:
         # self.G = update_graph(self.G, self.agent_pool, self.E, self.W, self.U)
         info = self.ouput_info()
         reward = self.reward_function(info)
-        self.t += 1
         done = self.is_terminate()
         if config.print_log:
             if self.t % 12 == 0:
@@ -135,6 +134,7 @@ class Env:
                 (self.t, len(self.E),len(self.U),len(self.W),alive_num(self.agent_pool),\
                 info['coin_a'],info['coin_v'],info['coin_t'],info['avg_coin_u'],info['avg_coin_e'],info['avg_coin_w'])
                 )
+        self.t += 1
         return info, reward, done
         
     def is_terminate(self,):

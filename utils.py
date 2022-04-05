@@ -171,7 +171,9 @@ def add_agent(N):
     pool = {}
     for i in range(N):
         # 用CPU时钟的小数位命名智能体
-        name = str(i)+str(time.time()).split('.')[1]
+        name = str(i)+str(time.time()).split('.')[1] # 【应该不会出现重名？】
+        
+        # 随机坐标
         x = round(uniform(c.x_range[0],c.x_range[1]),2)
         y = round(uniform(c.y_range[0],c.y_range[1]),2)
         
@@ -184,7 +186,6 @@ def add_agent(N):
         # [0,1]之间,均值0.5的Beta分布,mean=a/(a+b),a=b越小分布越均匀
         skill = round(np.random.beta(a=5,b=5))
 
-        
         coin = uniform(c.coin_range[0],c.coin_range[1]) if c.random_coin else c.init_coin
         
         # 初始年龄分布是[15,75]之间,均值38,标准差10的截断高斯分布,中美两国平均年龄均38岁
