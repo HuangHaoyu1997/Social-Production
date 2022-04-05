@@ -68,15 +68,16 @@ class Env:
         # data_step = [] for policy symbolic regression
         for name in agent_list:
             # 必须活着
-            if self.agent_pool[name].alive is not True: continue
+            if not self.agent_pool[name].alive: continue
             
-            self.agent_pool[name].exploit = 0
-            self.agent_pool[name].labor_cost = 0
+            # 针对employer
+            self.agent_pool[name].exploit = 0 # 该step的剥削量
+            self.agent_pool[name].labor_cost = 0 # 该step的人力成本
             
             # 随机移动
-            mod = round(uniform(0,config.move_len),2) # 向量的模
-            dir = round(uniform(0,config.move_dir),3) # 向量的角度
-            self.agent_pool[name].move(mod=mod,direction=dir)
+            mod = round(uniform(0,config.move_len),2) # 位移向量的模
+            dir = round(uniform(0,config.move_dir),3) # 位移向量的角度
+            self.agent_pool[name].move(mod=mod, direction=dir)
             
             self.production(name)
             self.hire(name)
