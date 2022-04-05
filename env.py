@@ -250,10 +250,11 @@ class Env:
                 
                 # 考虑个体的就业意愿
                 if random.random() <= self.agent_pool[name].employment_intention:
-                    # 给name设置雇主e,修改工作状态
+                    # 给name设置雇主e, 修改工作状态
                     self.agent_pool[name].employer = e
                     self.agent_pool[name].work = 2 # 2 for worker
-                    self.W.append(name)
+                    if name not in self.W: self.W.append(name)
+                    assert name in self.U
                     u_idx = self.U.index(name); self.U.pop(u_idx)
                     # 给雇主e添加员工u,修改工作状态
                     self.agent_pool[e].employer = e
@@ -269,11 +270,14 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool)
 
     def exploit(self, name):
+        '''
+        Worker生产,出售到Market,获得coin,交给Employer
+        '''
         work = self.agent_pool[name].work
         skill = self.agent_pool[name].skill
         if work == 0: return None # 失业
-        elif work == 1: employer = name # 雇主
-        elif work == 2: employer = self.agent_pool[name].employer # 被雇佣
+        elif work == 1: employer = name # name是雇主
+        elif work == 2: employer = self.agent_pool[name].employer # name被雇佣
         throughput = self.agent_pool[employer].throughput
 
         # 【若employer作为RL智能体, 则最低、最高价格应该由其控制,表示其能接受的毛利率上下限】
