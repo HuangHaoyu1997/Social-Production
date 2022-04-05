@@ -96,17 +96,15 @@ class Env:
             # 饿死或老死
             if config.die: 
                 if self.agent_pool[name].hungry >= config.hungry_days:
-                    self.die(name) # 饥饿超过5步就死掉
+                    self.die(name, 1) # 连续饥饿超过3步就死掉
                 else:
+                    # 超过死亡年龄后,死亡概率线性上升
                     if self.agent_pool[name].age >= config.death_age \
-                        and uniform()<=0.25+0.02*(self.agent_pool[name].age-config.death_age):
-                        self.die(name)
-            
-            
-
+                    and uniform()<=0.25+0.02*(self.agent_pool[name].age-config.death_age):
+                        self.die(name, 2)
         
         ########### 征收财产税
-        rich_people = most_rich(self.agent_pool, 50)
+        rich_people = most_rich(self.agent_pool, config.property_tax_num)
         for name in rich_people:
             tax = self.agent_pool[name].coin * config.property_tax
             self.agent_pool[name].coin -= tax
@@ -444,15 +442,15 @@ class Env:
         
         return data
     
-    def die(self, name):
+    def die(self, name, type):
         '''
         死亡
-        
+        type:1饿死2老死
         '''
         # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)
         # self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
-        if config.Verbose: print('%s is dead at %d years old with %f coins!'%(name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
+        if config.Verbose: print('%d, %s is dead at %d years old with %f coins!'%(type, name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
         
         # 资本家死前先破产
         if self.agent_pool[name].work == 1:
