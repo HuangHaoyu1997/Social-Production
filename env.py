@@ -241,7 +241,21 @@ class Env:
             prob = np.array(potential_e) / np.array(potential_e).sum()
             e = UE[np.random.choice(np.arange(len(prob)), p=prob)]
             
+            
+            # TODO
+            # TODO
+            # TODO
+            # TODO
+            # TODO
+            # TODO
+            # TODO
             # TODO【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
+            # TODO
+            # TODO
+            # TODO
+            # TODO
+            # TODO
+            # TODO
             if config.avg_update: 
                 config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
             
