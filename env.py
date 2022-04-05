@@ -138,6 +138,9 @@ class Env:
         return info, reward, done
         
     def is_terminate(self,):
+        '''
+        判断仿真是否结束
+        '''
         if self.t >= config.T:
             return True
         elif alive_num(self.agent_pool) <= 0:
@@ -214,31 +217,35 @@ class Env:
         '''
         产出量和距离成反比,和skill成正比
         '''
+        # 计算name与所有resource的距离
         shortest_dis = CalDistance(self.agent_pool[name], self.resource)
         if shortest_dis <= config.product_thr:
-            product = (config.product_thr - shortest_dis)*round(uniform(0,self.agent_pool[name].skill),2)
+            product = (config.product_thr - shortest_dis)*round(uniform(0, self.agent_pool[name].skill),2)
             self.agent_pool[name].coin += product
             # print(name,shortest_dis,product)
 
     def hire(self, name):
-        
-        work = self.agent_pool[name].work
+        '''
+        只对work=0,即失业的agent起作用
+        '''
         
         # 【下一行能不能删去，安全吗？】
-        self.E, self.W, self.U = working_state(self.agent_pool) # 可能耗费时间，确保都是活着的
-        if work == 0: # 失业
+        if self.agent_pool[name].work == 0: # 失业
+            self.E, self.W, self.U = working_state(self.agent_pool) # 可能耗费时间，确保都是活着的
             # U = copy.deepcopy(self.U); E = copy.deepcopy(self.E); random.shuffle(U)
-            UE = self.U + self.E
-            random.shuffle(UE)
-            # name的潜在雇佣者的货币统计
+            UE = self.U + self.E; random.shuffle(UE)
+            # 统计name的可能雇佣者的coin
             potential_e = [self.agent_pool[h].coin if self.agent_pool[h].coin>0 else 0 for h in UE]
-            # print(potential_e)
+            
             # 按货币量多少概率决定u的雇主
             prob = np.array(potential_e) / np.array(potential_e).sum()
-            e = UE[np.random.choice(np.arange(len(prob)),p=prob)]
+            e = UE[np.random.choice(np.arange(len(prob)), p=prob)]
+            
+            # TODO【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
             if config.avg_update: 
                 config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
             
+            # 如果e.coin大于平均工资
             if self.agent_pool[e].coin >= config.avg_coin and name!=e:
                 
                 # TODO 考虑个体的就业意愿,100%
@@ -253,9 +260,9 @@ class Env:
                     self.agent_pool[e].hire.append(name)
                     self.agent_pool[e].work = 1 # 1 for employer
                     if e not in self.E: self.E.append(e)
-        elif work == 1: # 雇佣者
+        elif self.agent_pool[name].work == 1: # 雇佣者
             pass
-        elif work == 2: # 被雇佣者
+        elif self.agent_pool[name].work == 2: # 被雇佣者
             pass
         
         # 【这一行能不能删去，安全吗？】
