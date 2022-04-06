@@ -4,13 +4,18 @@ from configuration import config
 import random, math, copy
 from utils import *
 import networkx as nx
-
+from collections import deque
 random.seed(config.seed)
 np.random.seed(config.seed)
 
 class Env:
     def __init__(self) -> None:
-        pass
+
+        # 计算平均工资时的权重
+        # 权重在时间上不是平均的,时间上越近,权重越高
+        self.salary_weight = [pow(config.salary_gamma, config.salary_deque_maxlen-i) for i in range(config.salary_deque_maxlen)]
+        self.salary_weight = np.array(self.salary_weight) / np.array(self.salary_weight).sum() # normalized
+        # self.salary_weight = np.exp(self.salary_weight) / np.exp(self.salary_weight).sum() # softmax
         
     def reset(self,):
         self.t = 0 # tick
@@ -31,6 +36,7 @@ class Env:
 
         self.w1_OU_noise = OrnsteinUhlenbeckActionNoise(mu=config.w1, theta=0.1, sigma=5, x0=10, dt=0.1) # config.w1
         info = self.ouput_info()
+        self.salary_deque = deque(maxlen=config.salary_deque_maxlen)
         return info
     
     def update_config(self, action=None):
@@ -241,32 +247,23 @@ class Env:
             prob = np.array(potential_e) / np.array(potential_e).sum()
             e = UE[np.random.choice(np.arange(len(prob)), p=prob)]
             
-            
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            # TODO【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            # TODO
-            if config.avg_update: 
-                config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
+            #【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
+            # if config.avg_update: 
+            #     config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
+            if len(self.salary_deque)>0:
+                config.avg_salary = np.sum(self.salary_weight * self.salary_deque)
             
             # 如果e.coin大于平均工资
-            if self.agent_pool[e].alive and self.agent_pool[e].coin >= config.avg_coin and name!=e:
+            if self.agent_pool[e].alive and self.agent_pool[e].coin >= config.avg_salary and name!=e:
                 
                 # 考虑个体的就业意愿
                 if random.random() <= self.agent_pool[name].employment_intention:
+                    # 成功雇佣
                     # 给name设置雇主e, 修改工作状态
                     self.agent_pool[name].employer = e
                     self.agent_pool[name].work = 2 # 2 for worker
+                    self.agent_pool[name].hire = []
+                    self.agent_pool[name].labor_cost = 0; self.agent_pool[name].exploit = 0
                     if name not in self.W: self.W.append(name)
                     assert name in self.U
                     u_idx = self.U.index(name); self.U.pop(u_idx)
@@ -336,6 +333,7 @@ class Env:
                     tax = w * config.personal_income_tax; self.gov += tax # 缴个税
                     w_after_tax = w * (1-config.personal_income_tax)
                     self.agent_pool[worker].coin += w_after_tax
+                    self.salary_deque.append(w) # 记录工资发放
                     continue
                     # self.agent_pool[name].coin = capital  ## 更新employer
                 
@@ -346,6 +344,7 @@ class Env:
                     tax = w * config.personal_income_tax; self.gov += tax # 缴个人所得税
                     w_after_tax = w * (1-config.personal_income_tax)
                     self.agent_pool[worker].coin += w_after_tax
+                    self.salary_deque.append(w) # 记录工资发放
                     continue
                     # self.agent_pool[name].coin = capital  ## 更新employer
                 
@@ -353,7 +352,7 @@ class Env:
                 if self.agent_pool[name].coin <= self.w1:
                     self.agent_pool[worker].coin += self.agent_pool[name].coin # 破产发工资
                     self.agent_pool[name].coin = 0
-                    
+                    self.salary_deque.append(w) # 记录工资发放
                     # 低于最低工资，不交税
                     # self.agent_pool[name].coin = capital  ## 更新employer
                     break
@@ -368,6 +367,7 @@ class Env:
             # self.agent_pool[name].coin = capital # 【这一行有没有必要】
             if self.agent_pool[name].coin <= 0:
                 self.broken(name) # 破产
+        
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新工作状态
         return None
 
@@ -378,6 +378,7 @@ class Env:
         雇佣者的雇佣名单清空,修改其工作状态
         
         '''
+        # 必须是资本家才能破产
         assert self.agent_pool[employer].work == 1
         if config.Verbose: print('%s has broken!'%employer)
         self.agent_pool[employer].work = 0 # 失业
@@ -409,10 +410,14 @@ class Env:
         capital = self.agent_pool[name].coin
         # 雇工名单
         worker_list = self.agent_pool[name].hire
+        
         # 最大工人数量=货币量/平均工资
-        config.avg_coin = financial_statistics(self.agent_pool, self.W+self.U)[2]
-        max_num = np.floor(capital / config.avg_coin)
-        # max_num = np.ceil(capital / config.avg_coin)
+        # config.avg_salary = financial_statistics(self.agent_pool, self.W+self.U)[2]
+        if len(self.salary_deque)>0:
+            config.avg_salary = np.sum(self.salary_weight * self.salary_deque)
+        
+        max_num = np.floor(capital / config.avg_salary)
+        # max_num = np.ceil(capital / config.avg_salary)
         
         # 工人数量
         num_worker = len(worker_list)

@@ -34,8 +34,10 @@ class config:
     dN = pow(N2/N1, 1/T) - 1 # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
     w1 = 50                     # 初始最低工资
     w2 = 150                    # 初始最高工资
+    salary_deque_maxlen = 1000  # 记录
+    salary_gamma = 0.999        # discount factor,计算权重时使用,权重在时间上不是平均的,时间上越近,权重越高
 
-    avg_coin = None # (w1+w2)/2        # 初始平均工资
+    avg_salary = (w1+w2)/2        # 初始平均工资
     avg_update = True           # 实时更新平均工资
     # danjia = 1.0                # 工人向市场出售商品时，最大单价
     consume = 1.0               # 消费比例,即智能体每次消费量占其总财产的比例
