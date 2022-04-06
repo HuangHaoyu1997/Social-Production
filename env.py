@@ -449,10 +449,10 @@ class Env:
         # agent的钱减少m，市场价值增加m
         
         ma = self.agent_pool[name].coin
-        data = [name, config.consume, ma, self.agent_pool[name].hungry]
+        # data = [name, config.consume, ma, self.agent_pool[name].hungry]
         if ma > 0: # 有钱就消费,消费要纳税
             # m = 0.1*ma
-            m = uniform(0, config.consume*ma)
+            m = uniform(1, config.consume*ma) # [0,ma]则永远不会饿死,[1,ma]表示最低消费
             
             tax = m * config.consumption_tax # 消费税
             m_ = m * (1-config.consumption_tax)
@@ -471,11 +471,11 @@ class Env:
         if self.agent_pool[name].coin<=0 and self.agent_pool[name].work == 1:
             self.broken(name)
 
-        data.append(self.agent_pool[name].coin)
-        data.append(self.market_V)
-        data.append(self.agent_pool[name].hungry)
+        # data.append(self.agent_pool[name].coin)
+        # data.append(self.market_V)
+        # data.append(self.agent_pool[name].hungry)
         
-        return data
+        return None # data
     
     def die(self, name, type):
         '''
@@ -485,7 +485,7 @@ class Env:
         # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)
         # self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
-        if config.Verbose: print('%d, %s is dead at %d years old with %f coins!'%(type, name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
+        if config.Verbose: print('∵%d, %s is dead at %d years old with %f coins!'%(type, name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
         
         # 资本家死前先破产
         if self.agent_pool[name].work == 1:
@@ -519,7 +519,7 @@ class Env:
         Worker失业函数
         强制修改Worker及其雇佣者的相关属性
         '''
-        assert self.agent_pool[worker].alive
+        assert self.agent_pool[worker].alive and self.agent_pool[worker].work==2
         self.agent_pool[worker].work = 0
         e = self.agent_pool[worker].employer
         self.agent_pool[worker].employer = None
