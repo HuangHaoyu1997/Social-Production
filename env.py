@@ -364,7 +364,6 @@ class Env:
         
             self.agent_pool[name].labor_cost = coin_before - coin_after
         
-            # self.agent_pool[name].coin = capital # 【这一行有没有必要】
             if self.agent_pool[name].coin <= 0:
                 self.broken(name) # 破产
         
@@ -403,6 +402,7 @@ class Env:
         '''
         if self.agent_pool[name].work != 1: return None
         assert self.agent_pool[name].coin >= 0
+        assert len(self.agent_pool[name].hire)>0
 
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         
@@ -416,12 +416,14 @@ class Env:
         if len(self.salary_deque)>0:
             config.avg_salary = np.sum(self.salary_weight * self.salary_deque)
         
+        # 最大雇佣数量
         max_num = np.floor(capital / config.avg_salary)
         # max_num = np.ceil(capital / config.avg_salary)
         
         # 工人数量
         num_worker = len(worker_list)
-        fire_num = int(max(num_worker-max_num, 0)) # 解雇数量
+        # 解雇数量
+        fire_num = int(max(num_worker - max_num, 0)) 
         if fire_num > 0:
             fire_list = random.sample(self.agent_pool[name].hire, fire_num) # 随机解雇
             for worker in fire_list:
@@ -432,11 +434,13 @@ class Env:
                 # 修改雇工名单
                 fid = self.agent_pool[name].hire.index(worker)
                 self.agent_pool[name].hire.pop(fid)
-                if config.Verbose: print('%s has been fired by %s'%(worker,name))
+                if config.Verbose: print('%s has been fired by %s'%(worker, name))
         
+        # 【为什么不破产？？？】
         if len(self.agent_pool[name].hire) == 0: # 解雇所有雇员,自己也失业但没有破产
-            self.agent_pool[name].work = 0
-            self.agent_pool[name].employer = None
+            self.broken(name)
+            # self.agent_pool[name].work = 0
+            # self.agent_pool[name].employer = None
         
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
@@ -515,6 +519,7 @@ class Env:
         Worker失业函数
         强制修改Worker及其雇佣者的相关属性
         '''
+        assert self.agent_pool[worker].alive
         self.agent_pool[worker].work = 0
         e = self.agent_pool[worker].employer
         self.agent_pool[worker].employer = None
