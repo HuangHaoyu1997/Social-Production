@@ -229,6 +229,18 @@ def working_state(agent_pool):
             elif agent_pool[name].work == 2:# 雇主是别人，自己是工人
                 W.append(name)
     return E, W, U
+def discounted_weight(length):
+    '''
+    生成长度=length的折扣权重
+    用于计算历史工资发放记录的加权平均
+    离现在越近的工资,weight越大,越早的工资发放记录,weight越小
+    '''
+    assert length<=c.salary_deque_maxlen
+    if length==1: return np.array(1.0)
+    salary_weight = [pow(c.salary_gamma, length-i) for i in range(length)]
+    salary_weight = np.array(salary_weight) / np.array(salary_weight).sum() # normalized
+    # salary_weight = np.exp(salary_weight) / np.exp(salary_weight).sum() # softmax
+    return salary_weight
 
 def update_graph(G:nx.Graph, agent:dict, E, W, U):
     '''

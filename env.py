@@ -11,12 +11,8 @@ np.random.seed(config.seed)
 class Env:
     def __init__(self) -> None:
 
-        # 计算平均工资时的权重
-        # 权重在时间上不是平均的,时间上越近,权重越高
-        self.salary_weight = [pow(config.salary_gamma, config.salary_deque_maxlen-i) for i in range(config.salary_deque_maxlen)]
-        self.salary_weight = np.array(self.salary_weight) / np.array(self.salary_weight).sum() # normalized
-        # self.salary_weight = np.exp(self.salary_weight) / np.exp(self.salary_weight).sum() # softmax
-        
+        pass
+
     def reset(self,):
         self.t = 0 # tick
         self.w1 = config.w1 # 初始最低工资
@@ -36,7 +32,13 @@ class Env:
 
         self.w1_OU_noise = OrnsteinUhlenbeckActionNoise(mu=config.w1, theta=0.1, sigma=5, x0=10, dt=0.1) # config.w1
         info = self.ouput_info()
+        
         self.salary_deque = deque(maxlen=config.salary_deque_maxlen)
+        
+        
+        
+        
+        
         return info
     
     def update_config(self, action=None):
@@ -245,13 +247,15 @@ class Env:
             
             # 按货币量多少概率决定u的雇主
             prob = np.array(potential_e) / np.array(potential_e).sum()
+            print(prob)
             e = UE[np.random.choice(np.arange(len(prob)), p=prob)]
             
             #【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
             # if config.avg_update: 
             #     config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
             if len(self.salary_deque)>0:
-                config.avg_salary = np.sum(self.salary_weight * self.salary_deque)
+                salary_weight = discounted_weight(len(self.salary_deque))
+                config.avg_salary = np.sum(salary_weight * self.salary_deque)
             
             # 如果e.coin大于平均工资
             if self.agent_pool[e].alive and self.agent_pool[e].coin >= config.avg_salary and name!=e:
@@ -414,7 +418,8 @@ class Env:
         # 最大工人数量=货币量/平均工资
         # config.avg_salary = financial_statistics(self.agent_pool, self.W+self.U)[2]
         if len(self.salary_deque)>0:
-            config.avg_salary = np.sum(self.salary_weight * self.salary_deque)
+            salary_weight = discounted_weight(len(self.salary_deque))
+            config.avg_salary = np.sum(salary_weight * self.salary_deque)
         
         # 最大雇佣数量
         max_num = np.floor(capital / config.avg_salary)

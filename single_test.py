@@ -39,6 +39,7 @@ import warnings
 from utils import info_parser
 warnings.filterwarnings('ignore')
 
+run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:10]
 np.random.seed(config.seed)
 random.seed(config.seed)
 
@@ -77,11 +78,12 @@ best_ind = None
 # 开始搜索
 for g in range(config.N_GEN):
     tick = time.time()
+    pop = func(pop)
     pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
     print(g,'time:',time.time()-tick, pop[0].fitness)
     #if pop[0].fitness > config.solved:
     if g % 10 == 9:
-        with open('./results/SP-'+str(g)+'.pkl','wb') as f:
+        with open('./results/'+run_time+'SP-'+str(g)+'.pkl','wb') as f:
             pickle.dump(pop,f)
 
 env = Env()
