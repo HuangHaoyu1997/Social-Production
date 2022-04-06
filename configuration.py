@@ -73,7 +73,7 @@ class config:
     
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2
-    LAMBDA = 1000-MU
+    LAMBDA = 20-MU
     N_GEN = 5000  # max number of generations
     n_process = 40
     solved = 100
