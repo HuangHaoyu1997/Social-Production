@@ -1,3 +1,4 @@
+from cmath import inf
 import numpy as np
 from numpy.random import uniform
 from configuration import config
@@ -5,7 +6,6 @@ import random, math, copy
 from utils import *
 import networkx as nx
 from collections import deque
-
 
 class Env:
     def __init__(self) -> None:
@@ -36,7 +36,7 @@ class Env:
         
         self.salary_deque = deque(maxlen=config.salary_deque_maxlen)
         
-        self.last_std = None
+        self.last_std = 1e10
         
         
         
@@ -163,7 +163,7 @@ class Env:
         output: Reward Scalar
         '''
         reward_RJ = min(self.target_RJ - info['RJ'], 0) # 失业率超过10%就扣分
-
+        
         
         reward_coin_std = 0.1 if info['std_coin_t']<self.last_std else -0.1 # 全体pop的coin标准差<上一时刻则加分，否则扣分
         self.last_std = info['std_coin_t']
