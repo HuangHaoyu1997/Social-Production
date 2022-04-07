@@ -15,20 +15,21 @@ plt.ion()
 
 env = Env()
 
-
-total_coin = [[],[],[],[]]
-agent_num = [[],[],[],[]]
-agent_coin = [[],[],[],[]]
-w = [[],[]]
-RSV = []
-RH = [0.] # RH for Rate of Hire
-JoblossRate = []
-data = []
-
-for _ in range(100):
+for i in range(100):
     tick = time.time()
     done = False
+    config.seed = i
     env.reset()
+
+    total_coin = [[],[],[],[]]
+    agent_num = [[],[],[],[]]
+    agent_coin = [[],[],[],[]]
+    w = [[],[]]
+    RSV = []
+    RH = [0.] # RH for Rate of Hire
+    JoblossRate = []
+    data = []
+    
     while not done:
         info, reward, done = env.step( uniform(0,100) ) # np.zeros((config.N1))
         for event_point in config.event_point:
@@ -136,7 +137,9 @@ for _ in range(100):
             
             plt.pause(0.0001)
             # print("tock = %.3f"%(time.time()-tick))
+            run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:19]
             plt.savefig('./results/'+run_time+'_'+str(env.t)+'.png')
+            plt.clf()
             plt.close()
-    print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T))
+    print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), np.mean(env.death_log))
 time.sleep(7200)

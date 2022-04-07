@@ -6,7 +6,7 @@ class config:
     '''
     seed = 1234
     Verbose = False             # 打印破产、解雇等事件
-    render = False
+    render = True
     print_log = False
     render_freq = 200           # 每100step保存figure
     N1 = 100                    # 初始人口
@@ -23,6 +23,7 @@ class config:
     move_len = 10               # 随机游走的最长距离
     move_dir = 1                # 随机游走的方向范围，即[0,2π]
     age = 15                    # 初始年龄
+    age_mean = 25               # 初始群体的年龄呈现截断高斯分布,均值25岁,过高容易出现人口断崖下跌
     retire_age = 65             # 退休年龄, 超过退休年龄, 就业意愿就开始下降
     delta_age = Year / T        # 1 step = 100/1200 year = 1 month
     death_age = 75              # 年龄超过75岁,每个step都有25%的概率死亡

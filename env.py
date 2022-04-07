@@ -5,8 +5,7 @@ import random, math, copy
 from utils import *
 import networkx as nx
 from collections import deque
-random.seed(config.seed)
-np.random.seed(config.seed)
+
 
 class Env:
     def __init__(self) -> None:
@@ -14,11 +13,13 @@ class Env:
         pass
 
     def reset(self,):
+        random.seed(config.seed)
+        np.random.seed(config.seed)
         self.t = 0 # tick
         self.w1 = config.w1 # 初始最低工资
         self.w2 = config.w2 # 初始最高工资
         self.target_RJ = config.target_RJ # 失业率控制线
-
+        self.death_log = []
 
         # TODO【想法】开局不一定全部是unemployment，可以有UWE之分，每个人初始coin也可以不一样
         self.agent_pool = add_agent(config.N1) # 添加智能体
@@ -51,7 +52,7 @@ class Env:
             self.w2 = scale_factor * self.w1
         else:
             self.w1 = action
-            self.w2 = action*5
+            self.w2 = action*2
 
         # self.w1 = action[0]
         # self.w2 = action[1]
@@ -126,7 +127,7 @@ class Env:
         # 单步增加人口数量不超过当前人数的dN比例(0<dN<1)
         # TODO 目前增长速度正比于人口数量，应该开发logistic增长（S型增长曲线）
         delta_pop = np.random.randint( 0, max(round(config.dN*alive_num(self.agent_pool)), 2) )
-        self.agent_pool.update(add_agent(delta_pop))
+        self.agent_pool.update(add_agent(delta_pop, flag=1))
 
         self.E, self.W, self.U = working_state(self.agent_pool)
         
@@ -491,7 +492,7 @@ class Env:
         # self.agent_pool.pop(name)
         # self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         if config.Verbose: print('∵%d, %s is dead at %d years old with %f coins!'%(type, name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
-        
+        self.death_log.append(type)
         # 资本家死前先破产
         if self.agent_pool[name].work == 1:
             self.broken(name)

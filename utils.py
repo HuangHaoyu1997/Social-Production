@@ -164,9 +164,12 @@ def build_graph(agent):
             G.add_node(name,coin=agent[name].coin)
     return G
 
-def add_agent(N):
+def add_agent(N, flag=None):
     '''
     添加智能体
+    flag:指示是否初次创建人口
+    None表示初次创建,人口年龄服从高斯分布
+    flag=1表示非初次,人口年龄为18-20岁
     '''
     pool = {}
     for i in range(N):
@@ -189,7 +192,10 @@ def add_agent(N):
         coin = uniform(c.coin_range[0],c.coin_range[1]) if c.random_coin else c.init_coin
         
         # 初始年龄分布是[15,75]之间,均值38,标准差10的截断高斯分布,中美两国平均年龄均38岁
-        age = np.clip((np.random.randn()*10+38), 15, 100)
+        if flag is None:
+            age = np.clip((np.random.randn()*10+c.age_mean), 15, 100)
+        if flag == 1:
+            age = round(uniform(18,20),2)
         intention = c.employment_intention if age>=18 and age<c.retire_age else 0
         pool[name] = agent(x, y, name, skill, coin, age, intention)
     return pool
