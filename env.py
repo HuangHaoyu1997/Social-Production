@@ -19,7 +19,7 @@ class Env:
         self.w1 = config.w1 # 初始最低工资
         self.w2 = config.w2 # 初始最高工资
         self.target_RJ = config.target_RJ # 失业率控制线
-        self.death_log = []
+        self.death_log = {0:[]}
 
         # TODO【想法】开局不一定全部是unemployment，可以有UWE之分，每个人初始coin也可以不一样
         self.agent_pool = add_agent(config.N1) # 添加智能体
@@ -36,7 +36,7 @@ class Env:
         
         self.salary_deque = deque(maxlen=config.salary_deque_maxlen)
         
-        
+        self.last_std = None
         
         
         
@@ -162,9 +162,13 @@ class Env:
         '''
         output: Reward Scalar
         '''
-        reward_RJ = min(self.target_RJ - info['RJ'], 0) # 扣分项
+        reward_RJ = min(self.target_RJ - info['RJ'], 0) # 失业率超过10%就扣分
 
-        reward = reward_RJ
+        
+        reward_coin_std = 0.1 if info['std_coin_t']<self.last_std else -0.1 # 全体pop的coin标准差<上一时刻则加分，否则扣分
+        self.last_std = info['std_coin_t']
+
+        reward = reward_RJ + reward_coin_std
         return reward
 
     def ouput_info(self,):
@@ -192,7 +196,10 @@ class Env:
         info['avg_coin_t'] = avg_coin_t; info['std_coin_t'] = std_coin_t
 
         # 各部分人口
-        info['Upop'] = len(self.U); info['Wpop'] = len(self.W); info['Epop'] = len(self.E); info['Tpop'] = alive_num(self.agent_pool)
+        info['Upop'] = len(self.U)
+        info['Wpop'] = len(self.W)
+        info['Epop'] = len(self.E)
+        info['Tpop'] = alive_num(self.agent_pool)
 
         # 失业率Rate of Jobless
         info['RJ'] = info['Upop'] / info['Tpop'] if info['Tpop']>0 else -1
@@ -205,7 +212,9 @@ class Env:
         info['w2'] = self.w2
         # 平均年龄
         info['avg_age'] = avg_age(self.agent_pool)
-        
+        # 死亡率
+        info['death_rate'] = len(self.death_log[self.t])/info['Tpop'] if info['Tpop']>0 else 0
+
 
         return info # data_step
         
@@ -376,32 +385,6 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新工作状态
         return None
 
-    def broken(self, employer):
-        '''
-        雇佣者及其雇工都失业,加入U集合,从E和W集合中删除对应agent
-        被雇者的雇主设置为0,修改其工作状态
-        雇佣者的雇佣名单清空,修改其工作状态
-        
-        '''
-        # 必须是资本家才能破产
-        assert self.agent_pool[employer].work == 1
-        if config.Verbose: print('%s has broken!'%employer)
-        self.agent_pool[employer].work = 0 # 失业
-        id = self.E.index(employer)
-        self.E.pop(id)
-
-        for worker in self.agent_pool[employer].hire:
-            self.agent_pool[worker].work = 0 # 失业
-            self.agent_pool[worker].employer = None
-            id = self.W.index(worker)
-            self.W.pop(id)
-        
-        self.agent_pool[employer].hire = []
-        self.agent_pool[employer].employer = None
-        self.agent_pool[employer].labor_cost = 0
-        self.agent_pool[employer].exploit = 0
-        # return None
-
     def fire(self, name):
         '''
         解雇
@@ -493,11 +476,14 @@ class Env:
         # self.agent_pool.pop(name)
         # self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         if config.Verbose: print('∵%d, %s is dead at %d years old with %f coins!'%(type, name, round(self.agent_pool[name].age), self.agent_pool[name].coin))
-        self.death_log.append(type)
+        if self.t not in self.death_log:
+            self.death_log[self.t] = [type]
+        else:
+            self.death_log[self.t].append(type)
+
         # 资本家死前先破产
         if self.agent_pool[name].work == 1:
             self.broken(name)
-        
         # 工人死前先失业
         if self.agent_pool[name].work == 2:
             self.jobless(name)
@@ -522,7 +508,33 @@ class Env:
             self.agent_pool[inheritor].coin += coin_after_tax # 继承人继承税后遗产
             self.agent_pool[name].coin = 0
         
-    
+    def broken(self, employer):
+        '''
+        雇佣者及其雇工都失业,加入U集合,从E和W集合中删除对应agent
+        被雇者的雇主设置为0,修改其工作状态
+        雇佣者的雇佣名单清空,修改其工作状态
+        
+        '''
+        # 必须是资本家才能破产
+        assert self.agent_pool[employer].work == 1
+        if config.Verbose: print('%s has broken!'%employer)
+        self.agent_pool[employer].work = 0 # 失业
+        id = self.E.index(employer)
+        self.E.pop(id)
+
+        for worker in self.agent_pool[employer].hire:
+            self.agent_pool[worker].work = 0 # 失业
+            self.agent_pool[worker].employer = None
+            if worker in self.W: 
+                id = self.W.index(worker)
+                self.W.pop(id)
+        
+        self.agent_pool[employer].hire = []
+        self.agent_pool[employer].employer = None
+        self.agent_pool[employer].labor_cost = 0
+        self.agent_pool[employer].exploit = 0
+        # return None
+
     def jobless(self, worker):
         '''
         Worker失业函数
@@ -532,9 +544,12 @@ class Env:
         self.agent_pool[worker].work = 0
         e = self.agent_pool[worker].employer
         self.agent_pool[worker].employer = None
-
-        id = self.agent_pool[e].hire.index(worker)
-        self.agent_pool[e].hire.pop(id) # 从雇佣者的雇佣名单中除名
+        
+        # 有可能出现ValueError: '254535422' is not in list的错误
+        # 可能的原因是老板和员工同时死掉
+        if self.agent_pool[e].work==1 and worker in self.agent_pool[e].hire:
+            id = self.agent_pool[e].hire.index(worker)
+            self.agent_pool[e].hire.pop(id) # 从雇佣者的雇佣名单中除名
         
         if len(self.agent_pool[e].hire)==0: # 若Worker是其最后一个工人,则老板也失业
             self.broken(e)

@@ -76,7 +76,7 @@ class config:
     MU = 2
     LAMBDA = 20-MU
     N_GEN = 5000  # max number of generations
-    n_process = 40
+    n_process = 20
     solved = 100
     Epoch = 10
 
