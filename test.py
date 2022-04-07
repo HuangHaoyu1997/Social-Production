@@ -52,28 +52,33 @@ def func(idx, pop):
     '''
     reward_pop = []
     env = Env()
+    tick = time.time()
     # 遍历每个individual
     for p in pop:
         r_ind = 0
         # 每个individual测试5个episode
         
         for i in range(config.Epoch):
-            info = env.reset(); s = info_parser(info)
+            info = env.reset() # ; s = info_parser(info)
             r_epoch = 0
             done = False
             while not done:
-                action = p.eval(*s)
-                action = np.clip(action,1.,100.)
+                # action = p.eval(*s)
+                # action = np.clip(action,1.,100.)
+                action = uniform(0,100)
                 info, r, done = env.step(action)
-                s = info_parser(info)
+                # s = info_parser(info)
                 r_epoch += r
             r_ind += r_epoch
         r_ind /= config.Epoch
         p.fitness = r_ind
         reward_pop.append(r_ind)
-
+    print(idx, (time.time()-tick) / (len(pop)*config.Epoch))
+    '''
     with open('./tmp/'+str(idx)+'.pkl','wb') as f:
         pickle.dump(reward_pop,f)
+    
+    '''
     # print(idx,' finished!')
 
 pop = create_population(config.MU+config.LAMBDA,input_dim=22,out_dim=1)
@@ -88,6 +93,8 @@ agent_p = int(total_agent/config.n_process) # 平均每个进程分到的agent�
 for g in range(config.N_GEN):
     if not os.path.exists('./tmp'):
         os.mkdir('./tmp/')
+    
+    # 运行1代总时间
     tick = time.time()
     process = []
     
@@ -96,6 +103,7 @@ for g in range(config.N_GEN):
 
     [p.start() for p in process]
     [p.join() for p in process]
+    '''
     fitness = []
     for i in range(config.n_process):
         with open('./tmp/'+str(i)+'.pkl','rb') as f:
@@ -107,8 +115,10 @@ for g in range(config.N_GEN):
     fitness = np.array(fitness)
     idx = fitness.argsort()[::-1][0:config.MU]
     shutil.rmtree('./tmp/',True)
-    pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
-    print(g,'time:',time.time()-tick, pop[0].fitness)
+    '''
+    
+    # pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
+    print(g,'time for one generation:', time.time()-tick, pop[0].fitness)
     #if pop[0].fitness > config.solved:
     if g % 10 == 9:
         with open('./results/SP-'+str(g)+'.pkl','wb') as f:

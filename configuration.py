@@ -6,7 +6,7 @@ class config:
     '''
     seed = 1234
     Verbose = False             # 打印破产、解雇等事件
-    render = True
+    render = False
     print_log = False
     render_freq = 200           # 每100step保存figure
     N1 = 100                    # 初始人口

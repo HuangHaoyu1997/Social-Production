@@ -63,11 +63,6 @@ class Env:
         '''
         单步仿真程序
         '''
-
-        '''
-        if len(action) != len(self.agent_pool):
-            raise Exception('动作空间必须与智能体数量相同')
-        '''
         self.update_config(action)
 
         agent_list = list(self.agent_pool.keys())
@@ -88,12 +83,14 @@ class Env:
             dir = round(uniform(0,config.move_dir),3) # 位移向量的角度
             self.agent_pool[name].move(mod=mod, direction=dir)
             
+            
             self.production(name)
             self.hire(name)
             self.exploit(name)
             self.pay(name)
             data = self.consume(name)
             self.fire(name)
+            
 
             # data_step.append(data)
 
@@ -128,11 +125,15 @@ class Env:
         # TODO 目前增长速度正比于人口数量，应该开发logistic增长（S型增长曲线）
         delta_pop = np.random.randint( 0, max(round(config.dN*alive_num(self.agent_pool)), 3) )
         self.agent_pool.update(add_agent(delta_pop, flag=1))
-
+        
+        
         self.E, self.W, self.U = working_state(self.agent_pool)
+        
+        
         
         # 更新Graph
         # self.G = update_graph(self.G, self.agent_pool, self.E, self.W, self.U)
+        # tick1 = time.time(); print((time.time()-tick1)*1000)
         info = self.ouput_info()
         reward = self.reward_function(info)
         done = self.is_terminate()
@@ -505,9 +506,11 @@ class Env:
             # self.agent_pool[employer].hire.pop(idx)
 
         self.agent_pool[name].alive = False
+        
         if name in self.E: idx = self.E.index(name); self.E.pop(idx)
         if name in self.U: idx = self.U.index(name); self.U.pop(idx)
         if name in self.W: idx = self.W.index(name); self.W.pop(idx)
+        
 
         # 遗产继承
         if self.agent_pool[name].coin > 0 and len(self.E+self.W+self.U)>0:
