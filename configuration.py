@@ -4,14 +4,14 @@ class config:
     如果两者数量相当,则工人和失业者数量相近,工人略高
     如果w2远小于init_coin,则会出现少量资本家-少量失业者-大量工人的情况
     '''
-    seed = 123
+    seed = 1234
     Verbose = False             # 打印破产、解雇等事件
     render = False
     print_log = False
     render_freq = 100           # 每100step保存figure
-    N1 = 200                    # 初始人口
+    N1 = 100                    # 初始人口
     N2 = 12000                  # 目标人口,即经过T步仿真后人口
-    T = 300                     # 仿真步长
+    T = 200                     # 仿真步长
     Year = 100                  # 仿真100年
 
     # for agent
@@ -59,7 +59,7 @@ class config:
     redistribution_freq = 1    # 每10个step进行一次财富再分配
     property_tax_num = 50       # 财产税征收人数,即Top50富裕
     distribution_num = 100      # 政府税收再分配的人数,即Top100贫穷
-    event_point = []     # 两次event,在point前后各持续2step
+    event_point = [50]     # 两次event,在point前后各持续2step
     event_duration = 1         # 负面事件的持续时间
 
     # for reward function

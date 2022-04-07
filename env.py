@@ -241,48 +241,48 @@ class Env:
         if self.agent_pool[name].work == 0: # 失业
             self.E, self.W, self.U = working_state(self.agent_pool) # 可能耗费时间，确保都是活着的
             # U = copy.deepcopy(self.U); E = copy.deepcopy(self.E); random.shuffle(U)
-            UE = self.U + self.E; random.shuffle(UE)
+            UE = self.U + self.E # ; random.shuffle(UE)
+
             # 统计name的可能雇佣者的coin
-            potential_e = [self.agent_pool[h].coin if self.agent_pool[h].coin>0 else 0 for h in UE]
-            
-            # 按货币量多少概率决定u的雇主
-            prob = np.array(potential_e) / np.array(potential_e).sum()
-            print(prob)
-            e = UE[np.random.choice(np.arange(len(prob)), p=prob)]
-            
-            #【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
-            # if config.avg_update: 
-            #     config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
-            if len(self.salary_deque)>0:
-                salary_weight = discounted_weight(len(self.salary_deque))
-                config.avg_salary = np.sum(salary_weight * self.salary_deque)
-            
-            # 如果e.coin大于平均工资
-            if self.agent_pool[e].alive and self.agent_pool[e].coin >= config.avg_salary and name!=e:
+            potential_e = [self.agent_pool[h].coin if self.agent_pool[h].coin>0 else 0 for h in (self.U+self.E)]
+            if len(potential_e)<=1: print(len(potential_e))
+            if np.max(potential_e)>0:
+                # print(potential_e)
+                # 按货币量多少概率决定u的雇主
+                prob = np.array(potential_e) / np.array(potential_e).sum()
+                # prob = np.exp(potential_e) / np.exp(potential_e).sum()
+                # print(prob)
+                e = UE[np.random.choice(np.arange(len(prob)), p=prob)]
                 
-                # 考虑个体的就业意愿
-                if random.random() <= self.agent_pool[name].employment_intention:
-                    # 成功雇佣
-                    # 给name设置雇主e, 修改工作状态
-                    self.agent_pool[name].employer = e
-                    self.agent_pool[name].work = 2 # 2 for worker
-                    self.agent_pool[name].hire = []
-                    self.agent_pool[name].labor_cost = 0; self.agent_pool[name].exploit = 0
-                    if name not in self.W: self.W.append(name)
-                    assert name in self.U
-                    u_idx = self.U.index(name); self.U.pop(u_idx)
-                    # 给雇主e添加员工u,修改工作状态
-                    self.agent_pool[e].employer = e
-                    self.agent_pool[e].hire.append(name)
-                    self.agent_pool[e].work = 1 # 1 for employer
-                    if e not in self.E: self.E.append(e)
-        elif self.agent_pool[name].work == 1: # 雇佣者
-            pass
-        elif self.agent_pool[name].work == 2: # 被雇佣者
-            pass
+                #【用avg_coin来代替平均工资是不合适的，应该记录历史上所有的工资发放记录，求平均】
+                # if config.avg_update: 
+                #     config.avg_coin = financial_statistics(self.agent_pool,self.W+self.U)[2] # 更新平均工资
+                if len(self.salary_deque)>0:
+                    salary_weight = discounted_weight(len(self.salary_deque))
+                    config.avg_salary = np.sum(salary_weight * self.salary_deque)
+                
+                # 如果e.coin大于平均工资
+                if self.agent_pool[e].alive and self.agent_pool[e].coin >= config.avg_salary and name!=e:
+                    
+                    # 考虑个体的就业意愿
+                    if random.random() <= self.agent_pool[name].employment_intention:
+                        # 成功雇佣
+                        # 给name设置雇主e, 修改工作状态
+                        self.agent_pool[name].employer = e
+                        self.agent_pool[name].work = 2 # 2 for worker
+                        self.agent_pool[name].hire = []
+                        self.agent_pool[name].labor_cost = 0; self.agent_pool[name].exploit = 0
+                        if name not in self.W: self.W.append(name)
+                        assert name in self.U
+                        u_idx = self.U.index(name); self.U.pop(u_idx)
+                        # 给雇主e添加员工u,修改工作状态
+                        self.agent_pool[e].employer = e
+                        self.agent_pool[e].hire.append(name)
+                        self.agent_pool[e].work = 1 # 1 for employer
+                        if e not in self.E: self.E.append(e)
+                        # 【这一行能不能删去，安全吗？】
+                        self.E, self.W, self.U = working_state(self.agent_pool)
         
-        # 【这一行能不能删去，安全吗？】
-        self.E, self.W, self.U = working_state(self.agent_pool)
 
     def exploit(self, name):
         '''
@@ -588,7 +588,7 @@ class Env:
             dead_U = random.sample(self.U, int(death_rate*len(self.U))) # 10%的失业者死亡
             for name in dead_U:
                 if self.agent_pool[name].alive:
-                    self.die(name)
+                    self.die(name, 3)
         
         elif event == 'WorldWar':
             if config.Verbose: print('WorldWar is coming!')
@@ -614,7 +614,7 @@ class Env:
             dead_U = random.sample(self.U+self.E+self.W, int(dead_ratio*len(self.U))) # 10%~30%的人死亡
             for name in dead_U:
                 if self.agent_pool[name].alive:
-                    self.die(name)
+                    self.die(name, 3)
 
         elif event == 'PandemicInfluenza':
             if config.Verbose: print('Pandemic Influenza is coming!')
@@ -637,17 +637,17 @@ class Env:
             dead_ratio = uniform(0.01,0.02)
             dead_E = random.sample(self.E, int(dead_ratio*len(self.E))) # 10%~30%的人死亡
             for name in dead_E:
-                if self.agent_pool[name].alive: self.die(name)
+                if self.agent_pool[name].alive: self.die(name,3)
             
             dead_ratio = uniform(0.08,0.10)
             dead_W = random.sample(self.W, int(dead_ratio*len(self.W))) # 10%~30%的人死亡
             for name in dead_W:
-                if self.agent_pool[name].alive: self.die(name)
+                if self.agent_pool[name].alive: self.die(name,3)
             
             dead_ratio = uniform(0.10,0.12)
             dead_U = random.sample(self.U, int(dead_ratio*len(self.U))) # 10%~30%的人死亡
             for name in dead_U:
-                if self.agent_pool[name].alive: self.die(name)
+                if self.agent_pool[name].alive: self.die(name,3)
         
         else:
             raise NotImplementedError
