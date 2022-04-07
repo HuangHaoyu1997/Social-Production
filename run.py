@@ -9,8 +9,8 @@ from env import Env
 import pickle, os, time
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
-# 运行时间e.g."2022-04-01"
-run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:10]
+# 运行时间e.g.'2022-04-07-15-10-12'
+run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:19]
 plt.ion()
 
 env = Env()
@@ -30,7 +30,7 @@ for _ in range(100):
     done = False
     env.reset()
     while not done:
-        info, reward, done = env.step( ) # np.zeros((config.N1))
+        info, reward, done = env.step( uniform(0,100) ) # np.zeros((config.N1))
         for event_point in config.event_point:
             if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
                 env.event_simulator('GreatDepression')
@@ -43,6 +43,8 @@ for _ in range(100):
         '''
         # 收集数据
         '''
+        
+        '''
         grid = grid_render(env.agent_pool,env.resource)
         total_coin[0].append(info['coin_a']); total_coin[1].append(info['coin_v']); total_coin[2].append(info['coin_g']); total_coin[3].append(info['coin_t'])
         agent_num[0].append(info['Upop']); agent_num[1].append(info['Epop']); agent_num[2].append(info['Wpop']); agent_num[3].append(info['Tpop'])
@@ -51,8 +53,6 @@ for _ in range(100):
         w[0].append(info['w1']); w[1].append(info['w2'])
         RSV.append(info['RSV'])
         if env.t > 0: RH.append(info['RH'])
-        '''
-        
         #### Render
         if env.t % config.render_freq == config.render_freq-1 and config.render:
             

@@ -193,7 +193,7 @@ class Env:
         info['Upop'] = len(self.U); info['Wpop'] = len(self.W); info['Epop'] = len(self.E); info['Tpop'] = alive_num(self.agent_pool)
 
         # 失业率Rate of Jobless
-        info['RJ'] = info['Upop'] / info['Tpop']
+        info['RJ'] = info['Upop'] / info['Tpop'] if info['Tpop']>0 else -1
         # 剩余价值率Rate of Surplus Value
         info['RSV'] = exploit_ratio(self.agent_pool, self.E)
         # 平均雇佣人数Rate of Hire

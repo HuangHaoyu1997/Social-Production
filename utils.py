@@ -37,10 +37,10 @@ def financial_statistics(agent_pool, agent):
     '''
     计算指定agent群体的coin最大数, 最小数, 平均数, 标准差, 中位数, 
     '''
-    if len(agent)==0: return 0., 0., 0., 0., 0.
-    _, coin_list = coin_sort(agent_pool, agent)
-
-    return coin_list[-1], coin_list[0], coin_list.mean(), coin_list.std(), np.median(coin_list)
+    if alive_num(agent_pool, agent)==0: return 0., 0., 0., 0., 0.
+    elif alive_num(agent_pool, agent)>0:
+        _, coin_list = coin_sort(agent_pool, agent)
+        return coin_list[-1], coin_list[0], coin_list.mean(), coin_list.std(), np.median(coin_list)
 
 def grid_render(agent, resource):
     '''
@@ -204,11 +204,17 @@ def avg_age(agent_pool):
             count.append(agent_pool[name].age)
     return np.mean(count)
 
-def alive_num(agent_pool):
-    count = 0
-    for name in agent_pool:
-        if agent_pool[name].alive:
-            count += 1
+def alive_num(agent_pool, agent=None):
+    if agent is None:
+        count = 0
+        for name in agent_pool:
+            if agent_pool[name].alive:
+                count += 1
+    elif agent is not None:
+        count = 0
+        for name in agent:
+            if agent_pool[name].alive:
+                count += 1
     return count
 
 def working_state(agent_pool):
