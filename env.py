@@ -486,7 +486,7 @@ class Env:
     def die(self, name, type):
         '''
         死亡
-        type:1饿死2老死
+        type:1饿死2老死3灾难
         '''
         # assert self.agent_pool[name].coin <= 0
         # self.agent_pool.pop(name)

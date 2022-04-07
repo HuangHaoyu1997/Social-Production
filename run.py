@@ -141,5 +141,5 @@ for i in range(100):
             plt.savefig('./results/'+run_time+'_'+str(env.t)+'.png')
             plt.clf()
             plt.close()
-    print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), np.mean(env.death_log))
+    print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), np.mean(env.death_log),len(env.death_log))
 time.sleep(7200)
