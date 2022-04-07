@@ -68,14 +68,22 @@ def gene_encoder(ind:Individual):
 
 g_b, g_a = gene_encoder(pop[0])
 '''
-def policy_generator(func_set=fs):
+def policy_generator(num_layer=2,hidden_dim=,batch_size=1, func_set=fs):
     '''
     return a sequence of symbols
 
     '''
-    fs_dim = len(fs) # dimension of function set / categorical distribution
+    fs_dim = len(func_set) # dimension of function set / categorical distribution
     tau = [] # sequence
     counter = 1
+    
+    # generte tau_1 with empty parent and sibling
+    parent = torch.zeros(1, batch_size, fs_dim)
+    sibling = torch.zeros(1, batch_size, fs_dim)
+    h0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
+    c0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
+    print(torch.cat((parent,sibling),dim=-1).shape)
+
 
 # test_lstm()
 
