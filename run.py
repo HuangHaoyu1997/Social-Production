@@ -7,6 +7,7 @@ from configuration import config
 from utils import *
 from env import Env
 import pickle, os, time
+from collections import Counter
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 # 运行时间e.g.'2022-04-07-15-10-12'
@@ -141,5 +142,5 @@ for i in range(100):
             plt.savefig('./results/'+run_time+'_'+str(env.t)+'.png')
             plt.clf()
             plt.close()
-    print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), np.mean(env.death_log),len(env.death_log))
+    print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), Counter(env.death_log)[1],Counter(env.death_log)[2],len(env.death_log))
 time.sleep(7200)

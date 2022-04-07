@@ -109,7 +109,7 @@ class Env:
                 else:
                     # 超过死亡年龄后,死亡概率线性上升
                     if self.agent_pool[name].age >= config.death_age \
-                    and uniform()<=0.25+0.02*(self.agent_pool[name].age-config.death_age):
+                    and uniform()<=c.death_prob+0.02*(self.agent_pool[name].age-config.death_age):
                         self.die(name, 2)
         
         ########### 征收财产税
@@ -126,7 +126,7 @@ class Env:
         ########### 新增人口
         # 单步增加人口数量不超过当前人数的dN比例(0<dN<1)
         # TODO 目前增长速度正比于人口数量，应该开发logistic增长（S型增长曲线）
-        delta_pop = np.random.randint( 0, max(round(config.dN*alive_num(self.agent_pool)), 2) )
+        delta_pop = np.random.randint( 0, max(round(config.dN*alive_num(self.agent_pool)), 3) )
         self.agent_pool.update(add_agent(delta_pop, flag=1))
 
         self.E, self.W, self.U = working_state(self.agent_pool)
