@@ -92,6 +92,9 @@ fs = [
     Function(math.sin, 1),
     Function(math.cos, 1),
     Function(math.log, 1),
+    Function(math.exp, 1),
+    Function(const_01, 0),
+    Function()
     
 ]
 # test_lstm()
