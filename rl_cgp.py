@@ -68,7 +68,7 @@ def gene_encoder(ind:Individual):
 
 g_b, g_a = gene_encoder(pop[0])
 '''
-def policy_generator(num_layer=2,hidden_dim=,batch_size=1, func_set=fs):
+def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, device=torch.device('cpu')):
     '''
     return a sequence of symbols
 
@@ -84,7 +84,16 @@ def policy_generator(num_layer=2,hidden_dim=,batch_size=1, func_set=fs):
     c0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
     print(torch.cat((parent,sibling),dim=-1).shape)
 
-
+fs = [
+    Function(op.add, 2),
+    Function(op.sub, 2),
+    Function(op.mul, 2),
+    Function(protected_div, 2),
+    Function(math.sin, 1),
+    Function(math.cos, 1),
+    Function(math.log, 1),
+    
+]
 # test_lstm()
 
 # print(cvt_bit(-1))
