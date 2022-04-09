@@ -70,6 +70,7 @@ class Env:
         
         ########### 单步执行
         # data_step = [] for policy symbolic regression
+        
         for name in agent_list:
             # 必须活着
             if not self.agent_pool[name].alive: continue
@@ -83,7 +84,7 @@ class Env:
             dir = round(uniform(0,config.move_dir),3) # 位移向量的角度
             self.agent_pool[name].move(mod=mod, direction=dir)
             
-            
+            tick1 = time.time()
             self.production(name)
             self.hire(name)
             self.exploit(name)
@@ -213,7 +214,10 @@ class Env:
         # 平均年龄
         info['avg_age'] = avg_age(self.agent_pool)
         # 死亡率
-        info['death_rate'] = len(self.death_log[self.t])/info['Tpop'] if info['Tpop']>0 else 0
+        if self.t not in self.death_log:
+            info['death_rate'] = 0
+        else:
+            info['death_rate'] = len(self.death_log[self.t])/info['Tpop'] if info['Tpop']>0 else 0
 
 
         return info # data_step

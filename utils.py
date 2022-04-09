@@ -5,6 +5,7 @@ import networkx as nx
 import time
 import matplotlib.pyplot as plt
 from numpy.random import uniform, randint
+from scipy.spatial.distance import cdist
 
 def coin_sort(agent_pool:dict, agent:list):
     '''
@@ -93,6 +94,8 @@ def CalDistance(agent:agent,resource:np.ndarray):
     返回指定智能体与所有资源点之间的最小距离
     '''
     tmp = np.sqrt((agent.x - resource[:,0])**2 + (agent.y - resource[:,1])**2)
+    
+    # tmp = cdist([[agent.x, agent.y]], resource)
     return tmp.min()
 
 def most_poor(agent, N):
