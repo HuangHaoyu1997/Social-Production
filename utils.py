@@ -130,6 +130,7 @@ def most_rich(agent, N):
             name_list.append(name)
     rich_list = np.array(rich_list)
     idx = rich_list.argsort()[::-1]
+    idx = idx[0:N]
     for i in idx:
         out.append(name_list[i])
     return out
