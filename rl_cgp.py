@@ -160,6 +160,7 @@ def ComputingTree(tau, func_set):
         elif tree[i].arity>0:
             assert (np.array(tree[i].i_inputs)==None).sum()==0 # i的input buf已经存满了i节点的子节点传给i的结果
             out = func_set[tree[i].i_func](*tree[i].i_inputs)
+            # 如果是根节点,直接return
             if parent[i] == -1: return out
             for j,k in enumerate(tree[parent[i]].i_inputs):
                 if k is None:
@@ -182,6 +183,9 @@ print(ParentSibling([3,4,2,8,9,6],fs))
 
 '''
 
-
+import time
 print(ComputingTree([3,4,2,8,9,6,10], fs))
-print(ComputingTree([0,1,3,8,10,4,9,2,5,7,8,6,10], fs))
+tick = time.time()
+for i in range(100):
+    ComputingTree([0,1,3,8,10,4,9,2,5,7,8,6,10], fs)
+print((time.time()-tick)/100*1000,'ms')
