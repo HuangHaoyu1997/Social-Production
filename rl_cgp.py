@@ -1,7 +1,7 @@
 '''
 利用RNN-based RL Policy生成符号解析式
 '''
-from itertools import count
+from urllib.parse import ParseResult
 import torch
 import torch.nn as nn
 from cgp import *
@@ -85,19 +85,52 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
     print(torch.cat((parent,sibling),dim=-1).shape)
 
 fs = [
-    Function(op.add, 2),
-    Function(op.sub, 2),
-    Function(op.mul, 2),
-    Function(protected_div, 2),
-    Function(math.sin, 1),
-    Function(math.cos, 1),
-    Function(math.log, 1),
-    Function(math.exp, 1),
-    Function(const_01, 0),
-    Function()
+    Function(op.add, 2),        # 0
+    Function(op.sub, 2),        # 1
+    Function(op.mul, 2),        # 2
+    Function(protected_div, 2), # 3
+    Function(math.sin, 1),      # 4
+    Function(math.cos, 1),      # 5
+    Function(math.log, 1),      # 6
+    Function(math.exp, 1),      # 7
+    Function(const_01, 0),      # 8
+    Function(const_1, 0),       # 9
     
 ]
+# ÷ sin × c01 const_1 log 
+# 3, 4, 2, 8, 9
+tau = [3,4,2,8,9,] # 6
+def ParentSibling(tau, function_set):
+    '''
+    tau: 输入的符号序列
+    function_set: 符号库
+    return: 输出下一个元素的parent和sibling，注意，这个元素还不在tau里，还没被生成出来
+    '''
+    T = len(tau)
+    counter = 0
+    if T == 0:
+        return -1, -1
+    if function_set[tau[T-1]].arity > 0:
+        # print(function_set[tau[T-1]].name)
+        parent = tau[T-1]
+        sibling = -1
+        return parent, sibling
+    for i in reversed(range(T)):
+        counter += (function_set[tau[i]].arity - 1)
+        if counter == 0:
+            parent = tau[i]
+            sibling = tau[i+1]
+            return parent, sibling
+
+
 # test_lstm()
 
 # print(cvt_bit(-1))
-policy_generator()
+# policy_generator()
+print(ParentSibling([],fs))
+print(ParentSibling([3],fs))
+print(ParentSibling([3,4],fs))
+print(ParentSibling([3,4,2],fs))
+print(ParentSibling([3,4,2,8],fs))
+print(ParentSibling([3,4,2,8,9],fs))
+print(ParentSibling([3,4,2,8,9,6],fs))
