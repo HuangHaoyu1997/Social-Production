@@ -1,7 +1,7 @@
 '''
 利用RNN-based RL Policy生成符号解析式
 '''
-from urllib.parse import ParseResult
+
 import torch
 import torch.nn as nn
 from cgp import *
@@ -96,6 +96,7 @@ fs = [
     Function(math.exp, 1),      # 7
     Function(const_01, 0),      # 8
     Function(const_1, 0),       # 9
+    Function(const_5, 0),       # 10
     
 ]
 # ÷ sin × c01 const_1 log 
@@ -105,31 +106,72 @@ def ParentSibling(tau, function_set):
     '''
     tau: 输入的符号序列,tau中每个元素是function_set中的序号,序号从0开始计数
     function_set: 符号库
-    return: 输出下一个元素的parent和sibling, 注意, 这个元素还不在tau里, 还没被生成出来
+    return: 输出下一个元素的parent和sibling在tau中的idx和在func_set中的序号, 注意, 这个元素还不在tau里, 还没被生成出来
     parent或sibling为空, 返回-1
     TODO 将return改写成one-hot concat向量
     '''
     T = len(tau)
     counter = 0
     if T == 0:
-        return -1, -1
+        return [-1, -1], -1, -1
     if function_set[tau[T-1]].arity > 0:
         # print(function_set[tau[T-1]].name)
         parent = tau[T-1]
         sibling = -1
-        return parent, sibling
+        return [T-1, -1], parent, sibling
     for i in reversed(range(T)):
         counter += (function_set[tau[i]].arity - 1)
         if counter == 0:
             parent = tau[i]
             sibling = tau[i+1]
-            return parent, sibling
+            return [i, i+1], parent, sibling
+
+def ComputingTree(tau, func_set):
+    '''
+    将操作符序列τ转化成一个计算树
+    '''
+    assert np.max(tau) <= len(func_set) # 操作符必须全部来自func_set内
+    
+    # 按tau正向顺序创建操作符
+    tree = []
+
+    # 计算tau中元素的parent
+    parent = []
+    l_tau = len(tau)
+    for i in range(l_tau):
+        [iP,iS], P, S = ParentSibling(tau[:i], func_set)
+        parent.append(iP)
+    assert (np.array(parent)==-1).sum() == 1 # 1个计算树只能有1个根节点,即只能有1个节点的parent=-1
+
+    # 按照tau的正向顺序,创建计算节点
+    for tau_i in tau:
+        n = Node(func_set[tau_i].arity)
+        n.i_func = tau_i
+        tree.append(n)
+    
+    # 按照tau反向顺序,进行计算
+    for i in reversed(range(len(tree))):
+        if tree[i].arity==0:
+            out = func_set[tree[i].i_func]()
+            for j,k in enumerate(tree[parent[i]].i_inputs):
+                if k is None:
+                    tree[parent[i]].i_inputs[j] = out
+                    break
+        elif tree[i].arity>0:
+            assert (np.array(tree[i].i_inputs)==None).sum()==0 # i的input buf已经存满了i节点的子节点传给i的结果
+            out = func_set[tree[i].i_func](*tree[i].i_inputs)
+            if parent[i] == -1: return out
+            for j,k in enumerate(tree[parent[i]].i_inputs):
+                if k is None:
+                    tree[parent[i]].i_inputs[j] = out
+                    break
 
 
 # test_lstm()
 
 # print(cvt_bit(-1))
 # policy_generator()
+'''
 print(ParentSibling([],fs))
 print(ParentSibling([3],fs))
 print(ParentSibling([3,4],fs))
@@ -137,3 +179,8 @@ print(ParentSibling([3,4,2],fs))
 print(ParentSibling([3,4,2,8],fs))
 print(ParentSibling([3,4,2,8,9],fs))
 print(ParentSibling([3,4,2,8,9,6],fs))
+
+'''
+
+print(ComputingTree([3,4,2,8,9,6,10], fs))
+print(ComputingTree([0,1,3,8,10,4,9,2,5,7,8,6,10], fs))

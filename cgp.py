@@ -17,14 +17,14 @@ class Node:
     """
     A node in CGP graph
     """
-    def __init__(self, max_arity):
+    def __init__(self, arity):
         """
         Initialize this node randomly
         """
-        
+        self.arity = arity
         self.i_func = None # 该节点的函数在函数集的index
-        self.i_inputs = [None] * max_arity
-        self.weights = [None] * max_arity
+        self.i_inputs = [None] * arity
+        self.weights = [None] * arity
         self.i_output = None
         self.output = None
         self.active = False

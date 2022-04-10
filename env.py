@@ -84,7 +84,7 @@ class Env:
             dir = round(uniform(0,config.move_dir),3) # 位移向量的角度
             self.agent_pool[name].move(mod=mod, direction=dir)
             
-            tick1 = time.time()
+            # tick1 = time.time()
             self.production(name)
             self.hire(name)
             self.exploit(name)
