@@ -182,5 +182,6 @@ print(ParentSibling([3,4,2,8,9,6],fs))
 
 '''
 
+
 print(ComputingTree([3,4,2,8,9,6,10], fs))
 print(ComputingTree([0,1,3,8,10,4,9,2,5,7,8,6,10], fs))
