@@ -75,6 +75,7 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
     '''
     fs_dim = len(func_set) # dimension of function set / categorical distribution
     tau = [] # sequence
+    x = ParentSibling(tau, func_set)
     counter = 1
     
     # generte tau_1 with empty parent and sibling
@@ -102,9 +103,11 @@ fs = [
 tau = [3,4,2,8,9,] # 6
 def ParentSibling(tau, function_set):
     '''
-    tau: 输入的符号序列
+    tau: 输入的符号序列,tau中每个元素是function_set中的序号,序号从0开始计数
     function_set: 符号库
-    return: 输出下一个元素的parent和sibling，注意，这个元素还不在tau里，还没被生成出来
+    return: 输出下一个元素的parent和sibling, 注意, 这个元素还不在tau里, 还没被生成出来
+    parent或sibling为空, 返回-1
+    TODO 将return改写成one-hot concat向量
     '''
     T = len(tau)
     counter = 0
