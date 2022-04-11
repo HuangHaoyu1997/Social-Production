@@ -6,6 +6,21 @@ import torch
 import torch.nn as nn
 from cgp import *
 from utils import pt_onehot
+from torch.distributions import Categorical
+
+fs = [
+    Function(op.add, 2),        # 0
+    Function(op.sub, 2),        # 1
+    Function(op.mul, 2),        # 2
+    Function(protected_div, 2), # 3
+    Function(math.sin, 1),      # 4
+    Function(math.cos, 1),      # 5
+    Function(math.log, 1),      # 6
+    Function(math.exp, 1),      # 7
+    Function(const_01, 0),      # 8
+    Function(const_1, 0),       # 9
+    Function(const_5, 0),       # 10
+]
 
 class lstm(nn.Module):
     def __init__(self,input_size, hidden_size, output_size, num_layer):
@@ -96,34 +111,42 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
     return a sequence of symbols
 
     '''
-    fs_dim = len(func_set) # dimension of function set / categorical distribution
-    tau = [] # sequence
+    func_dim = len(func_set) # dimension of function set / categorical distribution
+    tau = [] # symbol sequence
+    # generte tau_1 with empty parent and sibling
     [iP, iS], P, S = ParentSibling(tau, func_set)
     PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
     counter = 1
-    
-    # generte tau_1 with empty parent and sibling
-    parent = torch.zeros(1, batch_size, fs_dim)
-    sibling = torch.zeros(1, batch_size, fs_dim)
-    h0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
-    c0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
-    
+    hn, cn = None, None
+    # lstm model
+    model = lstm(input_size = 2*func_dim,
+                    hidden_size = hidden_dim, 
+                    output_size = func_dim, 
+                    num_layer = num_layer
+                ).to(device)
+    while counter > 0:
+        phi, hn, cn = model(PS, hn, cn)
+        
+        mask = ApplyConstraints(tau, func_set)
+        phi *= mask
+        phi = phi / phi.sum()
+
+        dist = Categorical(phi[0,0])
+        new_op = dist.sample()
+        tau.append(new_op.item())
+        
+        
+        
+        
+        PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
+        counter += func_set[new_op].arity - 1
+        if counter==0: break
+        [iP, iS], P, S = ParentSibling(tau, func_set)
+        print(tau)
+    return tau
 
 
-fs = [
-    Function(op.add, 2),        # 0
-    Function(op.sub, 2),        # 1
-    Function(op.mul, 2),        # 2
-    Function(protected_div, 2), # 3
-    Function(math.sin, 1),      # 4
-    Function(math.cos, 1),      # 5
-    Function(math.log, 1),      # 6
-    Function(math.exp, 1),      # 7
-    Function(const_01, 0),      # 8
-    Function(const_1, 0),       # 9
-    Function(const_5, 0),       # 10
-    
-]
+
 # ÷ sin × c01 const_1 log 
 # 3, 4, 2, 8, 9
 tau = [3,4,2,8,9,] # 6
@@ -150,24 +173,60 @@ def ParentSibling(tau, func_set):
         parent = tau[T-1]
         sibling = -1
         
-        return [T-1, -1], pt_onehot(x=[parent], dim=len(func_set)), template
+        return [T-1, -1], pt_onehot(x=[parent], dim=len(func_set))[0], template
 
     for i in reversed(range(T)):
         counter += (func_set[tau[i]].arity - 1)
         if counter == 0:
             parent = tau[i]
             sibling = tau[i+1]
-            return [i, i+1], pt_onehot(x=[parent], dim=len(func_set)), pt_onehot(x=[sibling], dim=len(func_set))
+            return [i, i+1], pt_onehot(x=[parent], dim=len(func_set))[0], pt_onehot(x=[sibling], dim=len(func_set))[0]
 
-def ApplyConstraints(func_dim):
+def ApplyConstraints(tau, func_set):
     '''
     给RNN输出的categorical概率施加约束
     如果parent是log/exp,则exp/log的概率为0
     如果parent是sin/cos,则cos/sin的概率为0
     '''
+    # 如果tau空集合,不能选择常量作为根节点
+    if len(tau)==0:
+        
+        mask = torch.tensor([0 if func_set[i].name in ['const_01','const_1','const_5'] else 1 for i in range(len(func_set))])
+        return mask
     
-    mask = torch.ones()
+    # 如果tau非空
+    else:
+        # 计算parent
+        [iP,iS], P, S = ParentSibling(tau, func_set)
+        parent = tau[iP]
+        if func_set[parent].name == 'sin':
+            mask = torch.tensor([0 if func_set[i].name=='cos' else 1 for i in range(len(func_set))])
+        elif func_set[parent].name == 'cos':
+            mask = torch.tensor([0 if func_set[i].name=='sin' else 1 for i in range(len(func_set))])
+        elif func_set[parent].name == 'log':
+            mask = torch.tensor([0 if func_set[i].name=='exp' else 1 for i in range(len(func_set))])
+        elif func_set[parent].name == 'exp':
+            mask = torch.tensor([0 if func_set[i].name=='log' else 1 for i in range(len(func_set))])
+        else:
+            mask = torch.ones(len(func_set))
+        return mask
+    '''
+    elif len(tau)>0:
+        par
+        if func_set[parent].name == 'sin':
+            mask = torch.tensor([0 if func_set[i].name=='cos' else 1 for i in range(len(func_set))])
+        elif func_set[parent].name == 'cos':
+            mask = torch.tensor([0 if func_set[i].name=='sin' else 1 for i in range(len(func_set))])
+        elif func_set[parent].name == 'log':
+            mask = torch.tensor([0 if func_set[i].name=='exp' else 1 for i in range(len(func_set))])
+        elif func_set[parent].name == 'exp':
+            mask = torch.tensor([0 if func_set[i].name=='log' else 1 for i in range(len(func_set))])
+        else:
+            mask = torch.ones(len(func_set))
+        return mask
 
+    '''
+    
 def ComputingTree(tau, func_set):
     '''
     将操作符序列τ转化成一个计算树
@@ -213,7 +272,9 @@ def ComputingTree(tau, func_set):
 # test_lstm()
 
 # print(cvt_bit(-1))
-# policy_generator()
+tau = policy_generator()
+
+print(len(tau), tau)
 '''
 print(ParentSibling([],fs))
 print(ParentSibling([3],fs))
@@ -225,9 +286,9 @@ print(ParentSibling([3,4,2,8,9],fs))
 
 '''
 # print(ParentSibling([3,4,2,8,9,6], fs))
-model =lstm(10,8,5,2)
+'''model =lstm(10,8,5,2)
 x, hn, cn = model(torch.rand(1,1,10), ) # torch.zeros(3,1,8), torch.zeros(3,1,8)
-print(x.shape, hn, cn)
+print(x.shape, hn, cn)'''
 
 '''
 import time

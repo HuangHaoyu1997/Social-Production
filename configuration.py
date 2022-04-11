@@ -74,11 +74,11 @@ class config:
     
     # parameters of evolutionary strategy: MU+LAMBDA
     MU = 2
-    LAMBDA = 20-MU
+    LAMBDA = 10-MU
     N_GEN = 5000  # max number of generations
     n_process = 20
     solved = 100
-    Epoch = 10
+    Epoch = 2
 
     # for CGP visualization Postprocessing
     # if True, then the evolved math formula will be simplified and the corresponding

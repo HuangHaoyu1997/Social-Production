@@ -82,8 +82,8 @@ for g in range(config.N_GEN):
     pop = evolve(pop, config.MUT_PB, config.MU, config.LAMBDA)
     print(g,'time:',time.time()-tick, pop[0].fitness)
     #if pop[0].fitness > config.solved:
-    if g % 10 == 9:
-        with open('./results/'+run_time+'SP-'+str(g)+'.pkl','wb') as f:
+    if g % 1 == 0:
+        with open('./results/'+run_time+'-SP-'+str(g)+'.pkl','wb') as f:
             pickle.dump(pop,f)
 
 env = Env()
