@@ -359,18 +359,21 @@ def pt_onehot(x, dim):
     '''
     生成pytorch tensor onehot向量
     dim: onehot向量的维度
+
+    示例代码:
+    pt_onehot([1],8)
     '''
     
 
     index = torch.tensor(x)
     length = len(index)
     a = index.unsqueeze(1)
-    result1 = torch.zeros(length, dim).scatter_(1,a,1)
-    print(result1)
+    result = torch.zeros(length, dim).scatter_(1,a,1)
+    return result 
 
 
 
 
 
 if __name__ == "__main__":
-    
+    pass

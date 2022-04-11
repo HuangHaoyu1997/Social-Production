@@ -5,6 +5,26 @@
 import torch
 import torch.nn as nn
 from cgp import *
+from utils import pt_onehot
+
+class lstm(nn.Module):
+    def __init__(self,input_size, hidden_size, output_size, num_layer):
+        super(lstm,self).__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layer)
+        self.fc = nn.Linear(hidden_size, output_size)
+    
+    def forward(self, x, hn=None, cn=None):
+        if hn is not None and cn is not None:
+            x, (hn, cn) = self.lstm(x, (hn, cn))
+        else:
+            x, (hn, cn) = self.lstm(x)
+        s, b, h = x.size() # s序列长度,b批大小,h隐层维度
+        # print(s,b,h,hn.shape,cn.shape)
+        x = x.view(s*b, h)
+        x = self.fc(x)
+        x = x.view(s, b, -1)
+        x = torch.softmax(x, dim=-1)
+        return x, hn, cn
 
 def test_lstm():
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -16,12 +36,15 @@ def test_lstm():
     hidden_dim = 16
 
     # input vec len(x)=10, lstm hidden layer dim=16, 此lstm model用2个lstm层。如果是1，可以省略，默认为1)
-    rnn = nn.LSTM(func_dim, hidden_dim, num_layer).to(device) 
-    fc = nn.Linear(hidden_dim, func_dim)
+    model = lstm(input_size = 2*func_dim,
+                    hidden_size = hidden_dim, 
+                    output_size = func_dim, 
+                    num_layer = num_layer
+                ).to(device)
     # 初始化hidden vec和memory vec, 通常其维度相同
     # 2个LSTM层，batch_size=3, 隐藏层的特征维度20
-    h0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
-    c0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
+    h0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
+    c0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
 
     # input seq_len=5, batch_size=3, len(x)=10, 每次运行时取3个含有5个word的seq,每个word的维度为10
     input = torch.randn(1, batch_size, func_dim).to(device)
@@ -75,15 +98,16 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
     '''
     fs_dim = len(func_set) # dimension of function set / categorical distribution
     tau = [] # sequence
-    x = ParentSibling(tau, func_set)
+    [iP, iS], P, S = ParentSibling(tau, func_set)
+    PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
     counter = 1
     
     # generte tau_1 with empty parent and sibling
     parent = torch.zeros(1, batch_size, fs_dim)
     sibling = torch.zeros(1, batch_size, fs_dim)
-    h0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
-    c0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
-    print(torch.cat((parent,sibling),dim=-1).shape)
+    h0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
+    c0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
+    
 
 
 fs = [
@@ -108,32 +132,41 @@ def ParentSibling(tau, func_set):
     '''
     tau: 输入的符号序列,tau中每个元素是function_set中的序号,序号从0开始计数
     function_set: 符号库
-    return: 输出下一个元素的parent和sibling在tau中的idx和在func_set中的序号, 注意, 这个元素还不在tau里, 还没被生成出来
-    parent或sibling为空, 返回-1
+    return: 
+    输出下一个算符的parent和sibling在tau中的idx和在func_set中的idx的onehot向量。
+    注意, 这个元素还不在tau里, 还没被生成出来
+    parent或sibling为空, 返回全0向量
     
     '''
     T = len(tau)
     counter = 0
     template = torch.zeros(len(func_set))
-    # torch.cat((template,template))
     
     if T == 0:
-        return [-1, -1], torch.cat((template,template))
+        return [-1, -1], template, template
     
     if func_set[tau[T-1]].arity > 0:
         # print(func_set[tau[T-1]].name)
         parent = tau[T-1]
         sibling = -1
-        tmp = template; tmp[parent] = 1
-        return [T-1, -1], torch.cat((tmp,template))
+        
+        return [T-1, -1], pt_onehot(x=[parent], dim=len(func_set)), template
 
     for i in reversed(range(T)):
         counter += (func_set[tau[i]].arity - 1)
         if counter == 0:
-            parent = tau[i]; tmp = template; tmp[parent] = 1
-            sibling = tau[i+1]; tmp2 = template; tmp2[sibling] = 1
-            return [i, i+1], torch.cat((tmp,tmp2))
+            parent = tau[i]
+            sibling = tau[i+1]
+            return [i, i+1], pt_onehot(x=[parent], dim=len(func_set)), pt_onehot(x=[sibling], dim=len(func_set))
 
+def ApplyConstraints(func_dim):
+    '''
+    给RNN输出的categorical概率施加约束
+    如果parent是log/exp,则exp/log的概率为0
+    如果parent是sin/cos,则cos/sin的概率为0
+    '''
+    
+    mask = torch.ones()
 
 def ComputingTree(tau, func_set):
     '''
@@ -144,11 +177,11 @@ def ComputingTree(tau, func_set):
     # 按tau正向顺序创建操作符
     tree = []
 
-    # 计算tau中元素的parent
+    # 计算tau中各元素的parent
     parent = []
     l_tau = len(tau)
     for i in range(l_tau):
-        [iP,iS], PS = ParentSibling(tau[:i], func_set)
+        [iP,iS], P, S = ParentSibling(tau[:i], func_set)
         parent.append(iP)
     assert (np.array(parent)==-1).sum() == 1 # 1个计算树只能有1个根节点,即只能有1个节点的parent=-1
 
@@ -191,10 +224,16 @@ print(ParentSibling([3,4,2,8,9],fs))
 
 
 '''
-print(ParentSibling([3,4,2,8,9,6],fs))
+# print(ParentSibling([3,4,2,8,9,6], fs))
+model =lstm(10,8,5,2)
+x, hn, cn = model(torch.rand(1,1,10), ) # torch.zeros(3,1,8), torch.zeros(3,1,8)
+print(x.shape, hn, cn)
+
+'''
 import time
 print(ComputingTree([3,4,2,8,9,6,10], fs))
 tick = time.time()
 for i in range(100):
-    ComputingTree([0,1,3,8,10,4,9,2,5,7,8,6,10], fs)
+    pass; #ComputingTree([0,1,3,8,10,4,9,2,5,7,8,6,10], fs)
 print((time.time()-tick)/100*1000,'ms')
+'''
