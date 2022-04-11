@@ -316,6 +316,24 @@ class OrnsteinUhlenbeckActionNoise:
         theta: how strongly the system reacts to perturbations(the decay-rate or growth-rate), 向均值回归的速度, theta越小,波动越大
         dt: 时间分辨率/时间尺度, 值越小, 变化越慢。
         x0: 状态初始值
+        
+        测试代码
+        ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=c.w1,theta=0.1,sigma=5,x0=10,dt=0.1)
+        ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=c.w1,theta=0.1,sigma=5,x0=10,dt=0.1)
+        # plt.figure()
+        y1 = []
+        y2 = [] # np.random.normal(0, 1, 10000)
+        # t = np.linspace(0, 1000, 10000)
+        for _ in range(1200):
+            y1.append(ou_noise1())
+            y2.append(ou_noise2())
+            # if y1[-1]<=0: print(y1[-1])
+            # y2.append(ou_noise2())
+
+        plt.plot(y1, c='r')
+        plt.plot(y2, c='b')
+        plt.show()
+
         '''
         self.theta = theta
         self.mu = np.array(mu) # np.array允许mu是实数,而不仅len>=2的向量
@@ -335,16 +353,19 @@ class OrnsteinUhlenbeckActionNoise:
 
     def __repr__(self):
         return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)
+        
 
-def pt_onehot(x):
+def pt_onehot(x, dim):
     '''
     生成pytorch tensor onehot向量
+    dim: onehot向量的维度
     '''
     
 
-    index = torch.tensor([1, 2, 4])
+    index = torch.tensor(x)
+    length = len(index)
     a = index.unsqueeze(1)
-    result1 = torch.zeros(3,5).scatter_(1,a,1)
+    result1 = torch.zeros(length, dim).scatter_(1,a,1)
     print(result1)
 
 
@@ -352,19 +373,4 @@ def pt_onehot(x):
 
 
 if __name__ == "__main__":
-    ou_noise1 = OrnsteinUhlenbeckActionNoise(mu=c.w1,theta=0.1,sigma=5,x0=10,dt=0.1)
-    ou_noise2 = OrnsteinUhlenbeckActionNoise(mu=c.w1,theta=0.1,sigma=5,x0=10,dt=0.1)
-    # plt.figure()
-    y1 = []
-    y2 = [] # np.random.normal(0, 1, 10000)
-    # t = np.linspace(0, 1000, 10000)
     
-    for _ in range(1200):
-        y1.append(ou_noise1())
-        y2.append(ou_noise2())
-        # if y1[-1]<=0: print(y1[-1])
-        # y2.append(ou_noise2())
-
-    plt.plot(y1, c='r')
-    plt.plot(y2, c='b')
-    plt.show()
