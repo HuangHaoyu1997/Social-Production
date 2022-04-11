@@ -2,7 +2,7 @@ import numpy as np
 from agent import agent
 from configuration import config as c
 import networkx as nx
-import time
+import time, torch
 import matplotlib.pyplot as plt
 from numpy.random import uniform, randint
 from scipy.spatial.distance import cdist
@@ -251,7 +251,7 @@ def discounted_weight(length):
     用于计算历史工资发放记录的加权平均
     离现在越近的工资,weight越大,越早的工资发放记录,weight越小
     '''
-    assert length<=c.salary_deque_maxlen
+    assert length <= c.salary_deque_maxlen
     if length==1: return np.array(1.0)
     salary_weight = [pow(c.salary_gamma, length-i) for i in range(length)]
     salary_weight = np.array(salary_weight) / np.array(salary_weight).sum() # normalized
@@ -336,7 +336,16 @@ class OrnsteinUhlenbeckActionNoise:
     def __repr__(self):
         return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)
 
+def pt_onehot(x):
+    '''
+    生成pytorch tensor onehot向量
+    '''
+    
 
+    index = torch.tensor([1, 2, 4])
+    a = index.unsqueeze(1)
+    result1 = torch.zeros(3,5).scatter_(1,a,1)
+    print(result1)
 
 
 

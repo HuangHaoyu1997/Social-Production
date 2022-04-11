@@ -85,6 +85,7 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
     c0 = torch.randn(num_layer, batch_size, hidden_dim).to(device)
     print(torch.cat((parent,sibling),dim=-1).shape)
 
+
 fs = [
     Function(op.add, 2),        # 0
     Function(op.sub, 2),        # 1
@@ -102,29 +103,37 @@ fs = [
 # ÷ sin × c01 const_1 log 
 # 3, 4, 2, 8, 9
 tau = [3,4,2,8,9,] # 6
-def ParentSibling(tau, function_set):
+
+def ParentSibling(tau, func_set):
     '''
     tau: 输入的符号序列,tau中每个元素是function_set中的序号,序号从0开始计数
     function_set: 符号库
     return: 输出下一个元素的parent和sibling在tau中的idx和在func_set中的序号, 注意, 这个元素还不在tau里, 还没被生成出来
     parent或sibling为空, 返回-1
-    TODO 将return改写成one-hot concat向量
+    
     '''
     T = len(tau)
     counter = 0
+    template = torch.zeros(len(func_set))
+    # torch.cat((template,template))
+    
     if T == 0:
-        return [-1, -1], -1, -1
-    if function_set[tau[T-1]].arity > 0:
-        # print(function_set[tau[T-1]].name)
+        return [-1, -1], torch.cat((template,template))
+    
+    if func_set[tau[T-1]].arity > 0:
+        # print(func_set[tau[T-1]].name)
         parent = tau[T-1]
         sibling = -1
-        return [T-1, -1], parent, sibling
+        tmp = template; tmp[parent] = 1
+        return [T-1, -1], torch.cat((tmp,template))
+
     for i in reversed(range(T)):
-        counter += (function_set[tau[i]].arity - 1)
+        counter += (func_set[tau[i]].arity - 1)
         if counter == 0:
-            parent = tau[i]
-            sibling = tau[i+1]
-            return [i, i+1], parent, sibling
+            parent = tau[i]; tmp = template; tmp[parent] = 1
+            sibling = tau[i+1]; tmp2 = template; tmp2[sibling] = 1
+            return [i, i+1], torch.cat((tmp,tmp2))
+
 
 def ComputingTree(tau, func_set):
     '''
@@ -139,7 +148,7 @@ def ComputingTree(tau, func_set):
     parent = []
     l_tau = len(tau)
     for i in range(l_tau):
-        [iP,iS], P, S = ParentSibling(tau[:i], func_set)
+        [iP,iS], PS = ParentSibling(tau[:i], func_set)
         parent.append(iP)
     assert (np.array(parent)==-1).sum() == 1 # 1个计算树只能有1个根节点,即只能有1个节点的parent=-1
 
@@ -179,10 +188,10 @@ print(ParentSibling([3,4],fs))
 print(ParentSibling([3,4,2],fs))
 print(ParentSibling([3,4,2,8],fs))
 print(ParentSibling([3,4,2,8,9],fs))
-print(ParentSibling([3,4,2,8,9,6],fs))
+
 
 '''
-
+print(ParentSibling([3,4,2,8,9,6],fs))
 import time
 print(ComputingTree([3,4,2,8,9,6,10], fs))
 tick = time.time()
