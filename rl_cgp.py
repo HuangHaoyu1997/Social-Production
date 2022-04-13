@@ -7,7 +7,31 @@ import torch.nn as nn
 from cgp import *
 from utils import pt_onehot
 from torch.distributions import Categorical
+from CartPoleContinuous import CartPoleContinuousEnv
+env = CartPoleContinuousEnv()
 
+state = [0., 0., 0., 0.]
+def s0():
+    '''返回env状态的第0维度'''
+    return state[0]
+def s1():
+    '''返回env状态的第1维度'''
+    return state[1]
+def s2():
+    '''返回env状态的第2维度'''
+    return state[2]
+def s3():
+    '''返回env状态的第3维度'''
+    return state[3]
+def test_gym():
+    env.reset()
+    done = False
+    while not done:
+        s,r,done,_ = env.step(env.action_space.sample())
+        global state
+        state = s
+        print(s0(),s1(),s2(),s3(),'\n')
+test_gym()
 fs = [
     Function(op.add, 2),        # 0
     Function(op.sub, 2),        # 1
@@ -18,8 +42,12 @@ fs = [
     Function(math.log, 1),      # 6
     Function(math.exp, 1),      # 7
     Function(const_01, 0),      # 8
-    Function(const_1, 0),       # 9
-    Function(const_5, 0),       # 10
+    # Function(const_1, 0),       # 9
+    # Function(const_5, 0),       # 10
+    Function(s0, 0),
+    Function(s1, 0),
+    Function(s2, 0),
+    Function(s3, 0),
 ]
 
 class lstm(nn.Module):
@@ -135,14 +163,12 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
         new_op = dist.sample()
         tau.append(new_op.item())
         
-        
-        
-        
         PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
         counter += func_set[new_op].arity - 1
         if counter==0: break
+        if len(tau) > config.N_COLS: return -1
         [iP, iS], P, S = ParentSibling(tau, func_set)
-        print(tau)
+        
     return tau
 
 
@@ -196,8 +222,9 @@ def ApplyConstraints(tau, func_set):
     
     # 如果tau非空
     else:
-        # 计算parent
+        # iP是将要生成的node的parent在tau中的idx
         [iP,iS], P, S = ParentSibling(tau, func_set)
+        # parent是iP在func_set中的idx
         parent = tau[iP]
         if func_set[parent].name == 'sin':
             mask = torch.tensor([0 if func_set[i].name=='cos' else 1 for i in range(len(func_set))])
@@ -270,11 +297,18 @@ def ComputingTree(tau, func_set):
 
 
 # test_lstm()
-
+print(s0())
 # print(cvt_bit(-1))
-tau = policy_generator()
+'''
+tau_len = []
+for i in range(100):
+    tau = policy_generator()
+    if tau != -1:
+        tau_len.append(len(tau))
+print(tau_len, len(tau_len), np.mean(tau_len))
+'''
 
-print(len(tau), tau)
+
 '''
 print(ParentSibling([],fs))
 print(ParentSibling([3],fs))
