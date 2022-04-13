@@ -135,42 +135,42 @@ model = lstm(input_size = 2*len(fs),
                 num_layer = 2
             ).to(device)
 
-def policy_generator(model, func_set=fs, ):
+def policy_generator(model, func_set=fs,):
     '''
     return a sequence of symbols
     '''
     func_dim = len(func_set) # dimension of function set / categorical distribution
     tau = [] # symbol sequence
+
     # generte tau_1 with empty parent and sibling
     [iP, iS], P, S = ParentSibling(tau, func_set)
     PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
-    counter = 1
-    hn, cn = None, None
     
+    counter = 1
+    log_prob = 0
+    hn, cn = None, None
     while counter > 0:
         phi, hn, cn = model(PS, hn, cn)
         
         mask = ApplyConstraints(tau, func_set)
-        phi *= mask
-        phi = phi / phi.sum()
-        print(phi)
+        phi_after_mask = phi * mask
+        phi_after_mask = phi_after_mask / phi_after_mask.sum()
+        # print(phi,'\n',phi_after_mask,'\n\n')
 
-        dist = Categorical(phi[0,0])
+        dist = Categorical(phi_after_mask[0,0])
         new_op = dist.sample()
+        # print(new_op, phi_after_mask[0,0,new_op].log())
+        log_prob += phi_after_mask[0,0,new_op].log()
         tau.append(new_op.item())
         
         PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
         counter += func_set[new_op].arity - 1
         if counter==0: break
-        if len(tau) > config.N_COLS: return -1
+        if len(tau) > config.N_COLS: return -1, 0
         [iP, iS], P, S = ParentSibling(tau, func_set)
-        
-    return tau
-
-# ÷ sin × c01 const_1 log 
-# 3, 4, 2, 8, 9
-tau = [3,4,2,8,9,] # 6
-
+    if (func_dim-1 not in tau) and (func_dim-2 not in tau) and (func_dim-3 not in tau) and (func_dim-4 not in tau):
+        return -1, 0
+    return tau, log_prob
 
 def ApplyConstraints(tau, func_set):
     '''
@@ -180,8 +180,7 @@ def ApplyConstraints(tau, func_set):
     '''
     # 如果tau空集合,不能选择常量作为根节点
     if len(tau)==0:
-        
-        mask = torch.tensor([0 if func_set[i].name in ['const_01','const_1','const_5'] else 1 for i in range(len(func_set))])
+        mask = torch.tensor([0 if func_set[i].name in ['s0','s1','s2','s3'] else 1 for i in range(len(func_set))])
         return mask
     
     # 如果tau非空
@@ -220,19 +219,16 @@ def ApplyConstraints(tau, func_set):
     
 
 
-
-# test_lstm()
-
-# print(cvt_bit(-1))
-'''
-tau_len = []
-for i in range(100):
-    tau = policy_generator()
+'''tau_len = []
+for i in range(1):
+    tau = policy_generator(model)
     if tau != -1:
         tau_len.append(len(tau))
-print(tau_len, len(tau_len), np.mean(tau_len))
-'''
 
+print(tau_len, len(tau_len), np.mean(tau_len))'''
+
+tau, log_prob = policy_generator(model)
+print(tau, log_prob)
 
 '''
 print(ParentSibling([],fs))
