@@ -74,7 +74,7 @@ best_f = -inf
 best_ff = -inf
 best_ind = None
 
-
+from postprocessing import *
 # 开始搜索
 for g in range(config.N_GEN):
     tick = time.time()
@@ -85,6 +85,11 @@ for g in range(config.N_GEN):
     if g % 1 == 0:
         with open('./results/'+run_time+'-SP-'+str(g)+'.pkl','wb') as f:
             pickle.dump(pop,f)
+        graph = extract_computational_subgraph(pop[0])
+        # formula = simplify(g, ) # ['x']
+        # formula = round_expr(formula, config.PP_FORMULA_NUM_DIGITS)
+        # print(pop[0].fitness, formula, type(formula.__str__))
+        visualize(graph, "./results/social-production_"+str(g)+".jpg", operator_map=DEFAULT_SYMBOLIC_FUNCTION_MAP)
 
 env = Env()
 rr = 0
