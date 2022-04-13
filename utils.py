@@ -77,7 +77,88 @@ def info_parser(info):
 def softmax(x):
     return np.exp(x)/(np.exp(x)).sum()
 
+def tanh(x, alpha=1.0):
+    '''
+    带有缩放因子alpha的tanh函数
+    tanh(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x))
+    原函数的不饱和区间太窄,引入alpha<1对x进行缩放可以扩大不饱和区间
+    '''
+    return (np.exp(alpha*x)-np.exp(-alpha*x)) / (np.exp(alpha*x)+np.exp(-alpha*x))
 
+def ComputingTree(tau, func_set):
+    '''
+    将操作符序列τ转化成一个计算树
+    '''
+    from cgp import Node
+    assert np.max(tau) <= len(func_set) # 操作符必须全部来自func_set内
+    
+    # 按tau正向顺序创建操作符
+    tree = []
+
+    # 计算tau中各元素的parent
+    parent = []
+    l_tau = len(tau)
+    for i in range(l_tau):
+        [iP,iS], P, S = ParentSibling(tau[:i], func_set)
+        parent.append(iP)
+    assert (np.array(parent)==-1).sum() == 1 # 1个计算树只能有1个根节点,即只能有1个节点的parent=-1
+
+    # 按照tau的正向顺序,创建计算节点
+    for tau_i in tau:
+        n = Node(func_set[tau_i].arity)
+        n.i_func = tau_i
+        tree.append(n)
+    
+    # 按照tau反向顺序,进行计算
+    for i in reversed(range(len(tree))):
+        if tree[i].arity==0:
+            out = func_set[tree[i].i_func]()
+            for j,k in enumerate(tree[parent[i]].i_inputs):
+                if k is None:
+                    tree[parent[i]].i_inputs[j] = out
+                    break
+        elif tree[i].arity>0:
+            assert (np.array(tree[i].i_inputs)==None).sum()==0 # i的input buf已经存满了i节点的子节点传给i的结果
+            out = func_set[tree[i].i_func](*tree[i].i_inputs)
+            # 如果是根节点,直接return
+            if parent[i] == -1: 
+                # [-1, 1] mapping
+                return tanh(out, alpha=0.1)
+            for j,k in enumerate(tree[parent[i]].i_inputs):
+                if k is None:
+                    tree[parent[i]].i_inputs[j] = out
+                    break
+
+def ParentSibling(tau, func_set):
+    '''
+    tau: 输入的符号序列,tau中每个元素是function_set中的序号,序号从0开始计数
+    function_set: 符号库
+    return: 
+    输出下一个算符的parent和sibling在tau中的idx和在func_set中的idx的onehot向量。
+    注意, 这个元素还不在tau里, 还没被生成出来
+    parent或sibling为空, 返回全0向量
+    
+    '''
+    T = len(tau)
+    counter = 0
+    template = torch.zeros(len(func_set))
+    
+    if T == 0:
+        return [-1, -1], template, template
+    
+    if func_set[tau[T-1]].arity > 0:
+        # print(func_set[tau[T-1]].name)
+        parent = tau[T-1]
+        sibling = -1
+        
+        return [T-1, -1], pt_onehot(x=[parent], dim=len(func_set))[0], template
+
+    for i in reversed(range(T)):
+        counter += (func_set[tau[i]].arity - 1)
+        if counter == 0:
+            parent = tau[i]
+            sibling = tau[i+1]
+            return [i, i+1], pt_onehot(x=[parent], dim=len(func_set))[0], pt_onehot(x=[sibling], dim=len(func_set))[0]
 
 def total_value(agent_pool, V, G):
     '''

@@ -5,12 +5,17 @@
 import torch
 import torch.nn as nn
 from cgp import *
-from utils import pt_onehot
+from utils import ParentSibling, ComputingTree
 from torch.distributions import Categorical
 from CartPoleContinuous import CartPoleContinuousEnv
+
+device = torch.device('cpu')
+
+
 env = CartPoleContinuousEnv()
 
-state = [0., 0., 0., 0.]
+state = env.reset()
+
 def s0():
     '''返回env状态的第0维度'''
     return state[0]
@@ -48,7 +53,7 @@ def test_gym():
         global state
         state = s
         print(fs[-4](),fs[-3](),fs[-2](),fs[-1](),'\n')
-test_gym()
+# test_gym()
 
 
 class lstm(nn.Module):
@@ -69,6 +74,27 @@ class lstm(nn.Module):
         x = x.view(s, b, -1)
         x = torch.softmax(x, dim=-1)
         return x, hn, cn
+
+def policy_evaluator(tau, env, func_set=fs, episode=config.Epoch):
+    '''
+    policy evaluation
+    policy is represented by a symbol sequence `tau`
+    episode: test the policy for `config.Epoch` times, and average the episode reward
+    '''
+    global state
+    r_epi = 0
+    for i in range(episode):
+        s = env.reset()
+        state = s
+        done = False
+        reward = 0
+        while not done:
+            action = ComputingTree(tau, func_set)
+            s,r,done,_ = env.step(np.array([action]))
+            reward += r
+        r_epi += reward
+    return r_epi / episode
+
 
 '''
 input_dim = 10
@@ -101,7 +127,15 @@ def gene_encoder(ind:Individual):
 
 g_b, g_a = gene_encoder(pop[0])
 '''
-def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, device=torch.device('cpu')):
+
+# lstm model
+model = lstm(input_size = 2*len(fs),
+                hidden_size = 32, 
+                output_size = len(fs), 
+                num_layer = 2
+            ).to(device)
+
+def policy_generator(model, func_set=fs, ):
     '''
     return a sequence of symbols
     '''
@@ -112,18 +146,14 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
     PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
     counter = 1
     hn, cn = None, None
-    # lstm model
-    model = lstm(input_size = 2*func_dim,
-                    hidden_size = hidden_dim, 
-                    output_size = func_dim, 
-                    num_layer = num_layer
-                ).to(device)
+    
     while counter > 0:
         phi, hn, cn = model(PS, hn, cn)
         
         mask = ApplyConstraints(tau, func_set)
         phi *= mask
         phi = phi / phi.sum()
+        print(phi)
 
         dist = Categorical(phi[0,0])
         new_op = dist.sample()
@@ -137,42 +167,10 @@ def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, devi
         
     return tau
 
-
-
 # ÷ sin × c01 const_1 log 
 # 3, 4, 2, 8, 9
 tau = [3,4,2,8,9,] # 6
 
-def ParentSibling(tau, func_set):
-    '''
-    tau: 输入的符号序列,tau中每个元素是function_set中的序号,序号从0开始计数
-    function_set: 符号库
-    return: 
-    输出下一个算符的parent和sibling在tau中的idx和在func_set中的idx的onehot向量。
-    注意, 这个元素还不在tau里, 还没被生成出来
-    parent或sibling为空, 返回全0向量
-    
-    '''
-    T = len(tau)
-    counter = 0
-    template = torch.zeros(len(func_set))
-    
-    if T == 0:
-        return [-1, -1], template, template
-    
-    if func_set[tau[T-1]].arity > 0:
-        # print(func_set[tau[T-1]].name)
-        parent = tau[T-1]
-        sibling = -1
-        
-        return [T-1, -1], pt_onehot(x=[parent], dim=len(func_set))[0], template
-
-    for i in reversed(range(T)):
-        counter += (func_set[tau[i]].arity - 1)
-        if counter == 0:
-            parent = tau[i]
-            sibling = tau[i+1]
-            return [i, i+1], pt_onehot(x=[parent], dim=len(func_set))[0], pt_onehot(x=[sibling], dim=len(func_set))[0]
 
 def ApplyConstraints(tau, func_set):
     '''
@@ -220,46 +218,7 @@ def ApplyConstraints(tau, func_set):
 
     '''
     
-def ComputingTree(tau, func_set):
-    '''
-    将操作符序列τ转化成一个计算树
-    '''
-    assert np.max(tau) <= len(func_set) # 操作符必须全部来自func_set内
-    
-    # 按tau正向顺序创建操作符
-    tree = []
 
-    # 计算tau中各元素的parent
-    parent = []
-    l_tau = len(tau)
-    for i in range(l_tau):
-        [iP,iS], P, S = ParentSibling(tau[:i], func_set)
-        parent.append(iP)
-    assert (np.array(parent)==-1).sum() == 1 # 1个计算树只能有1个根节点,即只能有1个节点的parent=-1
-
-    # 按照tau的正向顺序,创建计算节点
-    for tau_i in tau:
-        n = Node(func_set[tau_i].arity)
-        n.i_func = tau_i
-        tree.append(n)
-    
-    # 按照tau反向顺序,进行计算
-    for i in reversed(range(len(tree))):
-        if tree[i].arity==0:
-            out = func_set[tree[i].i_func]()
-            for j,k in enumerate(tree[parent[i]].i_inputs):
-                if k is None:
-                    tree[parent[i]].i_inputs[j] = out
-                    break
-        elif tree[i].arity>0:
-            assert (np.array(tree[i].i_inputs)==None).sum()==0 # i的input buf已经存满了i节点的子节点传给i的结果
-            out = func_set[tree[i].i_func](*tree[i].i_inputs)
-            # 如果是根节点,直接return
-            if parent[i] == -1: return out
-            for j,k in enumerate(tree[parent[i]].i_inputs):
-                if k is None:
-                    tree[parent[i]].i_inputs[j] = out
-                    break
 
 
 # test_lstm()
