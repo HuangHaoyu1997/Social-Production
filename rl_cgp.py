@@ -70,40 +70,6 @@ class lstm(nn.Module):
         x = torch.softmax(x, dim=-1)
         return x, hn, cn
 
-def test_lstm():
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cpu')
-    
-    func_dim = 10 # 操作符字典的长度
-    batch_size = 1
-    num_layer = 5
-    hidden_dim = 16
-
-    # input vec len(x)=10, lstm hidden layer dim=16, 此lstm model用2个lstm层。如果是1，可以省略，默认为1)
-    model = lstm(input_size = 2*func_dim,
-                    hidden_size = hidden_dim, 
-                    output_size = func_dim, 
-                    num_layer = num_layer
-                ).to(device)
-    # 初始化hidden vec和memory vec, 通常其维度相同
-    # 2个LSTM层，batch_size=3, 隐藏层的特征维度20
-    h0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
-    c0 = torch.zeros(num_layer, batch_size, hidden_dim).to(device)
-
-    # input seq_len=5, batch_size=3, len(x)=10, 每次运行时取3个含有5个word的seq,每个word的维度为10
-    input = torch.randn(1, batch_size, func_dim).to(device)
-    for i in range(5):
-        
-        # 这里有2层lstm，output是最后一层lstm的每个词向量对应隐藏层的输出,其与层数无关，只与序列长度相关
-        # hn,cn是各层最后一步的hidden vec和memory vec的输出
-        # torch.Size([5, 1, 20]) torch.Size([2, 1, 20]) torch.Size([2, 1, 20])
-        output, (hn, cn) = rnn(input, (h0, c0))
-        print(output[-1].unsqueeze(0).shape)
-        output = fc(output)
-        
-        print(input.shape,output.size(),hn.size(),cn.size(),output.device)
-        input = torch.cat((input, output))
-
 '''
 input_dim = 10
 out_dim = 5
@@ -138,7 +104,6 @@ g_b, g_a = gene_encoder(pop[0])
 def policy_generator(num_layer=2, hidden_dim=32, batch_size=1, func_set=fs, device=torch.device('cpu')):
     '''
     return a sequence of symbols
-
     '''
     func_dim = len(func_set) # dimension of function set / categorical distribution
     tau = [] # symbol sequence
@@ -298,7 +263,7 @@ def ComputingTree(tau, func_set):
 
 
 # test_lstm()
-print(s0())
+
 # print(cvt_bit(-1))
 '''
 tau_len = []
