@@ -23,15 +23,6 @@ def s2():
 def s3():
     '''返回env状态的第3维度'''
     return state[3]
-def test_gym():
-    env.reset()
-    done = False
-    while not done:
-        s,r,done,_ = env.step(env.action_space.sample())
-        global state
-        state = s
-        print(s0(),s1(),s2(),s3(),'\n')
-test_gym()
 fs = [
     Function(op.add, 2),        # 0
     Function(op.sub, 2),        # 1
@@ -49,6 +40,16 @@ fs = [
     Function(s2, 0),
     Function(s3, 0),
 ]
+def test_gym():
+    env.reset()
+    done = False
+    while not done:
+        s,r,done,_ = env.step(env.action_space.sample())
+        global state
+        state = s
+        print(fs[-4](),fs[-3](),fs[-2](),fs[-1](),'\n')
+test_gym()
+
 
 class lstm(nn.Module):
     def __init__(self,input_size, hidden_size, output_size, num_layer):
