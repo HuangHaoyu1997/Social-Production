@@ -84,10 +84,9 @@ class REINFORCE:
         # mu, sigma_sq = self.model(Variable(state).cuda())
         a, b = self.model(Variable(state))
         beta = torch.distributions.Beta(a,b)
-        # sigma_sq = F.softplus(sigma_sq)
+        action = (beta.sample()*2-1).item() # 定义域[-1,1]
 
-        eps = torch.randn(mu.size())                                  # 产生一个与动作向量维度相同的标准正态分布随机向量
-        # action = (mu + sigma_sq.sqrt()*Variable(eps).cuda()).data
+        
         action = (mu + sigma_sq.sqrt()*Variable(eps)).data            # 相当于从N(μ,σ²)中采样一个动作
         prob = self.normal(action, mu, sigma_sq)                      # 计算动作概率
         # entropy = -p*ln(p)
