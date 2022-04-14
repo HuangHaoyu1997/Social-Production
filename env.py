@@ -38,7 +38,14 @@ class Env:
         
         self.last_std = 1e10
         
-        
+        # data buffer for rendering
+        self.total_coin = [[],[],[],[]]
+        self.agent_num = [[],[],[],[]]
+        self.agent_coin = [[],[],[],[]]
+        self.w = [[],[]]
+        self.RSV = []
+        self.RH = [0.] # RH for Rate of Hire
+        self.JoblossRate = []
         
         return info
     
@@ -219,6 +226,28 @@ class Env:
         else:
             info['death_rate'] = len(self.death_log[self.t])/info['Tpop'] if info['Tpop']>0 else 0
 
+        
+        self.total_coin[0].append(info['coin_a'])
+        self.total_coin[1].append(info['coin_v'])
+        self.total_coin[2].append(info['coin_g'])
+        self.total_coin[3].append(info['coin_t'])
+        
+        self.agent_num[0].append(info['Upop'])
+        self.agent_num[1].append(info['Epop'])
+        self.agent_num[2].append(info['Wpop'])
+        self.agent_num[3].append(info['Tpop'])
+        
+        self.JoblossRate.append(info['RJ'])
+        
+        self.agent_coin[0].append(info['avg_coin_u'])
+        self.agent_coin[1].append(info['avg_coin_e'])
+        self.agent_coin[2].append(info['avg_coin_w'])
+        self.agent_coin[3].append(info['avg_coin_t'])
+        
+        self.w[0].append(info['w1'])
+        self.w[1].append(info['w2'])
+        self.RSV.append(info['RSV'])
+        if self.t > 0: self.RH.append(info['RH'])
 
         return info # data_step
         
@@ -676,5 +705,93 @@ class Env:
             raise NotImplementedError
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
+    def render(self,):
+        grid = grid_render(self.agent_pool, self.resource)
+        if self.t % config.render_freq == config.render_freq-1 and config.render:
+            
+            # 可视化
+            fig1 = plt.figure(1,(25,10))
+            ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
+            ax2 = fig1.add_subplot(242) # 各部平均财富图
+            ax3 = fig1.add_subplot(243) # 剥削率
+            ax4 = ax3.twinx()           # 雇佣率
+            ax5 = fig1.add_subplot(244) # 各子系统总财富变化图
+            ax6 = fig1.add_subplot(245) # Grid可视化
+            ax7 = fig1.add_subplot(246) # Graph可视化
+            ax8 = fig1.add_subplot(247) # 最低工资、最高工资变化趋势图
+            ax9 = fig1.add_subplot(248) # 失业率
+            
+            ax1.cla()
+            ax1.plot(agent_num[0])
+            ax1.plot(agent_num[1])
+            ax1.plot(agent_num[2])
+            ax1.plot(agent_num[3])
+            ax1.grid(); ax1.set_xlabel('T'); ax1.set_ylabel('Population')
+            ax1.legend(['Unemployed','Employer','Worker','Total'],loc=2)
+
+            ax2.cla()
+            ax2.plot(agent_coin[0])
+            ax2.plot(agent_coin[1])
+            ax2.plot(agent_coin[2])
+            ax2.plot(agent_coin[3])
+            ax2.grid(); ax2.set_xlabel('T'); ax2.set_ylabel('Coin')
+            ax2.set_yscale('log')
+            ax2.set_title('avg_coin')
+            ax2.legend(['Unemployed','Employer','Worker','Total'],loc=2)
+
+
+            ax3.cla()
+            ax3.plot(RSV,'r')
+            ax3.set_ylabel('Rate of Surplus Value',color='red')
+            ax3.set_xlabel('T')
+            ax3.grid()
+            
+            ax4.cla()
+            ax4.plot(RH,'b')
+            ax4.set_ylabel('Employment Rate',color='blue')
+            # ax4.legend(['Rate of Surplus Value','Rate of Employment'],loc=2)
+            # plt.legend(['single','total'])
+            
+            ax5.cla()
+            ax5.plot(total_coin[0])
+            ax5.plot(total_coin[1])
+            ax5.plot(total_coin[2])
+            ax5.plot(total_coin[3])
+            ax5.grid(); ax5.set_xlabel('T'); ax5.set_ylabel('Coin')
+            ax5.set_yscale('log')
+            ax5.set_title('total coin')
+            ax5.legend(['agent','market','government','Total'],loc=2)
+
+            
+            ax6.cla()
+            ax6.imshow(grid)
+
+            ax7.cla()
+            ax7.plot(w[0])
+            ax7.plot(w[1])
+            ax7.grid(); ax7.set_xlabel('T'); ax7.set_ylabel('Salary')
+            ax7.set_title('Top and bottom salary')
+            ax7.legend(['bottom','top'],loc=2)
+
+            ax8.cla()
+            ax8.plot(JoblossRate)
+            ax8.grid(); ax8.set_xlabel('T'); ax8.set_ylabel('Jobless Rate')
+            ax8.set_title('Jobless Rate')
+
+            ax9.cla()
+            p = nx.spring_layout(env.G)
+            nx.draw(env.G, pos=p)
+            # plt.show()
+            '''
+            # 有问题,会影响figure(4)的显示
+            # TODO 如何动态显示大规模nx.Graph?
+            '''
+            
+            plt.pause(0.0001)
+            # print("tock = %.3f"%(time.time()-tick))
+            run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:19]
+            plt.savefig('./results/'+run_time+'_'+str(env.t)+'.png')
+            plt.clf()
+            plt.close()
 
 # env.add_agent()
