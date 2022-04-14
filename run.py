@@ -21,8 +21,6 @@ for i in range(100):
     done = False
     config.seed = i
     env.reset()
-
-    
     data = []
     
     while not done:
@@ -30,7 +28,7 @@ for i in range(100):
         for event_point in config.event_point:
             if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
                 env.event_simulator('GreatDepression')
-        
+        env.render()
         '''
         data.extend(data_step)
         if env.t % 100 == 0:
