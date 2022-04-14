@@ -42,7 +42,7 @@ else:
     env = gym.make(env_name)                                            # 创建环境
 
 if args.display:
-    env = wrappers.Monitor(env, '/result/policygradient/{}-experiment'.format(env_name), force=True)
+    env = wrappers.Monitor(env, './result/policygradient/{}-experiment'.format(env_name), force=True)
 
 env.seed(args.seed)                                                 # 随机数种子
 torch.manual_seed(args.seed)                                        # Gym、numpy、Pytorch都要设置随机数种子
@@ -73,26 +73,16 @@ class REINFORCE:
         # self.model = self.model.cuda()                              # GPU版本
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3) # 优化器
         self.model.train()
-        self.pi = Variable(torch.FloatTensor([math.pi])) # .cuda()    # 圆周率
 
-    def normal(self, x, mu, sigma_sq):                                # 计算动作x在policy net定义的高斯分布中的概率值
-        a = ( -1 * (Variable(x)-mu).pow(2) / (2*sigma_sq) ).exp()
-        b = 1 / ( 2 * sigma_sq * self.pi.expand_as(sigma_sq) ).sqrt()      # pi.expand_as(sigma_sq)的意义是将标量π扩展为与sigma_sq同样的维度
-        return a*b
 
     def select_action(self, state):
         # mu, sigma_sq = self.model(Variable(state).cuda())
         a, b = self.model(Variable(state))
         beta = torch.distributions.Beta(a,b)
-        action = (beta.sample()*2-1).item() # 定义域[-1,1]
-
-        
-        action = (mu + sigma_sq.sqrt()*Variable(eps)).data            # 相当于从N(μ,σ²)中采样一个动作
-        prob = self.normal(action, mu, sigma_sq)                      # 计算动作概率
-        # entropy = -p*ln(p)
-        entropy = -0.5*( ( sigma_sq + 2 * self.pi.expand_as(sigma_sq) ).log()+1 ) # 高斯分布的信息熵，参考https://blog.csdn.net/raby_gyl/article/details/73477043
-
-        log_prob = prob.log()                                         # 对数概率
+        sample = beta.sample()
+        action = (sample*2 - 1).item() # 定义域[-1,1]
+        log_prob = beta.log_prob(sample)
+        entropy = beta.entropy()
         return action, log_prob, entropy
 
     def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
@@ -101,17 +91,17 @@ class REINFORCE:
         for i in reversed(range(len(rewards))):
             R = gamma * R + rewards[i]                                # 倒序计算累计期望
             # loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i])).cuda()).sum() - (0.0001*entropies[i].cuda()).sum()
-            loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i]))).sum() - (0.0001*entropies[i]).sum()
+            loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i]))).sum() - (0.001*entropies[i]).sum()
         loss = loss / len(rewards)
 
         self.optimizer.zero_grad()
         loss.backward()
-        utils.clip_grad_norm(self.model.parameters(), 40)             # 梯度裁剪，梯度的最大L2范数=40
+        utils.clip_grad_norm_(self.model.parameters(), 10)             # 梯度裁剪，梯度的最大L2范数=40
         self.optimizer.step()
 
 agent = REINFORCE(args.hidden_size, env.observation_space.shape[0], env.action_space)
 
-dir = 'ckpt_' + env_name
+dir = './results/ckpt_' + env_name
 if not os.path.exists(dir):    
     os.mkdir(dir)
 
@@ -122,8 +112,7 @@ for i_episode in range(args.num_episodes):
     rewards = []
     for t in range(args.num_steps): # 1个episode最长持续的timestep
         action, log_prob, entropy = agent.select_action(state)
-        action = action.cpu()
-        next_state, reward, done, _ = env.step(action.numpy()[0])
+        next_state, reward, done, _ = env.step(np.array([action]))
 
         entropies.append(entropy)
         log_probs.append(log_prob)
