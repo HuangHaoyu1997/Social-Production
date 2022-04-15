@@ -9,7 +9,7 @@ from utils import *
 from env import Env
 import pickle, os, time
 from collections import Counter
-matplotlib.use('pdf')
+matplotlib.use('pdf') # 不显示图片,直接保存pdf
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 # 运行时间e.g.'2022-04-07-15-10-12'
@@ -30,8 +30,7 @@ for i in range(10):
         for event_point in config.event_point:
             if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
                 env.event_simulator('GreatDepression')
-        if done:
-            env.render()
+        if done: env.render()
         '''
         data.extend(data_step)
         if env.t % 100 == 0:

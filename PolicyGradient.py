@@ -71,7 +71,7 @@ class REINFORCE:
         self.action_space = action_space
         self.model = Policy(hidden_size, num_inputs, action_space)    # 创建策略网络
         # self.model = self.model.cuda()                              # GPU版本
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3) # 优化器
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-2) # 优化器
         self.model.train()
 
 

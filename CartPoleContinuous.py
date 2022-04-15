@@ -1,9 +1,7 @@
 import math
-
 import numpy as np
 from gym import spaces, logger
 from gym.envs.classic_control import CartPoleEnv
-
 
 class CartPoleContinuousEnv(CartPoleEnv):
     def __init__(self):
@@ -44,9 +42,9 @@ class CartPoleContinuousEnv(CartPoleEnv):
             theta = theta + self.tau * theta_dot
         self.state = (x, x_dot, theta, theta_dot)
         done = x < -self.x_threshold \
-               or x > self.x_threshold \
-               or theta < -self.theta_threshold_radians \
-               or theta > self.theta_threshold_radians
+                or x > self.x_threshold \
+                or theta < -self.theta_threshold_radians \
+                or theta > self.theta_threshold_radians
         done = bool(done)
 
         if not done:
