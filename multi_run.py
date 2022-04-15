@@ -9,7 +9,7 @@ import numpy as np
 from configuration import config
 from utils import *
 from env import Env
-import pickle, os, time
+import pickle, os, time, random
 from collections import Counter
 matplotlib.use('pdf') # 不显示图片,直接保存pdf
 
@@ -19,17 +19,41 @@ run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:19]
 plt.ion()
 
 env = Env()
+class DictEnv(gym.Env):
+    observation_space = gym.spaces.Dict({
+        "position": gym.spaces.Box(-1., 1., (3,), np.float32),
+        "velocity": gym.spaces.Box(-1., 1., (2,), np.float32)
+    })
+    action_space = gym.spaces.Dict({
+        "fire": gym.spaces.Discrete(2),
+        "jump": gym.spaces.Discrete(2),
+        "acceleration": gym.spaces.Box(-1., 1., (2,), np.float32)
+    })
+    def reset(self):
+        self.flag = False
+        return self.observation_space.sample()
 
-envs = gym.vector.SyncVectorEnv([
-        lambda: gym.make("CartPole-v1"),
-        lambda: gym.make("CartPole-v1"),
-        lambda: gym.make("CartPole-v1")
-    ])
-s = envs.reset()
-print(envs.action_space.sample())
-for i 
-s,r,done,info = envs.step(envs.action_space.sample())
-print(s,r,done,info)
+    def step(self, action):
+        observation = self.observation_space.sample()
+        if not self.flag:
+            done = True if random.random()<0.2 else False
+        else: done = True
+        if done: self.flag = True
+        return (observation, 0., done, {})
+
+env_list = [
+        lambda: DictEnv()
+    ]*5
+envs = gym.vector.SyncVectorEnv(env_list)
+# envs = gym.vector.AsyncVectorEnv(env_list)
+
+tick = time.time()
+envs.reset()
+    
+for i in range(10000):
+    s, r, done, _ = envs.step(envs.action_space.sample())
+    # print(done)
+print((time.time()-tick)/10000*1000)
 
 '''
 for i in range(10):
