@@ -148,7 +148,7 @@ def policy_generator(model, func_set=fs,):
     
     counter = 1
     log_prob = 0
-    hn, cn = None, None
+    hn, cn = torch.zeros(2,1,32), torch.zeros(2,1,32)
     while counter > 0:
         phi, hn, cn = model(PS, hn, cn)
         
