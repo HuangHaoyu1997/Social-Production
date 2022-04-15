@@ -27,6 +27,7 @@ envs = gym.vector.SyncVectorEnv([
     ])
 s = envs.reset()
 print(envs.action_space.sample())
+for i 
 s,r,done,info = envs.step(envs.action_space.sample())
 print(s,r,done,info)
 
