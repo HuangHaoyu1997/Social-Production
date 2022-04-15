@@ -10,7 +10,14 @@ from collections import deque
 class Env:
     def __init__(self) -> None:
 
-        pass
+        # data buffer for rendering
+        self.total_coin = [[],[],[],[]]
+        self.agent_num = [[],[],[],[]]
+        self.agent_coin = [[],[],[],[]]
+        self.w = [[],[]]
+        self.RSV = []
+        self.RH = [0.] # RH for Rate of Hire
+        self.JoblossRate = []
 
     def reset(self,):
         random.seed(config.seed)
@@ -708,8 +715,10 @@ class Env:
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
     def render(self,):
+        '''
+        可视化
+        '''
         grid = grid_render(self.agent_pool, self.resource)
-            
         # 可视化
         fig1 = plt.figure(1,(25,10))
         ax1 = fig1.add_subplot(241) # 各部人口变化趋势图
@@ -750,8 +759,6 @@ class Env:
         ax4.cla()
         ax4.plot(self.RH,'b')
         ax4.set_ylabel('Employment Rate', color='blue')
-        # ax4.legend(['Rate of Surplus Value','Rate of Employment'],loc=2)
-        # plt.legend(['single','total'])
         
         ax5.cla()
         ax5.plot(self.total_coin[0])
@@ -782,15 +789,11 @@ class Env:
         ax9.cla()
         p = nx.spring_layout(self.G)
         nx.draw(self.G, pos=p)
-        # plt.show()
-        '''
-        # 有问题,会影响figure(4)的显示
+        
         # TODO 如何动态显示大规模nx.Graph?
-        '''
         
         plt.pause(0.0001)
-        # print("tock = %.3f"%(time.time()-tick))
-        plt.savefig('./results/'+self.run_time+'_'+str(self.t)+'.png')
+        plt.savefig('./results/'+self.run_time+'_'+str(self.t)+'.pdf')
         plt.clf()
         plt.close()
 
