@@ -88,3 +88,9 @@ class config:
     PP_FORMULA_SIMPLIFICATION = False
     PP_GRAPH_VISUALIZATION = True
 
+    # for Policy Gradient Algorithm
+    gamma = 0.99
+    num_episodes = 2000
+    hidden_size = 128
+    ckpt_freq = 100
+

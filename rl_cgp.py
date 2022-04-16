@@ -13,7 +13,6 @@ device = torch.device('cpu')
 
 
 env = CartPoleContinuousEnv()
-
 state = env.reset()
 
 def s0():
@@ -45,11 +44,12 @@ fs = [
     Function(s2, 0),
     Function(s3, 0),
 ]
+
 def test_gym():
     env.reset()
     done = False
     while not done:
-        s,r,done,_ = env.step(env.action_space.sample())
+        s, r, done, _ = env.step(env.action_space.sample())
         global state
         state = s
         print(fs[-4](),fs[-3](),fs[-2](),fs[-1](),'\n')
@@ -65,9 +65,8 @@ class lstm(nn.Module):
     def forward(self, x, hn=None, cn=None):
         if hn is not None and cn is not None:
             x, (hn, cn) = self.lstm(x, (hn, cn))
-        else:
-            x, (hn, cn) = self.lstm(x)
-        s, b, h = x.size() # s序列长度,b批大小,h隐层维度
+        else: x, (hn, cn) = self.lstm(x)
+        s, b, h = x.size() # s序列长度, b批大小, h隐层维度
         # print(s,b,h,hn.shape,cn.shape)
         x = x.view(s*b, h)
         x = self.fc(x)
@@ -90,7 +89,8 @@ def policy_evaluator(tau, env, func_set=fs, episode=config.Epoch):
         reward = 0
         while not done:
             action = ComputingTree(tau, func_set)
-            s,r,done,_ = env.step(np.array([action]))
+            s, r, done, _ = env.step(np.array([action]))
+            state = s
             reward += r
         r_epi += reward
     return r_epi / episode
@@ -226,9 +226,11 @@ for i in range(1):
         tau_len.append(len(tau))
 
 print(tau_len, len(tau_len), np.mean(tau_len))'''
-
-tau, log_prob = policy_generator(model)
-print(tau, log_prob)
+tau = -1
+while tau==-1:
+    tau, log_prob = policy_generator(model)
+R = policy_evaluator(tau, env, fs)
+print(tau, R)
 
 '''
 print(ParentSibling([],fs))

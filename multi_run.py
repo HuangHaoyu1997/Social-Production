@@ -29,6 +29,7 @@ class DictEnv(gym.Env):
         "jump": gym.spaces.Discrete(2),
         "acceleration": gym.spaces.Box(-1., 1., (2,), np.float32)
     })
+    
     def reset(self):
         self.flag = False
         return self.observation_space.sample()
@@ -50,10 +51,10 @@ envs = gym.vector.SyncVectorEnv(env_list)
 tick = time.time()
 envs.reset()
     
-for i in range(10000):
+for i in range(100000):
     s, r, done, _ = envs.step(envs.action_space.sample())
     # print(done)
-print((time.time()-tick)/10000*1000)
+print((time.time()-tick)/100000*1000)
 
 '''
 for i in range(10):
