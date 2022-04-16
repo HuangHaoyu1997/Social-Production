@@ -1,8 +1,8 @@
-from utils import *
+from CartPoleContinuous import CartPoleContinuousEnv
+import numpy as np
 
-data = []
-for i in np.linspace(-100,100,1000):
-    data.append(tanh(i, alpha=0.05))
-plt.figure()
-plt.plot(np.linspace(-100,100,1000),data)
-plt.show()
+env = CartPoleContinuousEnv()
+env.reset()
+
+action = np.array([1.])
+print(env.step([0.80]))

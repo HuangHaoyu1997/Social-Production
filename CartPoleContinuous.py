@@ -13,7 +13,7 @@ class CartPoleContinuousEnv(CartPoleEnv):
         self.action_space = spaces.Box(low=self.min_action, high=self.max_action, shape=(1,), )
 
     def step(self, action):
-        assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
+        # assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
 
         # Discrete Case:(just for reference)
         # force = self.force_mag if action == 1 else -self.force_mag

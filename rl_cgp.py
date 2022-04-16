@@ -230,7 +230,8 @@ tau = -1
 while tau==-1:
     tau, log_prob = policy_generator(model)
 R = policy_evaluator(tau, env, fs)
-print(tau, R)
+print(tau)
+print(R)
 
 '''
 print(ParentSibling([],fs))

@@ -1,11 +1,9 @@
-import argparse, math, os, sys
+import argparse, math, os, sys, gym, torch
 import numpy as np
-import gym
 from gym import wrappers
 from function import *
 from configuration import config
 from CartPoleContinuous import CartPoleContinuousEnv
-import torch
 from torch.autograd import Variable
 import torch.autograd as autograd
 import torch.nn.utils as utils
@@ -14,58 +12,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-parser = argparse.ArgumentParser(description='PyTorch REINFORCE example')
-parser.add_argument('--exploration_end', type=int, default=100, metavar='N',  # 
-                    help='number of episodes with noise (default: 100)')
-parser.add_argument('--num_steps', type=int, default=1000, metavar='N',       # 一个episode最长持续帧数
-                    help='max episode length (default: 1000)')
-parser.add_argument('--render', action='store_true',
-                    help='render the environment')
-parser.add_argument('--display', type=bool, default=False,
-                    help='display or not')
-args = parser.parse_args()
-
-
-
-
-
 env_name = 'CartPoleContinuous'
 env = CartPoleContinuousEnv()
 
-state = env.reset()
-
-def s0():
-    '''返回env状态的第0维度'''
-    return state[0]
-def s1():
-    '''返回env状态的第1维度'''
-    return state[1]
-def s2():
-    '''返回env状态的第2维度'''
-    return state[2]
-def s3():
-    '''返回env状态的第3维度'''
-    return state[3]
-fs = [
-    Function(op.add, 2),        # 0
-    Function(op.sub, 2),        # 1
-    Function(op.mul, 2),        # 2
-    Function(protected_div, 2), # 3
-    Function(math.sin, 1),      # 4
-    Function(math.cos, 1),      # 5
-    Function(math.log, 1),      # 6
-    Function(math.exp, 1),      # 7
-    Function(const_01, 0),      # 8
-    # Function(const_1, 0),       # 9
-    # Function(const_5, 0),       # 10
-    Function(s0, 0),
-    Function(s1, 0),
-    Function(s2, 0),
-    Function(s3, 0),
-]
-
-
-if args.display:
+if config.display:
     env = wrappers.Monitor(env, './result/policygradient/{}-experiment'.format(env_name), force=True)
 
 env.seed(config.seed)                                                 # 随机数种子
@@ -134,8 +84,7 @@ for i_episode in range(config.num_episodes):
     entropies = []
     log_probs = []
     rewards = []
-    for 
-    for t in range(args.num_steps): # 1个episode最长持续的timestep
+    for t in range(config.num_steps): # 1个episode最长持续的timestep
         action, log_prob, entropy = agent.select_action(state)
         next_state, reward, done, _ = env.step(np.array([action]))
 
