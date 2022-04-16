@@ -24,7 +24,6 @@ import torch.optim as optim
 
 device = torch.device('cpu')
 
-env_name = 'CartPoleContinuous'
 env = CartPoleContinuousEnv()
 state = env.reset()
 env.seed(config.seed)                                                 # 随机数种子
@@ -90,27 +89,6 @@ class lstm(nn.Module):
         x = torch.softmax(x, dim=-1)
         return x, hn, cn
 
-def policy_evaluator(tau, env, func_set=fs, episode=config.Epoch):
-    '''
-    policy evaluation
-    policy is represented by a symbol sequence `tau`
-    episode: test the policy for `config.Epoch` times, and average the episode reward
-    '''
-    global state
-    r_epi = 0
-    for i in range(episode):
-        s = env.reset()
-        state = s
-        done = False
-        reward = 0
-        while not done:
-            action = ComputingTree(tau, func_set)
-            s, r, done, _ = env.step(np.array([action]))
-            state = s
-            reward += r
-        r_epi += reward
-    return r_epi / episode
-
 
 '''
 input_dim = 10
@@ -144,12 +122,27 @@ def gene_encoder(ind:Individual):
 g_b, g_a = gene_encoder(pop[0])
 '''
 
-# lstm model
-model = lstm(input_size = 2*len(fs),
-                hidden_size = 32, 
-                output_size = len(fs), 
-                num_layer = 2
-            ).to(device)
+
+def policy_evaluator(tau, env, func_set=fs, episode=config.Epoch):
+    '''
+    policy evaluation
+    policy is represented by a symbol sequence `tau`
+    episode: test the policy for `config.Epoch` times, and average the episode reward
+    '''
+    global state
+    r_epi = 0
+    for i in range(episode):
+        s = env.reset()
+        state = s
+        done = False
+        reward = 0
+        while not done:
+            action = ComputingTree(tau, func_set)
+            s, r, done, _ = env.step(np.array([action]))
+            state = s
+            reward += r
+        r_epi += reward
+    return r_epi / episode
 
 def policy_generator(model, func_set=fs,):
     '''
@@ -232,12 +225,20 @@ def ApplyConstraints(tau, func_set):
         return mask
 
     '''
-    
 
+model = lstm(input_size = 2*len(fs),
+                hidden_size = 32, 
+                output_size = len(fs), 
+                num_layer = 2
+            ).to(device)
 class REINFORCE:
     def __init__(self, hidden_size, num_inputs, action_space):
         self.action_space = action_space
-        self.model = Policy(hidden_size, num_inputs, action_space)    # 创建策略网络
+        self.model = lstm(input_size = 2*len(fs),
+                                hidden_size = hidden_size, 
+                                output_size = len(fs), 
+                                num_layer = 2
+                            ).to(device)
         # self.model = self.model.cuda()                              # GPU版本
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-2) # 优化器
         self.model.train()
