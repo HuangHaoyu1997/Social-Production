@@ -24,6 +24,7 @@ import torch.optim as optim
 
 device = torch.device('cpu')
 
+env_name = 'CartPoleContinuous'
 env = CartPoleContinuousEnv()
 state = env.reset()
 env.seed(config.seed)                                                 # 随机数种子
@@ -59,17 +60,6 @@ fs = [
     Function(s2, 0),
     Function(s3, 0),
 ]
-
-def test_gym():
-    env.reset()
-    done = False
-    while not done:
-        s, r, done, _ = env.step(env.action_space.sample())
-        global state
-        state = s
-        print(fs[-4](),fs[-3](),fs[-2](),fs[-1](),'\n')
-# test_gym()
-
 
 class lstm(nn.Module):
     def __init__(self,input_size, hidden_size, output_size, num_layer):
