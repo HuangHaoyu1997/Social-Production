@@ -93,6 +93,6 @@ class config:
     num_episodes = 2000
     hidden_size = 128
     ckpt_freq = 100
-    num_steps = 10 # generate 10 tau for once time
+    num_steps = 3 # generate 10 tau for once time
     display = False
 

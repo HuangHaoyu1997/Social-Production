@@ -42,6 +42,7 @@ def ln(a, epsilon=1e-3):
         return math.log(abs(a))
 
 def exp(a):
+    a = np.clip(a, -100, 100)
     return (np.exp(a)-1)/(np.exp(1)-1)
 
 def max1(a):

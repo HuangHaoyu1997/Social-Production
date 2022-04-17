@@ -137,8 +137,10 @@ def policy_generator(model, func_set,):
         if counter==0: break
         if len(tau) > config.N_COLS: return -1, 0, 0
         [iP, iS], P, S = ParentSibling(tau, func_set)
+    
     if (func_dim-1 not in tau) and (func_dim-2 not in tau) and (func_dim-3 not in tau) and (func_dim-4 not in tau):
         return -1, 0, 0
+    
     return tau, log_prob, joint_entropy
 
 def ApplyConstraints(tau, func_set):
