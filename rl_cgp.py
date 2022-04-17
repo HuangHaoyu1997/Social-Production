@@ -44,6 +44,7 @@ def s2():
 def s3():
     '''返回env状态的第3维度'''
     return state[3]
+
 func_set = [
     Function(op.add, 2),        # 0
     Function(op.sub, 2),        # 1
@@ -51,8 +52,8 @@ func_set = [
     Function(protected_div, 2), # 3
     Function(math.sin, 1),      # 4
     Function(math.cos, 1),      # 5
-    Function(math.log, 1),      # 6
-    Function(math.exp, 1),      # 7
+    Function(ln, 1),      # 6
+    Function(exp, 1),      # 7
     Function(const_01, 0),      # 8
     # Function(const_1, 0),       # 9
     # Function(const_5, 0),       # 10
@@ -79,9 +80,6 @@ class lstm(nn.Module):
         x = x.view(s, b, -1)
         x = torch.softmax(x, dim=-1)
         return x, hn, cn
-
-
-
 
 def policy_evaluator(tau, env, func_set, episode=config.Epoch):
     '''
@@ -118,7 +116,7 @@ def policy_generator(model, func_set,):
     counter = 1
     log_prob = 0
     joint_entropy = 0
-    hn, cn = torch.zeros(2,1,32), torch.zeros(2,1,32)
+    hn, cn = torch.zeros(2,1,config.hidden_size), torch.zeros(2,1,config.hidden_size)
     while counter > 0:
         phi, hn, cn = model(PS, hn, cn)
         
@@ -172,12 +170,6 @@ def ApplyConstraints(tau, func_set):
             mask = torch.ones(len(func_set))
         return mask
 
-model = lstm(input_size = 2*len(func_set),
-                hidden_size = 32, 
-                output_size = len(func_set),
-                num_layer = 2
-            ).to(device)
-
 class REINFORCE:
     def __init__(self, func_set, hidden_size):
         '''
@@ -193,7 +185,6 @@ class REINFORCE:
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-2) # 优化器
         self.fs = func_set
         self.model.train()
-
 
     def symbolic_generator(self):
         tau = -1
@@ -222,24 +213,20 @@ if not os.path.exists(dir):
     os.mkdir(dir)
 
 for i_episode in range(config.num_episodes):
-    state = torch.Tensor([env.reset()])
     entropies = []
     log_probs = []
     rewards = []
     for t in range(config.num_steps): # 1次生成10个tau,分别测试
         tau, log_prob, entropy = agent.symbolic_generator()
-        policy_evaluator(tau, env, func_set)
+        print(tau, log_prob, entropy)
+        reward = policy_evaluator(tau, env, func_set)
 
         entropies.append(entropy)
         log_probs.append(log_prob)
         rewards.append(reward)
-        state = torch.Tensor([next_state])
 
-        if done:
-            break
     # 1局游戏结束后开始更新参数
     agent.update_parameters(rewards, log_probs, entropies, config.gamma)
-
 
     if i_episode % config.ckpt_freq == 0:
         torch.save(agent.model.state_dict(), os.path.join(dir, 'reinforce-'+str(i_episode)+'.pkl'))
@@ -247,11 +234,3 @@ for i_episode in range(config.num_episodes):
     print("Episode: {}, reward: {}".format(i_episode, np.sum(rewards)))
 
 env.close()
-
-
-tau = -1
-while tau==-1:
-    tau, log_prob = policy_generator(model)
-R = policy_evaluator(tau, env, func_set)
-print(tau)
-print(R)
