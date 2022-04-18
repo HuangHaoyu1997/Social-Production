@@ -94,11 +94,14 @@ def policy_evaluator(tau, env, func_set, episode=config.Epoch):
         state = s
         done = False
         reward = 0
+        count = 0
         while not done:
             action = ComputingTree(tau, func_set)
             s, r, done, _ = env.step(np.array([action]))
             state = s
             reward += r
+            count += 1
+            if count >= config.max_step: break
         r_epi += reward
     return r_epi / episode
 
@@ -219,7 +222,7 @@ for i_episode in range(config.num_episodes):
     entropies = []
     log_probs = []
     rewards = []
-    for t in range(config.num_steps): # 1次生成10个tau,分别测试
+    for t in range(config.batch): # 1次生成10个tau,分别测试
         tau, log_prob, entropy = agent.symbolic_generator()
         # print(tau, log_prob, entropy)
         reward = policy_evaluator(tau, env, func_set)
@@ -227,6 +230,15 @@ for i_episode in range(config.num_episodes):
         entropies.append(entropy)
         log_probs.append(log_prob)
         rewards.append(reward)
+    
+    # 截取reward排前90%的样本
+    length = int(config.batch*(1-config.epsilon))
+    idx = np.array(rewards).argsort()[::-1][:length]
+    
+    rewards = np.array(rewards)[idx]
+    entropies = np.array(entropies)[idx]
+    log_probs = np.array(log_probs)[idx]
+
 
     # 1局游戏结束后开始更新参数
     agent.update_parameters(rewards, log_probs, entropies, config.gamma)
