@@ -69,7 +69,7 @@ class config:
 
     # for CGP
     MUT_PB = 0.55  # mutate probability
-    N_COLS = 200   # number of cols (nodes) in a single-row CGP
+    N_COLS = 20   # number of cols (nodes) in a single-row CGP
     LEVEL_BACK = 160  # how many levels back are allowed for inputs in CGP
     
     # parameters of evolutionary strategy: MU+LAMBDA
@@ -90,7 +90,7 @@ class config:
 
     # for Policy Gradient Algorithm
     gamma = 0.99
-    num_episodes = 2000
+    num_episodes = 200000000
     hidden_size = 128
     ckpt_freq = 100
     num_steps = 3 # generate 10 tau for once time

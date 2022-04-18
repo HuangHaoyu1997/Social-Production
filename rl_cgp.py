@@ -195,12 +195,13 @@ class REINFORCE:
         return tau, log_prob, entropy
 
     def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
-        R = torch.zeros(1, 1)
+        
         loss = 0
+        # print(rewards)
         for i in reversed(range(len(rewards))):
-            R = gamma * R + rewards[i]                                # 倒序计算累计期望
-            # loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i])).cuda()).sum() - (0.0001*entropies[i].cuda()).sum()
-            loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i]))).sum() - (0.001*entropies[i]).sum()
+            
+            R = Variable(torch.tensor(rewards[i]))
+            loss = loss - log_probs[i]*R - 0.01*entropies[i]
         loss = loss / len(rewards)
 
         self.optimizer.zero_grad()
@@ -220,7 +221,7 @@ for i_episode in range(config.num_episodes):
     rewards = []
     for t in range(config.num_steps): # 1次生成10个tau,分别测试
         tau, log_prob, entropy = agent.symbolic_generator()
-        print(tau, log_prob, entropy)
+        # print(tau, log_prob, entropy)
         reward = policy_evaluator(tau, env, func_set)
 
         entropies.append(entropy)
@@ -232,7 +233,7 @@ for i_episode in range(config.num_episodes):
 
     if i_episode % config.ckpt_freq == 0:
         torch.save(agent.model.state_dict(), os.path.join(dir, 'reinforce-'+str(i_episode)+'.pkl'))
-
-    print("Episode: {}, reward: {}".format(i_episode, np.sum(rewards)))
+    
+    print("Episode: {}, reward: {}".format(i_episode, np.mean(rewards)))
 
 env.close()
