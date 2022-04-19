@@ -195,6 +195,7 @@ class REINFORCE:
         tau = -1
         while tau == -1:
             tau, log_prob, entropy = policy_generator(self.model, self.fs)
+        print('done')
         return tau, log_prob, entropy
 
     def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
