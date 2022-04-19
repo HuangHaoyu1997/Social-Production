@@ -1,3 +1,6 @@
+'''
+Vanilla Policy Gradient for Continuous Control Env
+'''
 import argparse, math, os, sys, gym, torch
 import numpy as np
 from gym import wrappers

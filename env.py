@@ -18,10 +18,20 @@ class Env:
         self.RSV = []
         self.RH = [0.] # RH for Rate of Hire
         self.JoblossRate = []
+        self.seed()
+    
+    def seed(self, seed=None):
+        '''
+        set random seed for env
+        '''
+        if seed is None:
+            random.seed(config.seed)
+            np.random.seed(config.seed)
+        else:
+            random.seed(seed)
+            np.random.seed(seed)
 
     def reset(self,):
-        random.seed(config.seed)
-        np.random.seed(config.seed)
         self.t = 0 # tick
         self.w1 = config.w1 # 初始最低工资
         self.w2 = config.w2 # 初始最高工资
