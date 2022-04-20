@@ -79,8 +79,8 @@ class Env:
             self.w1 = max(self.w1_OU_noise(), 1)
             self.w2 = scale_factor * self.w1
         else:
-            self.w1 = action
-            self.w2 = action*2
+            self.w1 = action[0]
+            self.w2 = action[0]*action[1]
 
         # self.w1 = action[0]
         # self.w2 = action[1]

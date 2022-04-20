@@ -40,7 +40,7 @@ class Policy(nn.Module):                                            # 神经网�
     def __init__(self, hidden_size, num_inputs, action_space):
         super(Policy, self).__init__()
         self.action_space = action_space                            # 动作空间
-        num_outputs = action_space                         # 动作空间的维度
+        num_outputs = 2                         # 动作空间的维度
 
         self.linear1 = nn.Linear(num_inputs, hidden_size)           # 隐层神经元数量
         self.linear2 = nn.Linear(hidden_size, num_outputs)
@@ -73,7 +73,8 @@ class REINFORCE:
         
         beta = torch.distributions.Beta(a,b)
         sample = beta.sample()
-        action = (sample*50).item() # 定义域[-1,1]
+        action = [sample[0,0].item()*50, sample[0,1].item()*4+1] # 最低工资[0,50],最高工资倍率[1,5]
+        
         log_prob = beta.log_prob(sample)
         entropy = beta.entropy()
         return action, log_prob, entropy
@@ -85,7 +86,7 @@ class REINFORCE:
             R = gamma * R + rewards[i]                                # 倒序计算累计期望
             # loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i])).cuda()).sum() - (0.0001*entropies[i].cuda()).sum()
             # print(len(rewards), len(log_probs))
-            loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i]))).sum() - (0.01*entropies[i]).sum()
+            loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i]))).sum() - (0.1*entropies[i]).sum()
         loss = loss / len(rewards)
 
         self.optimizer.zero_grad()
