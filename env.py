@@ -37,7 +37,6 @@ class Env:
         self.t = 0 # tick
         self.w1 = config.w1 # 初始最低工资
         self.w2 = config.w2 # 初始最高工资
-        self.target_RJ = config.target_RJ # 失业率控制线
         self.death_log = {0:[]}
         
         self.run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:19]
@@ -191,8 +190,9 @@ class Env:
         '''
         output: Reward Scalar
         '''
-        reward_RJ = min(self.target_RJ - info['RJ'], 0) # 失业率超过10%就扣分
-        
+        # reward_RJ = min(config.target_RJ - info['RJ'], 0) # 失业率超过10%就扣分
+        reward_RJ = config.target_RJ - info['RJ']
+        # print(reward_RJ)
         
         reward_coin_std = 0.1 if info['std_coin_t']<self.last_std else -0.1 # 全体pop的coin标准差<上一时刻则加分，否则扣分
         self.last_std = info['std_coin_t']
@@ -726,7 +726,7 @@ class Env:
             raise NotImplementedError
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
-    def render(self,):
+    def render(self, file_name=None):
         '''
         可视化,
         '''
@@ -805,7 +805,10 @@ class Env:
         # TODO 如何动态显示大规模nx.Graph?
         
         plt.pause(0.0001)
-        plt.savefig('./results/'+self.run_time+'_'+str(self.t)+'.pdf')
+        if file_name is not None:
+            plt.savefig('./results/'+self.run_time+'_'+file_name+'_'+str(self.t)+'.pdf')
+        else:
+            plt.savefig('./results/'+self.run_time+'_'+str(self.t)+'.pdf')
         plt.clf()
         plt.close()
 

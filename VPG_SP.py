@@ -43,14 +43,16 @@ class Policy(nn.Module):                                            # 神经网�
         num_outputs = 2                         # 动作空间的维度
 
         self.linear1 = nn.Linear(num_inputs, hidden_size)           # 隐层神经元数量
-        self.linear2 = nn.Linear(hidden_size, num_outputs)
-        self.linear2_ = nn.Linear(hidden_size, num_outputs)
+        self.linear2 = nn.Linear(hidden_size, hidden_size)
+        self.linear3 = nn.Linear(hidden_size, num_outputs)
+        self.linear3_ = nn.Linear(hidden_size, num_outputs)
 
     def forward(self, inputs):
         x = inputs
         x = F.relu(self.linear1(x))
-        a = F.softplus(self.linear2(x),beta=0.0001)                                  # 为了输出连续域动作，policy net定义了
-        b = F.softplus(self.linear2_(x),beta=0.0001)                                 # 一个多维Beta分布，维度=动作空间的维度
+        x = F.relu(self.linear2(x))
+        a = F.softplus(self.linear3(x),beta=0.0001)                                  # 为了输出连续域动作，policy net定义了
+        b = F.softplus(self.linear3_(x),beta=0.0001)                                 # 一个多维Beta分布，维度=动作空间的维度
         # torch.nn.Softplus()
         # a += Variable(torch.tensor(1e-2))
         # b += Variable(torch.tensor(1e-2))
@@ -105,7 +107,7 @@ if not os.path.exists(dir):
 for i_episode in range(config.num_episodes):
     tick = time.time()
     done = False
-    seed = i_episode; env.seed(seed)
+    # seed = i_episode; env.seed(seed)
     info = env.reset()
     state = torch.Tensor([info_parser(info)])
     entropies = []
@@ -121,7 +123,7 @@ for i_episode in range(config.num_episodes):
         '''for event_point in config.event_point:
             if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
                 env.event_simulator('GreatDepression')'''
-        if done: env.render(); break # 只保存文件，不画图
+        if done: env.render(str(np.round(np.sum(rewards),2))); break # 只保存文件，不画图
         
     # 1局游戏结束后开始更新参数
     agent.update_parameters(rewards, log_probs, entropies, config.gamma)

@@ -51,7 +51,7 @@ class config:
     product_thr = 10            # 与资源最小距离＜10则会有产出
     
     
-    tax = False
+    tax = True
     personal_income_tax = 0.0001 if tax else 0  # 个人所得税5%
     consumption_tax = 0.002 if tax else 0      # 消费税
     business_tax = 0.001 if tax else 0          # 企业税
@@ -64,7 +64,7 @@ class config:
     event_duration = 1         # 负面事件的持续时间
 
     # for reward function
-    target_RJ = 0.1             # 目标失业率小于10%
+    target_RJ = 0.2             # 目标失业率小于10%
 
 
     # for CGP
