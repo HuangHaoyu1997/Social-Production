@@ -93,6 +93,7 @@ class config:
     num_episodes = 200000000
     hidden_size = 128
     ckpt_freq = 100
+    num_steps = 500
     batch = 100 # generate 20 tau for once time
     max_step = 500
     display = False

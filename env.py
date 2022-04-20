@@ -19,6 +19,8 @@ class Env:
         self.RH = [0.] # RH for Rate of Hire
         self.JoblossRate = []
         self.seed()
+        self.observation_shape = 23 # len(info)
+        self.action_shape = 1
     
     def seed(self, seed=None):
         '''
@@ -195,7 +197,7 @@ class Env:
         reward_coin_std = 0.1 if info['std_coin_t']<self.last_std else -0.1 # 全体pop的coin标准差<上一时刻则加分，否则扣分
         self.last_std = info['std_coin_t']
 
-        reward = reward_RJ + reward_coin_std
+        reward = 3*reward_RJ + reward_coin_std
         return reward
 
     def ouput_info(self,):
@@ -726,7 +728,7 @@ class Env:
 
     def render(self,):
         '''
-        可视化
+        可视化,
         '''
         grid = grid_render(self.agent_pool, self.resource)
         # 可视化
