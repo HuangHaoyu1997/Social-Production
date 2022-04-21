@@ -6,11 +6,11 @@
 import torch
 import torch.nn as nn
 from cgp import *
-from utils import ParentSibling, ComputingTree
+from utils import ParentSibling, ComputingTree, info_parser
 from torch.distributions import Categorical
 from CartPoleContinuous import CartPoleContinuousEnv
 from env import Env
-
+from DSO import policy_evaluator, policy_generator
 import argparse, math, os, sys, gym
 import numpy as np
 from gym import wrappers
@@ -26,10 +26,10 @@ import torch.optim as optim
 
 device = torch.device('cpu')
 
-env_name = 'SocialProduction'
+env_name = 'Social-Production'
 env = Env()
 info = env.reset() # len(info)=23
-print(len(info))
+state = info_parser(info)
 
 env.seed(config.seed)                                                 # 随机数种子
 torch.manual_seed(config.seed)                                        # Gym、numpy、Pytorch都要设置随机数种子
@@ -47,6 +47,63 @@ def s2():
 def s3():
     '''返回env状态的第3维度'''
     return state[3]
+def s4():
+    '''返回env状态的第4维度'''
+    return state[4]
+def s5():
+    '''返回env状态的第5维度'''
+    return state[5]
+def s6():
+    '''返回env状态的第6维度'''
+    return state[6]
+def s7():
+    '''返回env状态的第7维度'''
+    return state[7]
+def s8():
+    '''返回env状态的第8维度'''
+    return state[8]
+def s9():
+    '''返回env状态的第9维度'''
+    return state[9]
+def s10():
+    '''返回env状态的第10维度'''
+    return state[10]
+def s11():
+    '''返回env状态的第11维度'''
+    return state[11]
+def s12():
+    '''返回env状态的第12维度'''
+    return state[12]
+def s13():
+    '''返回env状态的第13维度'''
+    return state[13]
+def s14():
+    '''返回env状态的第14维度'''
+    return state[14]
+def s15():
+    '''返回env状态的第15维度'''
+    return state[15]
+def s16():
+    '''返回env状态的第16维度'''
+    return state[16]
+def s17():
+    '''返回env状态的第17维度'''
+    return state[17]
+def s18():
+    '''返回env状态的第18维度'''
+    return state[18]
+def s19():
+    '''返回env状态的第19维度'''
+    return state[19]
+def s20():
+    '''返回env状态的第20维度'''
+    return state[20]
+def s21():
+    '''返回env状态的第21维度'''
+    return state[21]
+def s22():
+    '''返回env状态的第22维度'''
+    return state[22]
 
 func_set = [
     Function(op.add, 2),        # 0
@@ -64,6 +121,25 @@ func_set = [
     Function(s1, 0),
     Function(s2, 0),
     Function(s3, 0),
+    Function(s4, 0),
+    Function(s5, 0),
+    Function(s6, 0),
+    Function(s7, 0),
+    Function(s8, 0),
+    Function(s9, 0),
+    Function(s10, 0),
+    Function(s11, 0),
+    Function(s12, 0),
+    Function(s13, 0),
+    Function(s14, 0),
+    Function(s15, 0),
+    Function(s16, 0),
+    Function(s17, 0),
+    Function(s18, 0),
+    Function(s19, 0),
+    Function(s20, 0),
+    Function(s21, 0),
+    Function(s22, 0),
 ]
 
 class lstm(nn.Module):
@@ -84,99 +160,6 @@ class lstm(nn.Module):
         x = torch.softmax(x, dim=-1)
         return x, hn, cn
 
-def policy_evaluator(tau, env, func_set, episode=config.Epoch):
-    '''
-    policy evaluation
-    policy is represented by a symbol sequence `tau`
-    episode: test the policy for `config.Epoch` times, and average the episode reward
-    '''
-    global state
-    r_epi = 0
-    for i in range(episode):
-        s = env.reset()
-        state = s
-        done = False
-        reward = 0
-        count = 0
-        while not done:
-            action = ComputingTree(tau, func_set)
-            s, r, done, _ = env.step(np.array([action]))
-            state = s
-            reward += r
-            count += 1
-            if count >= config.max_step: break
-        r_epi += reward
-    return r_epi / episode
-
-def policy_generator(model, func_set,):
-    '''
-    return a sequence of symbols
-    '''
-    func_dim = len(func_set) # dimension of function set / categorical distribution
-    tau = [] # symbol sequence
-
-    # generte tau_1 with empty parent and sibling
-    [iP, iS], P, S = ParentSibling(tau, func_set)
-    PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
-    
-    counter = 1
-    log_prob = 0
-    joint_entropy = 0
-    hn, cn = torch.zeros(2,1,config.hidden_size), torch.zeros(2,1,config.hidden_size)
-    while counter > 0:
-        phi, hn, cn = model(PS, hn, cn)
-        
-        mask = ApplyConstraints(tau, func_set)
-        phi_after_mask = phi * mask
-        phi_after_mask = phi_after_mask / phi_after_mask.sum()
-        # print(phi,'\n',phi_after_mask,'\n\n')
-
-        dist = Categorical(phi_after_mask[0,0])
-        new_op = dist.sample()
-        # print(new_op, phi_after_mask[0,0,new_op].log())
-        log_prob += phi_after_mask[0,0,new_op].log()
-        joint_entropy += dist.entropy()
-        tau.append(new_op.item())
-        
-        PS = torch.cat((P,S)).unsqueeze(0).unsqueeze(0)
-        counter += func_set[new_op].arity - 1
-        if counter==0: break
-        if len(tau) > config.N_COLS: return -1, 0, 0
-        [iP, iS], P, S = ParentSibling(tau, func_set)
-    
-    if (func_dim-1 not in tau) and (func_dim-2 not in tau) and (func_dim-3 not in tau) and (func_dim-4 not in tau):
-        return -1, 0, 0
-    
-    return tau, log_prob, joint_entropy
-
-def ApplyConstraints(tau, func_set):
-    '''
-    给RNN输出的categorical概率施加约束
-    如果parent是log/exp,则exp/log的概率为0
-    如果parent是sin/cos,则cos/sin的概率为0
-    '''
-    # 如果tau空集合,不能选择常量作为根节点
-    if len(tau)==0:
-        mask = torch.tensor([0 if func_set[i].name in ['s0','s1','s2','s3'] else 1 for i in range(len(func_set))])
-        return mask
-    
-    # 如果tau非空
-    else:
-        # iP是将要生成的node的parent在tau中的idx
-        [iP,iS], P, S = ParentSibling(tau, func_set)
-        # parent是iP在func_set中的idx
-        parent = tau[iP]
-        if func_set[parent].name == 'sin':
-            mask = torch.tensor([0 if func_set[i].name=='cos' else 1 for i in range(len(func_set))])
-        elif func_set[parent].name == 'cos':
-            mask = torch.tensor([0 if func_set[i].name=='sin' else 1 for i in range(len(func_set))])
-        elif func_set[parent].name == 'log':
-            mask = torch.tensor([0 if func_set[i].name=='exp' else 1 for i in range(len(func_set))])
-        elif func_set[parent].name == 'exp':
-            mask = torch.tensor([0 if func_set[i].name=='log' else 1 for i in range(len(func_set))])
-        else:
-            mask = torch.ones(len(func_set))
-        return mask
 
 class REINFORCE:
     def __init__(self, func_set, hidden_size):
@@ -218,7 +201,7 @@ class REINFORCE:
 
 agent = REINFORCE(func_set, config.hidden_size)
 
-dir = './results/ckpt_' + env_name
+dir = './results/DSO_' + env_name
 if not os.path.exists(dir):    
     os.mkdir(dir)
 
@@ -229,7 +212,7 @@ for i_episode in range(config.num_episodes):
     for t in range(config.batch): # 1次生成10个tau,分别测试
         tau, log_prob, entropy = agent.symbolic_generator()
         # print(tau, log_prob, entropy)
-        reward = policy_evaluator(tau, env, func_set)
+        reward = policy_evaluator(tau, env, func_set, episode=config.Epoch)
 
         entropies.append(entropy)
         log_probs.append(log_prob)

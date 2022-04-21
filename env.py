@@ -77,7 +77,12 @@ class Env:
             scale_factor = uniform(2,5)
             self.w1 = max(self.w1_OU_noise(), 1)
             self.w2 = scale_factor * self.w1
-        else:
+        
+        elif isinstance(action, float):
+            self.w1 = action
+            self.w2 = action * 2
+        
+        elif isinstance(action, list):
             self.w1 = action[0]
             self.w2 = action[0]*action[1]
 
