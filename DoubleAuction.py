@@ -1,11 +1,14 @@
 from typing import List  
 from dataclasses import dataclass  
 
-
 @dataclass
-class Order(object):   
-    CreatorID: int   
-    Side: bool  
+class Order(object):
+    # Time: int
+    CreatorID: int
+    
+    # Side=True为offer(报价,卖方价)
+    # Side=False为bids(出价,买方价)
+    Side: bool
     Quantity: int   
     Price: int  
 
@@ -13,8 +16,6 @@ class Order(object):
 class Match(object):   
     Bid: Order   
     Offer: Order     
-
-
 
 class Market(object):
     def __init__(self):
@@ -28,11 +29,14 @@ class Market(object):
         else:
             self.Bids.append(order)
 
-    def MatchOrders(self):   
-        self.Bids = sorted(self.Bids, key=lambda x: x.Price)[::-1]
+    def MatchOrders(self):
+        # 买方价格从高到低
+        self.Bids = sorted(self.Bids, key=lambda x: x.Price)[::-1] 
+        # 卖方价格从低到高
         self.Offers = sorted(self.Offers, key=lambda x: x.Price)
 
         while (len(self.Bids) > 0 and len(self.Offers) > 0):
+            # 买方最高价低于卖方最低价
             if self.Bids[0].Price < self.Offers[0].Price:
                 break
             else:  # self.Bids[0].Price >= self.Offers[0].Price:
@@ -62,11 +66,13 @@ class Market(object):
         return clearingPrice / cumulativeQuantity
 # Create market instance and test orders   
 market = Market()     
-buyOrder = Order(CreatorID=0, Side=False, Quantity=100, Price=10.)   
+buyOrder1 = Order(CreatorID=0, Side=False, Quantity=100, Price=10.)
+buyOrder2 = Order(CreatorID=0, Side=False, Quantity=100, Price=10.)   
 sellOrder1 = Order(CreatorID=1, Side=True, Quantity=120, Price=5.5)   
 sellOrder2 = Order(CreatorID=1, Side=True, Quantity=120, Price=6)   
 # Send orders to market   
-market.AddOrder(buyOrder)
+market.AddOrder(buyOrder1)
+market.AddOrder(buyOrder2)
 market.AddOrder(sellOrder1)
 market.AddOrder(sellOrder2)
 
