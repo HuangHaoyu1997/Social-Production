@@ -60,9 +60,13 @@ class Market(object):
         '''清空匹配list'''
         self.Matches: List[Match] = []
     
-    def DeleteOrder(self):
-        '''删除指定订单'''
-        
+    def DeleteOrder(self, time):
+        '''删除指定时间戳的订单'''
+        # bids
+        for offer in self.Bids:
+            if offer.Time <= time:
+                
+
     def ComputeClearingPrice(self) -> float:   
         '''
         计算出清价格
