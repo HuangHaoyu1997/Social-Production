@@ -90,9 +90,10 @@ class config:
 
     # for Policy Gradient Algorithm
     gamma = 0.99
+    lr = 5e-3
     num_episodes = 200000000
     hidden_size = 128
-    ckpt_freq = 100
+    ckpt_freq = 10
     num_steps = 500
     batch = 100 # generate 20 tau for once time
     max_step = 500

@@ -806,9 +806,9 @@ class Env:
         
         plt.pause(0.0001)
         if file_name is not None:
-            plt.savefig('./results/'+self.run_time+'_'+file_name+'_'+str(self.t)+'.pdf')
+            plt.savefig('./results/exp6/'+self.run_time+'_'+file_name+'_'+str(self.t)+'.pdf')
         else:
-            plt.savefig('./results/'+self.run_time+'_'+str(self.t)+'.pdf')
+            plt.savefig('./results/exp6/'+self.run_time+'_'+str(self.t)+'.pdf')
         plt.clf()
         plt.close()
 

@@ -9,8 +9,6 @@ class Order(object):
     Quantity: int   
     Price: int  
 
-
-
 @dataclass  
 class Match(object):   
     Bid: Order   
@@ -61,4 +59,20 @@ class Market(object):
             cumulativeQuantity += match.Bid.Quantity
             clearingPrice += match.Bid.Quantity * (match.Bid.Price + match.Offer.Price) / 2
         
-        return int(clearingPrice / cumulativeQuantity)
+        return clearingPrice / cumulativeQuantity
+# Create market instance and test orders   
+market = Market()     
+buyOrder = Order(CreatorID=0, Side=False, Quantity=100, Price=10.)   
+sellOrder1 = Order(CreatorID=1, Side=True, Quantity=120, Price=5.5)   
+sellOrder2 = Order(CreatorID=1, Side=True, Quantity=120, Price=6)   
+# Send orders to market   
+market.AddOrder(buyOrder)
+market.AddOrder(sellOrder1)
+market.AddOrder(sellOrder2)
+
+# Match orders  
+market.MatchOrders()
+
+# Get the clearing price  
+print(market.ComputeClearingPrice())
+# returns 9  

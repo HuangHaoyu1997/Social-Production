@@ -51,8 +51,8 @@ class Policy(nn.Module):                                            # 神经网�
         x = inputs
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
-        a = F.softplus(self.linear3(x),beta=0.0001)                                  # 为了输出连续域动作，policy net定义了
-        b = F.softplus(self.linear3_(x),beta=0.0001)                                 # 一个多维Beta分布，维度=动作空间的维度
+        a = F.softplus(self.linear3(x), beta=0.0005)                                  # 为了输出连续域动作，policy net定义了
+        b = F.softplus(self.linear3_(x), beta=0.0005)                                 # 一个多维Beta分布，维度=动作空间的维度
         # torch.nn.Softplus()
         # a += Variable(torch.tensor(1e-2))
         # b += Variable(torch.tensor(1e-2))
@@ -65,7 +65,7 @@ class REINFORCE:
         self.action_space = action_space
         self.model = Policy(hidden_size, num_inputs, action_space)    # 创建策略网络
         # self.model = self.model.cuda()                              # GPU版本
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-2) # 优化器
+        self.optimizer = optim.Adam(self.model.parameters(), lr=config.lr) # 优化器
         self.model.train()
 
 
