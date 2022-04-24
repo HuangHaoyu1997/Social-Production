@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 from cgp import *
-from utils import ParentSibling, ComputingTree
+from DSO import ParentSibling, ComputingTree
 from torch.distributions import Categorical
 from CartPoleContinuous import CartPoleContinuousEnv
 
@@ -57,10 +57,10 @@ func_set = [
     Function(const_01, 0),      # 8
     # Function(const_1, 0),       # 9
     # Function(const_5, 0),       # 10
-    Function(s0, 0),
-    Function(s1, 0),
-    Function(s2, 0),
-    Function(s3, 0),
+    Function(s0, 0),# 9
+    Function(s1, 0),# 10
+    Function(s2, 0),# 11
+    Function(s3, 0),# 12
 ]
 
 class lstm(nn.Module):
@@ -102,7 +102,7 @@ def policy_evaluator(tau, env, func_set, episode=config.Epoch):
             reward += r
             count += 1
             if count >= config.max_step: break
-        r_epi += reward
+            r_epi += r
     return r_epi / episode
 
 def policy_generator(model, func_set,):
@@ -195,7 +195,7 @@ class REINFORCE:
         tau = -1
         while tau == -1:
             tau, log_prob, entropy = policy_generator(self.model, self.fs)
-        print('done')
+        # print('done')
         return tau, log_prob, entropy
 
     def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
@@ -213,40 +213,49 @@ class REINFORCE:
         utils.clip_grad_norm_(self.model.parameters(), 10)             # 梯度裁剪，梯度的最大L2范数=40
         self.optimizer.step()
 
-agent = REINFORCE(func_set, config.hidden_size)
 
-dir = './results/ckpt_' + env_name
-if not os.path.exists(dir):    
-    os.mkdir(dir)
+if __name__ == '__main__':
+    agent = REINFORCE(func_set, config.hidden_size)
 
-for i_episode in range(config.num_episodes):
-    entropies = []
-    log_probs = []
-    rewards = []
-    for t in range(config.batch): # 1次生成10个tau,分别测试
-        tau, log_prob, entropy = agent.symbolic_generator()
-        # print(tau, log_prob, entropy)
-        reward = policy_evaluator(tau, env, func_set)
+    dir = './results/ckpt_' + env_name
+    if not os.path.exists(dir):    
+        os.mkdir(dir)
 
-        entropies.append(entropy)
-        log_probs.append(log_prob)
-        rewards.append(reward)
+    for i_episode in range(config.num_episodes):
+        entropies = []
+        log_probs = []
+        rewards = []
+        rr = -1000
+        tt = None
+        for t in range(config.batch): # 1次生成10个tau,分别测试
+            tau, log_prob, entropy = agent.symbolic_generator()
+            
+            # print(tau, log_prob, entropy)
+            reward = policy_evaluator(tau, env, func_set)
+            if reward>rr: 
+                rr = reward
+                tt = tau
+
+            entropies.append(entropy)
+            log_probs.append(log_prob)
+            rewards.append(reward)
+        print(rr,tt)
+        # 截取reward排前90%的样本
+        length = int(config.batch*(1-config.epsilon))
+        idx = np.array(rewards).argsort()[::-1][:length]
+        
+        rewards = np.array(rewards)[idx]
+        entropies = np.array(entropies)[idx]
+        log_probs = np.array(log_probs)[idx]
+
+
+        # 1局游戏结束后开始更新参数
+        agent.update_parameters(rewards, log_probs, entropies, config.gamma)
+
+        if i_episode % config.ckpt_freq == 0:
+            torch.save(agent.model.state_dict(), os.path.join(dir, '4.22-reinforce-'+str(i_episode)+'.pkl'))
+        
+        print("Episode: {}, reward: {}".format(i_episode, np.mean(rewards)))
+
+    env.close()
     
-    # 截取reward排前90%的样本
-    length = int(config.batch*(1-config.epsilon))
-    idx = np.array(rewards).argsort()[::-1][:length]
-    
-    rewards = np.array(rewards)[idx]
-    entropies = np.array(entropies)[idx]
-    log_probs = np.array(log_probs)[idx]
-
-
-    # 1局游戏结束后开始更新参数
-    agent.update_parameters(rewards, log_probs, entropies, config.gamma)
-
-    if i_episode % config.ckpt_freq == 0:
-        torch.save(agent.model.state_dict(), os.path.join(dir, 'reinforce-'+str(i_episode)+'.pkl'))
-    
-    print("Episode: {}, reward: {}".format(i_episode, np.mean(rewards)))
-
-env.close()

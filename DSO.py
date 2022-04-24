@@ -2,7 +2,7 @@ from configuration import config
 import numpy as np
 import torch
 from torch.distributions import Categorical
-from utils import pt_onehot, tanh, sigmoid
+from utils import info_parser, pt_onehot, tanh, sigmoid
 
 def policy_evaluator(tau, env, func_set, episode):
     '''
@@ -20,7 +20,10 @@ def policy_evaluator(tau, env, func_set, episode):
         count = 0
         while not done:
             action = ComputingTree(tau, func_set)
-            s, r, done, _ = env.step(np.array([action]))
+            # for CartPoleContinuous
+            # s, r, done, _ = env.step(np.array([action]))
+            info, r, done = env.step(np.array([action]))
+            s = info_parser(info)
             state = s
             reward += r
             count += 1
@@ -66,8 +69,11 @@ def ComputingTree(tau, func_set):
             # 如果是根节点,直接return
             if parent[i] == -1: 
                 # [-1, 1] mapping for CartPoleContinuous
-                # return tanh(out, alpha=0.1)
-                return 
+                return tanh(out, alpha=0.1)
+
+                # [0,50] mapping for Social-Production
+                # return sigmoid(out, alpha=0.1)*50
+
             for j,k in enumerate(tree[parent[i]].i_inputs):
                 if k is None:
                     tree[parent[i]].i_inputs[j] = out
@@ -140,7 +146,12 @@ def policy_generator(model, func_set,):
         if len(tau) > config.N_COLS: return -1, 0, 0
         [iP, iS], P, S = ParentSibling(tau, func_set)
     
-    if (func_dim-1 not in tau) and (func_dim-2 not in tau) and (func_dim-3 not in tau) and (func_dim-4 not in tau):
+    if (func_dim-1 not in tau) and (func_dim-2 not in tau) and (func_dim-3 not in tau) and (func_dim-4 not in tau) and\
+        (func_dim-5 not in tau) and (func_dim-6 not in tau) and (func_dim-7 not in tau) and (func_dim-8 not in tau) and \
+        (func_dim-9 not in tau) and (func_dim-10 not in tau) and (func_dim-11 not in tau) and (func_dim-12 not in tau) and \
+        (func_dim-13 not in tau) and (func_dim-14 not in tau) and (func_dim-15 not in tau) and (func_dim-16 not in tau) and \
+        (func_dim-17 not in tau) and (func_dim-18 not in tau) and (func_dim-19 not in tau) and (func_dim-20 not in tau) and \
+        (func_dim-21 not in tau) and (func_dim-22 not in tau) and (func_dim-23 not in tau) :
         return -1, 0, 0
     
     return tau, log_prob, joint_entropy
@@ -153,7 +164,9 @@ def ApplyConstraints(tau, func_set):
     '''
     # 如果tau空集合,不能选择常量作为根节点
     if len(tau)==0:
-        mask = torch.tensor([0 if func_set[i].name in ['s0','s1','s2','s3'] else 1 for i in range(len(func_set))])
+        mask = torch.tensor([0 if func_set[i].name in ['s0','s1','s2','s3','s4','s5','s6','s7','s8','s9','s10',\
+                                                        's11','s12','s13','s14','s15','s16','s17','s18','s19','s20',\
+                                                        's21','s22'] else 1 for i in range(len(func_set))])
         return mask
     
     # 如果tau非空

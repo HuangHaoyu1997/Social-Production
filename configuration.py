@@ -90,7 +90,7 @@ class config:
 
     # for Policy Gradient Algorithm
     gamma = 0.99
-    lr = 5e-3
+    lr = 1e-2
     num_episodes = 200000000
     hidden_size = 128
     ckpt_freq = 10

@@ -217,7 +217,7 @@ for i_episode in range(config.num_episodes):
         entropies.append(entropy)
         log_probs.append(log_prob)
         rewards.append(reward)
-    
+
     # 截取reward排前90%的样本
     length = int(config.batch*(1-config.epsilon))
     idx = np.array(rewards).argsort()[::-1][:length]
@@ -226,12 +226,11 @@ for i_episode in range(config.num_episodes):
     entropies = np.array(entropies)[idx]
     log_probs = np.array(log_probs)[idx]
 
-
     # 1局游戏结束后开始更新参数
     agent.update_parameters(rewards, log_probs, entropies, config.gamma)
 
     if i_episode % config.ckpt_freq == 0:
-        torch.save(agent.model.state_dict(), os.path.join(dir, 'reinforce-'+str(i_episode)+'.pkl'))
+        torch.save(agent.model.state_dict(), os.path.join(dir, 'rl_sp-'+str(i_episode)+'.pkl'))
     
     print("Episode: {}, reward: {}".format(i_episode, np.mean(rewards)))
 
