@@ -6,17 +6,13 @@
 import torch
 import torch.nn as nn
 from cgp import *
-from utils import ParentSibling, ComputingTree, info_parser
-from torch.distributions import Categorical
-from CartPoleContinuous import CartPoleContinuousEnv
+from utils import info_parser
 from env import Env
 from DSO import policy_evaluator, policy_generator
-import argparse, math, os, sys, gym
+import math, os, sys
 import numpy as np
-from gym import wrappers
 from function import *
 from configuration import config
-from CartPoleContinuous import CartPoleContinuousEnv
 from torch.autograd import Variable
 import torch.autograd as autograd
 import torch.nn.utils as utils
@@ -26,7 +22,7 @@ import torch.optim as optim
 
 device = torch.device('cpu')
 
-env_name = 'Social-Production'
+env_name = 'SocialProduction'
 env = Env()
 info = env.reset() # len(info)=23
 state = info_parser(info)
@@ -164,7 +160,7 @@ for i_episode in range(config.num_episodes):
     for t in range(config.batch): # 1次生成10个tau,分别测试
         tau, log_prob, entropy = agent.symbolic_generator()
         # print(tau, log_prob, entropy)
-        reward = policy_evaluator(tau, env, func_set, episode=config.Epoch)
+        reward = policy_evaluator(tau, env, func_set, episode=config.Epoch, env_name=env_name)
 
         entropies.append(entropy)
         log_probs.append(log_prob)

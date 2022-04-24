@@ -4,7 +4,7 @@ import torch
 from torch.distributions import Categorical
 from utils import info_parser, pt_onehot, tanh, sigmoid
 
-def policy_evaluator(tau, env, func_set, episode):
+def policy_evaluator(tau, env, func_set, episode, env_name):
     '''
     policy evaluation
     policy is represented by a symbol sequence `tau`
@@ -21,10 +21,12 @@ def policy_evaluator(tau, env, func_set, episode):
         count = 0
         while not done:
             action = ComputingTree(tau, func_set, env_name)
-            # for CartPoleContinuous
-            # s, r, done, _ = env.step(np.array([action]))
-            info, r, done = env.step(np.array([action]))
-            s = info_parser(info)
+            if env_name == 'CartPole':
+                # for CartPoleContinuous
+                s, r, done, _ = env.step(np.array([action]))
+            elif env_name == 'SocialProduction':
+                info, r, done = env.step(np.array(action))
+                s = info_parser(info)
             state = s
             reward += r
             count += 1
