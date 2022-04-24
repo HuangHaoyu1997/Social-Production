@@ -10,6 +10,7 @@ def policy_evaluator(tau, env, func_set, episode):
     policy is represented by a symbol sequence `tau`
     episode: test the policy for `config.Epoch` times, and average the episode reward
     '''
+    
     global state
     r_epi = 0
     for i in range(episode):
@@ -19,7 +20,7 @@ def policy_evaluator(tau, env, func_set, episode):
         reward = 0
         count = 0
         while not done:
-            action = ComputingTree(tau, func_set)
+            action = ComputingTree(tau, func_set, env_name)
             # for CartPoleContinuous
             # s, r, done, _ = env.step(np.array([action]))
             info, r, done = env.step(np.array([action]))
@@ -31,7 +32,7 @@ def policy_evaluator(tau, env, func_set, episode):
         r_epi += reward
     return r_epi / episode
 
-def ComputingTree(tau, func_set):
+def ComputingTree(tau, func_set, env_name):
     '''
     将操作符序列τ转化成一个计算树
     '''
@@ -68,11 +69,12 @@ def ComputingTree(tau, func_set):
             out = func_set[tree[i].i_func](*tree[i].i_inputs)
             # 如果是根节点,直接return
             if parent[i] == -1: 
-                # [-1, 1] mapping for CartPoleContinuous
-                return tanh(out, alpha=0.1)
-
-                # [0,50] mapping for Social-Production
-                # return sigmoid(out, alpha=0.1)*50
+                if env_name == 'CartPole':
+                    # [-1, 1] mapping for CartPoleContinuous
+                    return tanh(out, alpha=0.1)
+                elif env_name == 'SocialProduction':
+                    # [0,50] mapping for Social-Production
+                    return sigmoid(out, alpha=0.1)*50
 
             for j,k in enumerate(tree[parent[i]].i_inputs):
                 if k is None:

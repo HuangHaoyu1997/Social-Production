@@ -65,7 +65,7 @@ class Market(object):
         # bids
         for offer in self.Bids:
             if offer.Time <= time:
-                
+                pass
 
     def ComputeClearingPrice(self) -> float:   
         '''

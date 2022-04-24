@@ -34,7 +34,7 @@ plt.show()
 '''
 
 import torch
-from rl_cgp import REINFORCE, func_set, lstm
+from DSO_Gym import REINFORCE, func_set, lstm
 model_param = torch.load('./results/ckpt_CartPoleContinuous/reinforce-100.pkl')
 model = lstm(input_size = 2*len(func_set),
                                 hidden_size = 128, 

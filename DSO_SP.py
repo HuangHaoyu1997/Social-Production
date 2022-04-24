@@ -35,75 +35,29 @@ env.seed(config.seed)                                                 # 随机�
 torch.manual_seed(config.seed)                                        # Gym、numpy、Pytorch都要设置随机数种子
 np.random.seed(config.seed)
 
-def s0():
-    '''返回env状态的第0维度'''
-    return state[0]
-def s1():
-    '''返回env状态的第1维度'''
-    return state[1]
-def s2():
-    '''返回env状态的第2维度'''
-    return state[2]
-def s3():
-    '''返回env状态的第3维度'''
-    return state[3]
-def s4():
-    '''返回env状态的第4维度'''
-    return state[4]
-def s5():
-    '''返回env状态的第5维度'''
-    return state[5]
-def s6():
-    '''返回env状态的第6维度'''
-    return state[6]
-def s7():
-    '''返回env状态的第7维度'''
-    return state[7]
-def s8():
-    '''返回env状态的第8维度'''
-    return state[8]
-def s9():
-    '''返回env状态的第9维度'''
-    return state[9]
-def s10():
-    '''返回env状态的第10维度'''
-    return state[10]
-def s11():
-    '''返回env状态的第11维度'''
-    return state[11]
-def s12():
-    '''返回env状态的第12维度'''
-    return state[12]
-def s13():
-    '''返回env状态的第13维度'''
-    return state[13]
-def s14():
-    '''返回env状态的第14维度'''
-    return state[14]
-def s15():
-    '''返回env状态的第15维度'''
-    return state[15]
-def s16():
-    '''返回env状态的第16维度'''
-    return state[16]
-def s17():
-    '''返回env状态的第17维度'''
-    return state[17]
-def s18():
-    '''返回env状态的第18维度'''
-    return state[18]
-def s19():
-    '''返回env状态的第19维度'''
-    return state[19]
-def s20():
-    '''返回env状态的第20维度'''
-    return state[20]
-def s21():
-    '''返回env状态的第21维度'''
-    return state[21]
-def s22():
-    '''返回env状态的第22维度'''
-    return state[22]
+def s0(): return state[0]
+def s1(): return state[1]
+def s2(): return state[2]
+def s3(): return state[3]
+def s4(): return state[4]
+def s5(): return state[5]
+def s6(): return state[6]
+def s7(): return state[7]
+def s8(): return state[8]
+def s9(): return state[9]
+def s10():return state[10]
+def s11():return state[11]
+def s12():return state[12]
+def s13():return state[13]
+def s14():return state[14]
+def s15():return state[15]
+def s16():return state[16]
+def s17():return state[17]
+def s18():return state[18]
+def s19():return state[19]
+def s20():return state[20]
+def s21():return state[21]
+def s22():return state[22]
 
 func_set = [
     Function(op.add, 2),        # 0
@@ -184,12 +138,10 @@ class REINFORCE:
         print('done')
         return tau, log_prob, entropy
 
-    def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
-        
+    def update_parameters(self, rewards, log_probs, entropies):# 更新参数
         loss = 0
         # print(rewards)
         for i in reversed(range(len(rewards))):
-            
             R = Variable(torch.tensor(rewards[i]))
             loss = loss - log_probs[i]*R - 0.01*entropies[i]
         loss = loss / len(rewards)
@@ -227,10 +179,10 @@ for i_episode in range(config.num_episodes):
     log_probs = np.array(log_probs)[idx]
 
     # 1局游戏结束后开始更新参数
-    agent.update_parameters(rewards, log_probs, entropies, config.gamma)
+    agent.update_parameters(rewards, log_probs, entropies)
 
     if i_episode % config.ckpt_freq == 0:
-        torch.save(agent.model.state_dict(), os.path.join(dir, 'rl_sp-'+str(i_episode)+'.pkl'))
+        torch.save(agent.model.state_dict(), os.path.join(dir, 'dso_sp-'+str(i_episode)+'.pkl'))
     
     print("Episode: {}, reward: {}".format(i_episode, np.mean(rewards)))
 
