@@ -610,7 +610,7 @@ class Env:
             id = self.agent_pool[e].hire.index(worker)
             self.agent_pool[e].hire.pop(id) # 从雇佣者的雇佣名单中除名
         
-        if len(self.agent_pool[e].hire)==0: # 若Worker是其最后一个工人,则老板也失业
+        if len(self.agent_pool[e].hire)==0 and self.agent_pool[e].work==1: # 若Worker是其最后1个工人,则老板也失业
             self.broken(e)
 
     def event_simulator(self, event):

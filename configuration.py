@@ -95,7 +95,7 @@ class config:
     hidden_size = 128
     ckpt_freq = 10
     num_steps = 500
-    batch = 100 # generate 20 tau for once time
+    batch = 30 # generate 20 tau for once time
     max_step = 500
     display = False
     epsilon = 0.4 # 一次生成batch个tau,根据reward选择前90%的样本进行训练

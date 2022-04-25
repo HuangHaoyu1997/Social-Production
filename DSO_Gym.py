@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 from cgp import *
-from DSO import ParentSibling, ComputingTree
+from DSO import lstm, ParentSibling, ComputingTree
 from torch.distributions import Categorical
 from CartPoleContinuous import CartPoleContinuousEnv
 
@@ -24,13 +24,20 @@ import torch.optim as optim
 
 device = torch.device('cpu')
 
-env_name = 'CartPoleContinuous'
-env = CartPoleContinuousEnv()
+# env_name = 'CartPoleContinuous'
+# env = CartPoleContinuousEnv()
+env_name = 'LunarLander'
+env = gym.make('LunarLander-v2')
+obs_dim = env.observation_space.shape[0]
 state = env.reset()
 
 env.seed(config.seed)                                                 # 随机数种子
 torch.manual_seed(config.seed)                                        # Gym、numpy、Pytorch都要设置随机数种子
 np.random.seed(config.seed)
+
+def s(index):
+    return state[index]
+
 
 def s0():
     '''返回env状态的第0维度'''
@@ -44,6 +51,18 @@ def s2():
 def s3():
     '''返回env状态的第3维度'''
     return state[3]
+def s4():
+    '''返回env状态的第4维度'''
+    return state[4]
+def s5():
+    '''返回env状态的第5维度'''
+    return state[5]
+def s6():
+    '''返回env状态的第6维度'''
+    return state[6]
+def s7():
+    '''返回env状态的第7维度'''
+    return state[7]
 
 func_set = [
     Function(op.add, 2),        # 0
@@ -54,34 +73,16 @@ func_set = [
     Function(math.cos, 1),      # 5
     Function(ln, 1),      # 6
     Function(exp, 1),      # 7
-    Function(const_01, 0),      # 8
+    # Function(const_01, 0),      # 8
     # Function(const_1, 0),       # 9
     # Function(const_5, 0),       # 10
-    Function(s0, 0),# 9
-    Function(s1, 0),# 10
-    Function(s2, 0),# 11
-    Function(s3, 0),# 12
 ]
+state_f = [Function(s(index=i), 0, name='s'+str(i)) for i in range(obs_dim)]
+func_set.extend(state_f)
+for f in state_f:
+    print(f.name)
 
-class lstm(nn.Module):
-    def __init__(self,input_size, hidden_size, output_size, num_layer):
-        super(lstm,self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layer)
-        self.fc = nn.Linear(hidden_size, output_size)
-    
-    def forward(self, x, hn=None, cn=None):
-        if hn is not None and cn is not None:
-            x, (hn, cn) = self.lstm(x, (hn, cn))
-        else: x, (hn, cn) = self.lstm(x)
-        s, b, h = x.size() # s序列长度, b批大小, h隐层维度
-        # print(s,b,h,hn.shape,cn.shape)
-        x = x.view(s*b, h)
-        x = self.fc(x)
-        x = x.view(s, b, -1)
-        x = torch.softmax(x, dim=-1)
-        return x, hn, cn
-
-def policy_evaluator(tau, env, func_set, episode=config.Epoch):
+def policy_evaluator(tau, env, func_set, episode, env_name):
     '''
     policy evaluation
     policy is represented by a symbol sequence `tau`
@@ -93,13 +94,11 @@ def policy_evaluator(tau, env, func_set, episode=config.Epoch):
         s = env.reset()
         state = s
         done = False
-        reward = 0
         count = 0
         while not done:
-            action = ComputingTree(tau, func_set)
-            s, r, done, _ = env.step(np.array([action]))
+            action = ComputingTree(tau, func_set, env_name)
+            s, r, done, _ = env.step(np.array(action))
             state = s
-            reward += r
             count += 1
             if count >= config.max_step: break
             r_epi += r
@@ -154,7 +153,7 @@ def ApplyConstraints(tau, func_set):
     '''
     # 如果tau空集合,不能选择常量作为根节点
     if len(tau)==0:
-        mask = torch.tensor([0 if func_set[i].name in ['s0','s1','s2','s3'] else 1 for i in range(len(func_set))])
+        mask = torch.tensor([0 if func_set[i].name in [f.name for f in state_f] else 1 for i in range(len(func_set))])
         return mask
     
     # 如果tau非空
@@ -177,17 +176,14 @@ def ApplyConstraints(tau, func_set):
 
 class REINFORCE:
     def __init__(self, func_set, hidden_size):
-        '''
-        func_set: 符号库
         
-        '''
         self.model = lstm(input_size = 2*len(func_set),
                                 hidden_size = hidden_size, 
                                 output_size = len(func_set), 
                                 num_layer = 2
         )
         # self.model = self.model.cuda()                              # GPU版本
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-2) # 优化器
+        self.optimizer = optim.Adam(self.model.parameters(), lr=5e-3) # 优化器
         self.fs = func_set
         self.model.train()
 
@@ -198,7 +194,7 @@ class REINFORCE:
         # print('done')
         return tau, log_prob, entropy
 
-    def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
+    def update_parameters(self, rewards, log_probs, entropies):# 更新参数
         
         loss = 0
         # print(rewards)
@@ -217,7 +213,7 @@ class REINFORCE:
 if __name__ == '__main__':
     agent = REINFORCE(func_set, config.hidden_size)
 
-    dir = './results/ckpt_' + env_name
+    dir = './results/DSO_' + env_name
     if not os.path.exists(dir):    
         os.mkdir(dir)
 
@@ -231,7 +227,7 @@ if __name__ == '__main__':
             tau, log_prob, entropy = agent.symbolic_generator()
             
             # print(tau, log_prob, entropy)
-            reward = policy_evaluator(tau, env, func_set)
+            reward = policy_evaluator(tau, env, func_set, config.Epoch,env_name)
             if reward>rr: 
                 rr = reward
                 tt = tau
@@ -250,7 +246,7 @@ if __name__ == '__main__':
 
 
         # 1局游戏结束后开始更新参数
-        agent.update_parameters(rewards, log_probs, entropies, config.gamma)
+        agent.update_parameters(rewards, log_probs, entropies)
 
         if i_episode % config.ckpt_freq == 0:
             torch.save(agent.model.state_dict(), os.path.join(dir, '4.22-reinforce-'+str(i_episode)+'.pkl'))

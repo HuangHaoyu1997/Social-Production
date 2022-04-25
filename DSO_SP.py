@@ -8,7 +8,7 @@ import torch.nn as nn
 from cgp import *
 from utils import info_parser
 from env import Env
-from DSO import policy_evaluator, policy_generator
+from DSO import lstm, policy_evaluator, policy_generator
 import math, os, sys
 import numpy as np
 from function import *
@@ -91,24 +91,6 @@ func_set = [
     Function(s21, 0),
     Function(s22, 0),
 ]
-
-class lstm(nn.Module):
-    def __init__(self,input_size, hidden_size, output_size, num_layer):
-        super(lstm,self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layer)
-        self.fc = nn.Linear(hidden_size, output_size)
-    
-    def forward(self, x, hn=None, cn=None):
-        if hn is not None and cn is not None:
-            x, (hn, cn) = self.lstm(x, (hn, cn))
-        else: x, (hn, cn) = self.lstm(x)
-        s, b, h = x.size() # s序列长度, b批大小, h隐层维度
-        # print(s,b,h,hn.shape,cn.shape)
-        x = x.view(s*b, h)
-        x = self.fc(x)
-        x = x.view(s, b, -1)
-        x = torch.softmax(x, dim=-1)
-        return x, hn, cn
 
 
 class REINFORCE:

@@ -1,8 +1,28 @@
 from configuration import config
 import numpy as np
 import torch
+import torch.nn as nn
 from torch.distributions import Categorical
 from utils import info_parser, pt_onehot, tanh, sigmoid
+
+class lstm(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, num_layer):
+        super(lstm,self).__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layer)
+        self.fc = nn.Linear(hidden_size, output_size)
+    
+    def forward(self, x, hn=None, cn=None):
+        if hn is not None and cn is not None:
+            x, (hn, cn) = self.lstm(x, (hn, cn))
+        else: x, (hn, cn) = self.lstm(x)
+        s, b, h = x.size() # s序列长度, b批大小, h隐层维度
+        # print(s,b,h,hn.shape,cn.shape)
+        x = x.view(s*b, h)
+        x = self.fc(x)
+        x = x.view(s, b, -1)
+        x = torch.softmax(x, dim=-1)
+        return x, hn, cn
+
 
 def policy_evaluator(tau, env, func_set, episode, env_name):
     '''
@@ -61,7 +81,8 @@ def ComputingTree(tau, func_set, env_name):
     # 按照tau反向顺序,进行计算
     for i in reversed(range(len(tree))):
         if tree[i].arity==0:
-            out = func_set[tree[i].i_func]()
+            
+            out = func_set[tree[i].i_func].f
             for j,k in enumerate(tree[parent[i]].i_inputs):
                 if k is None:
                     tree[parent[i]].i_inputs[j] = out
@@ -71,9 +92,16 @@ def ComputingTree(tau, func_set, env_name):
             out = func_set[tree[i].i_func](*tree[i].i_inputs)
             # 如果是根节点,直接return
             if parent[i] == -1: 
-                if env_name == 'CartPole':
-                    # [-1, 1] mapping for CartPoleContinuous
+                if env_name == 'CartPole':# [-1, 1] mapping for CartPoleContinuous
                     return tanh(out, alpha=0.1)
+                
+                elif env_name == 'LunarLander':
+                    tmp = sigmoid(out, alpha=0.1)
+                    if 0.00<=tmp and tmp<0.25: return 0
+                    if 0.25<=tmp and tmp<0.50: return 1
+                    if 0.50<=tmp and tmp<0.75: return 2
+                    if 0.75<=tmp and tmp<=1.00: return 3
+                
                 elif env_name == 'SocialProduction':
                     # [0,50] mapping for Social-Production
                     return sigmoid(out, alpha=0.1)*50
