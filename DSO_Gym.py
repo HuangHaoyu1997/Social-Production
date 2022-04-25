@@ -236,7 +236,7 @@ if __name__ == '__main__':
             log_probs.append(log_prob)
             rewards.append(reward)
         print(rr,tt)
-        # 截取reward排前90%的样本
+        # 截取reward排前60%的样本
         length = int(config.batch*(1-config.epsilon))
         idx = np.array(rewards).argsort()[::-1][:length]
         
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         agent.update_parameters(rewards, log_probs, entropies)
 
         if i_episode % config.ckpt_freq == 0:
-            torch.save(agent.model.state_dict(), os.path.join(dir, '4.22-reinforce-'+str(i_episode)+'.pkl'))
+            torch.save(agent.model.state_dict(), os.path.join(dir, '4.25-reinforce-'+str(i_episode)+'.pkl'))
         
         print("Episode: {}, reward: {}".format(i_episode, np.mean(rewards)))
 
