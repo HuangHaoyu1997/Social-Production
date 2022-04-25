@@ -1,13 +1,12 @@
 '''
 Social Production的运行示例
 '''
-import matplotlib
+import matplotlib, pickle, os, time
 import matplotlib.pyplot as plt
 import numpy as np
 from configuration import config
 from utils import *
 from env import Env
-import pickle, os, time
 from collections import Counter
 matplotlib.use('pdf') # 不显示图片,直接保存pdf
 
@@ -36,14 +35,7 @@ for i in range(10):
         if env.t % 100 == 0:
             with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
                 pickle.dump(data, f)
-        '''
-        # 收集数据
-        '''
-        
-        '''
-        
-        #### Render
-        
+        '''        
     print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), Counter(env.death_log)[1],Counter(env.death_log)[2],len(env.death_log))
 print('done')
 time.sleep(7200)

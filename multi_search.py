@@ -43,7 +43,6 @@ warnings.filterwarnings('ignore')
 np.random.seed(config.seed)
 random.seed(config.seed)
 
-
 def func(idx, pop):
     '''
     子进程所执行的函数
@@ -55,12 +54,11 @@ def func(idx, pop):
     tick = time.time()
     # 遍历每个individual
     for p in pop:
-        r_ind = 0
+        reward = 0
         # 每个individual测试5个episode
         
         for i in range(config.Epoch):
             info = env.reset() # ; s = info_parser(info)
-            r_epoch = 0
             done = False
             while not done:
                 # action = p.eval(*s)
@@ -68,11 +66,10 @@ def func(idx, pop):
                 action = uniform(0,100)
                 info, r, done = env.step(action)
                 # s = info_parser(info)
-                r_epoch += r
-            r_ind += r_epoch
-        r_ind /= config.Epoch
-        p.fitness = r_ind
-        reward_pop.append(r_ind)
+                reward += r
+        reward /= config.Epoch
+        p.fitness = reward
+        reward_pop.append(reward)
     print(idx, (time.time()-tick) / (len(pop)*config.Epoch))
     '''
     with open('./tmp/'+str(idx)+'.pkl','wb') as f:
@@ -81,7 +78,7 @@ def func(idx, pop):
     '''
     # print(idx,' finished!')
 
-pop = create_population(config.MU+config.LAMBDA,input_dim=22,out_dim=1)
+pop = create_population(config.MU+config.LAMBDA, input_dim=23, out_dim=1)
 best_f = -inf
 best_ff = -inf
 best_ind = None
@@ -121,7 +118,7 @@ for g in range(config.N_GEN):
     print(g,'time for one generation:', time.time()-tick, pop[0].fitness)
     #if pop[0].fitness > config.solved:
     if g % 10 == 9:
-        with open('./results/SP-'+str(g)+'.pkl','wb') as f:
+        with open('./results/CGP_SP-'+str(g)+'.pkl','wb') as f:
             pickle.dump(pop,f)
 
 env = Env()
