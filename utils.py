@@ -431,7 +431,7 @@ def tSNE(X, label=None):
     plt.xticks([])
     plt.yticks([])
     plt.show()'''
-    return X_norm
+    return X_tsne, X_norm
 
 if __name__ == "__main__":
     pass

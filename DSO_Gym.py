@@ -209,6 +209,19 @@ class REINFORCE:
         utils.clip_grad_norm_(self.model.parameters(), 10)             # 梯度裁剪，梯度的最大L2范数=40
         self.optimizer.step()
 
+def load_test():
+    model_param = torch.load('./results/ckpt_CartPoleContinuous/reinforce-100.pkl')
+    model = lstm(input_size = 2*len(func_set),
+                                    hidden_size = 128, 
+                                    output_size = len(func_set), 
+                                    num_layer = 2
+            )
+    model.load_state_dict(model_param)
+    agent = REINFORCE(func_set, 128)
+    agent.model = model
+    for _ in range(10):
+        tau, _, _ = agent.symbolic_generator()
+        print(tau)
 
 if __name__ == '__main__':
     agent = REINFORCE(func_set, config.hidden_size)

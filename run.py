@@ -24,18 +24,30 @@ for i in range(10):
     env.reset()
     data = []
     
+    count = 0
     while not done:
-        info, reward, done = env.step( uniform(0,100) ) # np.zeros((config.N1))
+        if count <= 100:
+            action = 30.0
+        else:
+            action = 80.0
+        info, reward, done = env.step( action ) # np.zeros((config.N1))
+        data.append(info_parser(info))
+
         for event_point in config.event_point:
             if abs(env.t - event_point) <= config.event_duration: # t%100 == 99:
                 env.event_simulator('GreatDepression')
-        if done: env.render()
+        count += 1
+        run_time = (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))[:19]
+        if done: env.render('./results/exp1/'+run_time+'_'+'test'+'.pdf')
         '''
         data.extend(data_step)
         if env.t % 100 == 0:
             with open('./data/consume_data_'+run_time+'.pkl','wb') as f:
                 pickle.dump(data, f)
-        '''        
+        '''
+    with open('./data/tSNE-simulation.pkl','wb') as f:
+        pickle.dump(data, f)
     print('total time: %.3f,time per step:%.3f'%(time.time()-tick, (time.time()-tick)/config.T), Counter(env.death_log)[1],Counter(env.death_log)[2],len(env.death_log))
 print('done')
 time.sleep(7200)
+

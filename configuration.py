@@ -11,7 +11,7 @@ class config:
     render_freq = 200           # 每100step保存figure
     N1 = 100                    # 初始人口
     N2 = 12000                  # 目标人口,即经过T步仿真后人口
-    T = 200                     # 仿真步长
+    T = 500                     # 仿真步长
     Year = 100                  # 仿真100年
 
     # for agent

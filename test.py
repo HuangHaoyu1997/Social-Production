@@ -1,7 +1,8 @@
-import os
-from statistics import mode
+import os, pickle
 import matplotlib.pyplot as plt
 import numpy as np
+
+from utils import tSNE
 '''
 file_list = os.listdir('./results/exp6')
 rewards = []
@@ -33,20 +34,14 @@ plt.grid()
 plt.show()
 '''
 
-import torch
-from DSO_Gym import REINFORCE, func_set, lstm
-model_param = torch.load('./results/ckpt_CartPoleContinuous/reinforce-100.pkl')
-model = lstm(input_size = 2*len(func_set),
-                                hidden_size = 128, 
-                                output_size = len(func_set), 
-                                num_layer = 2
-        )
-model.load_state_dict(model_param)
-agent = REINFORCE(func_set, 128)
-agent.model = model
-for _ in range(10):
-    tau, _, _ = agent.symbolic_generator()
-    print(tau)
+with open('./data/tSNE-simulation.pkl','rb') as f:
+    data = pickle.load(f)
+data = np.array(data)
+
+data,_ = tSNE(data)
+plt.figure(1)
+plt.scatter(data[:,0],data[:,1], c=list(range(0, 501)))
+plt.show()
 
 
 

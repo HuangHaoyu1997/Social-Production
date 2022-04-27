@@ -731,7 +731,7 @@ class Env:
             raise NotImplementedError
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
 
-    def render(self, file_name=None):
+    def render(self, file_name):
         '''
         可视化,
         '''
@@ -810,10 +810,7 @@ class Env:
         # TODO 如何动态显示大规模nx.Graph?
         
         plt.pause(0.0001)
-        if file_name is not None:
-            plt.savefig('./results/exp6/'+self.run_time+'_'+file_name+'_'+str(self.t)+'.pdf')
-        else:
-            plt.savefig('./results/exp6/'+self.run_time+'_'+str(self.t)+'.pdf')
+        plt.savefig(file_name)
         plt.clf()
         plt.close()
 
