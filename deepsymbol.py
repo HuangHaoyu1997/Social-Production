@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 import numpy as np
+from function import Function
 
 import gym
 
@@ -48,14 +49,36 @@ class DeepSymbol():
         print(log_prob)
 
         # calculate upper bound of entropy for joint symbol categorical distribution
+        entropies = 0
         for i in range(idx.size()[0]):
             for j in range(idx.size()[1]):
                 p = matrix_prob[i, j]
                 dist = Categorical(p)
                 entropy = dist.entropy()
-                print(entropy)
+                entropies += entropy
+        print(entropies)
         # print(idx.shape, x.shape)
+        print(idx)
 
+def torchInv(x):
+    return torch.pow(x, -1)
+torch.square
+func_set = [
+    Function(torch.add, 2, 'torchAdd'),
+    Function(torch.sub, 2, 'torchSub'),
+    Function(torch.mul, 2, 'torchMul'),
+    Function(torch.div, 2, 'torchDiv'),
+
+    Function(torch.log, 1, 'torchLog'),
+    Function(torch.sin, 1, 'torchSin'),
+    Function(torch.cos, 1, 'torchCos'),
+    Function(torch.exp, 1, 'torchExp'),
+    Function(torch.neg, 1, 'torchNeg'),
+    Function(torch.abs, 1, 'torchAbs'),
+
+
+
+]
 
 ds = DeepSymbol()
 ds.sym_mat(s)
