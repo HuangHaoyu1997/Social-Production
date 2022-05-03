@@ -59,15 +59,21 @@ class DeepSymbol():
         print(entropies)
         # print(idx.shape, x.shape)
         print(idx)
+    
+    def execute(self, idx):
+        
 
 def torchInv(x):
     return torch.pow(x, -1)
-torch.square
+def torchConst(x):
+    return torch.pow(x, 0)
 func_set = [
     Function(torch.add, 2, 'torchAdd'),
     Function(torch.sub, 2, 'torchSub'),
     Function(torch.mul, 2, 'torchMul'),
     Function(torch.div, 2, 'torchDiv'),
+    Function(torch.max, 2, 'torchMax'),
+    Function(torch.min, 2, 'torchMin'),
 
     Function(torch.log, 1, 'torchLog'),
     Function(torch.sin, 1, 'torchSin'),
@@ -75,8 +81,12 @@ func_set = [
     Function(torch.exp, 1, 'torchExp'),
     Function(torch.neg, 1, 'torchNeg'),
     Function(torch.abs, 1, 'torchAbs'),
-
-
+    Function(torch.square, 1, 'torchX^2'),
+    Function(torch.sqrt, 1, 'torchSqrt'),
+    Function(torch.sign, 1, 'torchSgn'),
+    Function(torch.relu, 1, 'torchRelu'),
+    Function(torchInv, 1, 'torchInv'),
+    Function(torchConst, 1, 'torchConst')
 
 ]
 
