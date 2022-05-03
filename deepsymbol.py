@@ -7,9 +7,6 @@ from function import Function
 
 import gym
 
-env = gym.make('CartPole-v1')
-s = env.reset()
-
 class Model(nn.Module):
     def __init__(self, inpt_dim, hid_dim, dict_dim, ):
         super(Model, self).__init__()
@@ -29,8 +26,15 @@ class Model(nn.Module):
         return x
 
 class DeepSymbol():
-    def __init__(self) -> None:
-        self.model = Model(inpt_dim=4, hid_dim=12, dict_dim=5)
+    def __init__(self, func_set) -> None:
+        self.env = gym.make('CartPole-v1')
+        self.inpt_dim = self.env.observation_space.shape[0]
+        # s = self.env.reset()
+        self.func_set = func_set
+        self.dict_dim = len(func_set)
+        self.model = Model(inpt_dim = self.inpt_dim,
+         hid_dim=12, 
+         dict_dim=self.dict_dim)
 
     def sym_mat(self, state):
         '''
@@ -46,7 +50,6 @@ class DeepSymbol():
         for i in range(idx.size()[0]):
             for j in range(idx.size()[1]):
                 log_prob += matrix_prob[i, j, idx[i,j]].log()
-        print(log_prob)
 
         # calculate upper bound of entropy for joint symbol categorical distribution
         entropies = 0
@@ -56,17 +59,38 @@ class DeepSymbol():
                 dist = Categorical(p)
                 entropy = dist.entropy()
                 entropies += entropy
-        print(entropies)
-        # print(idx.shape, x.shape)
-        print(idx)
-    
-    def execute(self, idx):
         
+        return idx, log_prob, entropies
+    
+    def execute(self, state, idx):
+        '''
+        do the symbolic calculation using state vector
+        '''
+        state = torch.tensor(state)
+        tmp = torch.zeros_like(idx, dtype=torch.float32)
+        for i in range(idx.size()[0]):
+            for j in range(idx.size()[1]):
+                arity = self.func_set[idx[i,j]].arity
+                if arity == 1:
+                    inpt = torch.tensor([state[i]])
+                elif arity == 2:
+                    inpt = torch.tensor([state[i], state[j]])
+                # print(idx[i,j], self.func_set[idx[i,j]].name, inpt)
+                tmp[i,j] = self.func_set[idx[i,j]](*inpt)
+        return tmp.sum()
+    
+    def test(self, ):
+        s = self.env.reset()
+        idx, _, _ = self.sym_mat(s)
+        action = self.execute(s, idx)
+        print(action)
 
 def torchInv(x):
     return torch.pow(x, -1)
 def torchConst(x):
     return torch.pow(x, 0)
+def torchNone(x):
+    return torch.tensor(0.)
 func_set = [
     Function(torch.add, 2, 'torchAdd'),
     Function(torch.sub, 2, 'torchSub'),
@@ -75,20 +99,21 @@ func_set = [
     Function(torch.max, 2, 'torchMax'),
     Function(torch.min, 2, 'torchMin'),
 
-    Function(torch.log, 1, 'torchLog'),
+    # Function(torch.log, 1, 'torchLog'),
     Function(torch.sin, 1, 'torchSin'),
     Function(torch.cos, 1, 'torchCos'),
-    Function(torch.exp, 1, 'torchExp'),
+    # Function(torch.exp, 1, 'torchExp'),
     Function(torch.neg, 1, 'torchNeg'),
     Function(torch.abs, 1, 'torchAbs'),
-    Function(torch.square, 1, 'torchX^2'),
-    Function(torch.sqrt, 1, 'torchSqrt'),
-    Function(torch.sign, 1, 'torchSgn'),
-    Function(torch.relu, 1, 'torchRelu'),
+    # Function(torch.square, 1, 'torchX^2'),
+    # Function(torch.sqrt, 1, 'torchSqrt'),
+    # Function(torch.sign, 1, 'torchSgn'),
+    # Function(torch.relu, 1, 'torchRelu'),
     Function(torchInv, 1, 'torchInv'),
-    Function(torchConst, 1, 'torchConst')
+    Function(torchConst, 1, 'torchConst'),
+    Function(torchNone, 1, 'torchNone'),
 
 ]
 
-ds = DeepSymbol()
-ds.sym_mat(s)
+ds = DeepSymbol(func_set)
+ds.test()
