@@ -1,7 +1,9 @@
-from turtle import forward
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.distributions import Categorical
+import numpy as np
+
 import gym
 
 env = gym.make('CartPole-v1')
@@ -21,12 +23,39 @@ class Model(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = x.view(self.inpt_dim, self.inpt_dim, self.dict_dim)
-        x = F.softmax(x, dim=-1)
-        idx = torch.argmax(x,dim=-1).unsqueeze_(0)
-        print(idx.shape, x.shape)
+        x = F.softmax(x, dim=-1) # x.shape=(4,4,5)
+        
         return x
 
-model = Model(inpt_dim=4, hid_dim=12, dict_dim=5)
-sym_mat = model(torch.tensor(s))
-# print(sym_mat[1,:,:])
+class DeepSymbol():
+    def __init__(self) -> None:
+        self.model = Model(inpt_dim=4, hid_dim=12, dict_dim=5)
 
+    def sym_mat(self, state):
+        '''
+        generate the symbol matrix for observation vector
+        '''
+        matrix_prob = self.model(torch.tensor(state))
+        
+        # find the max prob symbol for each position in matrix
+        idx = torch.argmax(matrix_prob, dim=-1)
+        
+        # calculate the joint log prob for all symbol selected
+        log_prob = 0
+        for i in range(idx.size()[0]):
+            for j in range(idx.size()[1]):
+                log_prob += matrix_prob[i, j, idx[i,j]].log()
+        print(log_prob)
+
+        # calculate upper bound of entropy for joint symbol categorical distribution
+        for i in range(idx.size()[0]):
+            for j in range(idx.size()[1]):
+                p = matrix_prob[i, j]
+                dist = Categorical(p)
+                entropy = dist.entropy()
+                print(entropy)
+        # print(idx.shape, x.shape)
+
+
+ds = DeepSymbol()
+ds.sym_mat(s)
