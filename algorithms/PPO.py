@@ -134,7 +134,7 @@ class PPO:
         self.policy_old.load_state_dict(self.policy.state_dict())
 def main():
     ############## Hyperparameters ##############
-    env_name = "BipedalWalker-v2"
+    env_name = "BipedalWalker-v3"
     render = False
     solved_reward = 300         # stop training if avg_reward > solved_reward
     log_interval = 20           # print avg reward in the interval
@@ -230,7 +230,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def test():
     ############## Hyperparameters ##############
-    env_name = "BipedalWalker-v2"
+    env_name = "BipedalWalker-v3"
     env = gym.make(env_name)
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
