@@ -6,11 +6,9 @@ import numpy as np
 from function import Function
 import argparse, math, os, sys, gym, torch
 from function import *
+from utils import tanh
 from configuration import config
 from CartPoleContinuous import CartPoleContinuousEnv
-from torch.autograd import Variable
-import torch.autograd as autograd
-import torch.nn.utils as utils
 import torch.nn.functional as F
 import torch.optim as optim
 
@@ -85,6 +83,7 @@ class DeepSymbol():
         # state = torch.tensor(state)
         idx, log_prob, entropy = self.sym_mat(state)
         action = self.execute(state, idx)
+        action = ,action.item()
         return action, log_prob, entropy
 
     def sym_mat(self, state):
@@ -133,6 +132,7 @@ class DeepSymbol():
 
 
 ds = DeepSymbol(env, func_set)
+ds.select_action(env.reset())
 
 
 
