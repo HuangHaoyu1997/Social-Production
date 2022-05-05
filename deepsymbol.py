@@ -32,21 +32,21 @@ func_set = [
     Function(torch.sub, 2, 'torchSub'),
     Function(torch.mul, 2, 'torchMul'),
     Function(torch.div, 2, 'torchDiv'),
-    Function(torch.max, 2, 'torchMax'),
-    Function(torch.min, 2, 'torchMin'),
+    # Function(torch.max, 2, 'torchMax'),
+    # Function(torch.min, 2, 'torchMin'),
 
     # Function(torch.log, 1, 'torchLog'),
     Function(torch.sin, 1, 'torchSin'),
     Function(torch.cos, 1, 'torchCos'),
     # Function(torch.exp, 1, 'torchExp'),
     Function(torch.neg, 1, 'torchNeg'),
-    Function(torch.abs, 1, 'torchAbs'),
+    # Function(torch.abs, 1, 'torchAbs'),
     # Function(torch.square, 1, 'torchX^2'),
     # Function(torch.sqrt, 1, 'torchSqrt'),
     # Function(torch.sign, 1, 'torchSgn'),
     # Function(torch.relu, 1, 'torchRelu'),
-    Function(torchInv, 1, 'torchInv'),
-    Function(torchConst, 1, 'torchConst'),
+    # Function(torchInv, 1, 'torchInv'),
+    # Function(torchConst, 1, 'torchConst'),
     Function(torchNone, 1, 'torchNone'),
 ]
 
@@ -69,7 +69,7 @@ class Model(nn.Module):
         return x
 
 class DeepSymbol():
-    def __init__(self, inpt_dim, hid_dim, func_set) -> None:
+    def __init__(self, inpt_dim, hid_dim, func_set, lr) -> None:
         self.inpt_dim = inpt_dim
         # s = self.env.reset()
         self.func_set = func_set
@@ -77,7 +77,7 @@ class DeepSymbol():
         self.model = Model(inpt_dim = self.inpt_dim,
                             hid_dim = hid_dim, 
                             dict_dim= self.dict_dim)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-2)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.model.train()
     
     def select_action(self, state):
@@ -124,28 +124,28 @@ class DeepSymbol():
                 if arity == 1:
                     inpt = torch.tensor([state[0,i]])
                 elif arity == 2:
-                    print(state[0,i], state[0,j])
                     inpt = torch.tensor([state[0,i], state[0,j]])
                 # print(idx[i,j], self.func_set[idx[i,j]].name, inpt)
                 tmp[i,j] = self.func_set[idx[i,j]](*inpt)
         return tmp.sum()
     
     def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
-        R = torch.zeros(1, 1)
+        R = torch.tensor(0.)
         loss = 0
         for i in reversed(range(len(rewards))):
             R = gamma * R + rewards[i]                                # 倒序计算累计期望
             # loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i])).cuda()).sum() - (0.0001*entropies[i].cuda()).sum()
-            loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i]))).sum() - (0.001*entropies[i]).sum()
+            # print(log_probs[i], rewards[i], R, entropies[i])
+            loss = loss - (log_probs[i]*(R.expand_as(log_probs[i]))).sum() - (0.001*entropies[i]).sum()
         loss = loss / len(rewards)
 
         self.optimizer.zero_grad()
         loss.backward()
-        utils.clip_grad_norm_(self.model.parameters(), 10)             # 梯度裁剪，梯度的最大L2范数=40
+        utils.clip_grad_norm_(self.model.parameters(), 40)             # 梯度裁剪，梯度的最大L2范数=40
         self.optimizer.step()
 
 
-ds = DeepSymbol(inpt_dim=4, hid_dim=16, func_set=func_set)
+ds = DeepSymbol(inpt_dim=4, hid_dim=32, func_set=func_set, lr=1e-3)
 dir = './results/ckpt_deepsymbol_' + env_name
 
 if not os.path.exists(dir):    
