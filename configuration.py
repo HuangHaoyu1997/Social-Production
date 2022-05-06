@@ -92,6 +92,7 @@ class config:
     gamma = 0.99
     lr = 1e-2
     num_episodes = 200000000
+    max_episode = 10 # test 10 episodes for one policy and average the total reward
     hidden_size = 128
     ckpt_freq = 10
     num_steps = 500

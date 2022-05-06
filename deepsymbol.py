@@ -169,6 +169,7 @@ for i_episode in range(config.num_episodes):
     entropies = []
     log_probs = []
     rewards = []
+    test(env, ds)
 
     for t in range(config.num_steps): # 1个episode最长持续的timestep
         action, log_prob, entropy = ds.select_action(state)
