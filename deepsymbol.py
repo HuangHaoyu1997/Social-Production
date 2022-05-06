@@ -151,11 +151,25 @@ dir = './results/ckpt_deepsymbol_' + env_name
 if not os.path.exists(dir):    
     os.mkdir(dir)
 
+def test(env, policy:DeepSymbol, num_episode=config.num_episodes):
+    reward = 0
+    for epi in range(num_episode):
+        done = False
+        state = env.reset()
+        for t in range(config.num_steps):
+            action, _, _ = policy.select_action(state)
+            state, r, done, _ = env.step(np.array([action]))
+            reward += r
+            if done: break
+    return reward / num_episode
+
+
 for i_episode in range(config.num_episodes):
     state = torch.Tensor([env.reset()])
     entropies = []
     log_probs = []
     rewards = []
+
     for t in range(config.num_steps): # 1个episode最长持续的timestep
         action, log_prob, entropy = ds.select_action(state)
         next_state, reward, done, _ = env.step(np.array([action]))
