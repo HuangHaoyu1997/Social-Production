@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils as utils
 from torch.distributions import Categorical, Beta
-import torch.autograd.variable as Variable
 import numpy as np
 from function import Function
 import argparse, math, os, sys, gym, torch
@@ -51,21 +50,14 @@ func_set = [
 ]
 
 class Model(nn.Module):
-    def __init__(self, inpt_dim, hid_dim, dict_dim, ):
+    def __init__(self, inpt_dim, dict_dim, ):
         super(Model, self).__init__()
         self.inpt_dim = inpt_dim 
-        self.hid_dim = hid_dim
         self.dict_dim = dict_dim
-        self.fc1 = nn.Linear(inpt_dim, hid_dim)
-        self.fc2 = nn.Linear(hid_dim, dict_dim*inpt_dim*inpt_dim)
+        self.symbol_matrix = torch.rand(inpt_dim, inpt_dim, dict_dim)
 
-    def forward(self, x, ):
-        
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = x.view(self.inpt_dim, self.inpt_dim, self.dict_dim)
-        x = F.softmax(x, dim=-1) # x.shape=(4,4,5)
-        
+    def forward(self, ):
+        x = F.softmax(self.symbol_matrix, dim=-1) # x.shape=(4,4,5)
         return x
 
 class DeepSymbol():
@@ -75,23 +67,22 @@ class DeepSymbol():
         self.func_set = func_set
         self.dict_dim = len(func_set)
         self.model = Model(inpt_dim = self.inpt_dim,
-                            hid_dim = hid_dim, 
                             dict_dim= self.dict_dim)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.model.train()
     
-    def select_action(self, state):
+    def select_action(self, idx, state):
         # state = torch.tensor(state)
-        idx, log_prob, entropy = self.sym_mat(state)
+        # idx, log_prob, entropy = self.sym_mat(state)
         action = self.execute_symbol_mat(state, idx)
-        action = tanh(action.item(), alpha=0.05)
-        return action, log_prob, entropy
+        action = tanh(action.item(), alpha=0.1)
+        return action
 
-    def sym_mat(self, state):
+    def sym_mat(self,):
         '''
-        generate the symbol matrix for observation vector
+        get symbol matrix for policy
         '''
-        matrix_prob = self.model(state)
+        matrix_prob = self.model()
         
         # find the max prob symbol for each position in matrix
         idx = torch.argmax(matrix_prob, dim=-1)
@@ -122,22 +113,18 @@ class DeepSymbol():
             for j in range(idx.size()[1]):
                 arity = self.func_set[idx[i,j]].arity
                 if arity == 1:
-                    inpt = torch.tensor([state[0,i]])
+                    inpt = torch.tensor([state[i]])
                 elif arity == 2:
-                    inpt = torch.tensor([state[0,i], state[0,j]])
+                    inpt = torch.tensor([state[i], state[j]])
                 # print(idx[i,j], self.func_set[idx[i,j]].name, inpt)
                 tmp[i,j] = self.func_set[idx[i,j]](*inpt)
         return tmp.sum()
     
-    def update_parameters(self, rewards, log_probs, entropies, gamma):# 更新参数
-        R = torch.tensor(0.)
-        loss = 0
-        for i in reversed(range(len(rewards))):
-            R = gamma * R + rewards[i]                                # 倒序计算累计期望
-            # loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i])).cuda()).sum() - (0.0001*entropies[i].cuda()).sum()
-            # print(log_probs[i], rewards[i], R, entropies[i])
-            loss = loss - (log_probs[i]*(R.expand_as(log_probs[i]))).sum() - (0.001*entropies[i]).sum()
-        loss = loss / len(rewards)
+    def update_parameters(self, reward, log_prob, entropy, gamma):# 更新参数
+        R = torch.tensor(reward)                                # 倒序计算累计期望
+        # loss = loss - (log_probs[i]*(Variable(R).expand_as(log_probs[i])).cuda()).sum() - (0.0001*entropies[i].cuda()).sum()
+        # print(log_probs[i], rewards[i], R, entropies[i])
+        loss = -log_prob*R - 0.001*entropy
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -145,51 +132,33 @@ class DeepSymbol():
         self.optimizer.step()
 
 
-ds = DeepSymbol(inpt_dim=4, hid_dim=32, func_set=func_set, lr=1e-3)
+ds = DeepSymbol(inpt_dim=4, hid_dim=32, func_set=func_set, lr=1e-2)
 dir = './results/ckpt_deepsymbol_' + env_name
 
 if not os.path.exists(dir):    
     os.mkdir(dir)
 
-def test(env, policy:DeepSymbol, num_episode=config.num_episodes):
+def test(env, policy:DeepSymbol, num_episode=config.max_episode):
     reward = 0
     for epi in range(num_episode):
         done = False
         state = env.reset()
+        idx, log_prob, entropy = ds.sym_mat(torch.rand(1,4))
         for t in range(config.num_steps):
-            action, _, _ = policy.select_action(state)
+            action = policy.select_action(idx, state)
             state, r, done, _ = env.step(np.array([action]))
             reward += r
             if done: break
-    return reward / num_episode
-
+    return reward / num_episode, log_prob, entropy
 
 for i_episode in range(config.num_episodes):
-    state = torch.Tensor([env.reset()])
-    entropies = []
-    log_probs = []
-    rewards = []
-    test(env, ds)
-
-    for t in range(config.num_steps): # 1个episode最长持续的timestep
-        action, log_prob, entropy = ds.select_action(state)
-        next_state, reward, done, _ = env.step(np.array([action]))
-
-        entropies.append(entropy)
-        log_probs.append(log_prob)
-        rewards.append(reward)
-        state = torch.Tensor([next_state])
-
-        if done:
-            break
-    # 1局游戏结束后开始更新参数
-    ds.update_parameters(rewards, log_probs, entropies, config.gamma)
-
+    reward, log_prob, entropy = test(env, ds)
+    ds.update_parameters(reward, log_prob, entropy, config.gamma)
 
     if i_episode % config.ckpt_freq == 0:
         torch.save(ds.model.state_dict(), os.path.join(dir, 'VPG-'+str(i_episode)+'.pkl'))
 
-    print("Episode: {}, reward: {}".format(i_episode, np.sum(rewards)))
+    print("Episode: {}, reward: {}".format(i_episode, reward))
 
 env.close()
 
