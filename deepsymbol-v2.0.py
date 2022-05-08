@@ -54,11 +54,18 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.inpt_dim = inpt_dim 
         self.dict_dim = dict_dim
+        self.fc = nn.Linear(1, inpt_dim*inpt_dim*self.dict_dim)
         self.symbol_matrix = torch.rand(inpt_dim, inpt_dim, dict_dim)
 
     def forward(self, ):
-        x = F.softmax(self.symbol_matrix, dim=-1) # x.shape=(4,4,5)
+        x = self.fc(torch.tensor([0.]))
+        x = x.view(self.inpt_dim, self.inpt_dim, self.dict_dim)
+        x = F.softmax(x, dim=-1) # x.shape=(4,4,5)
         return x
+import cma
+cma.CMAEvolutionStrategy()
+model = Model(4, len(func_set))
+print(model.fc.parameters())
 
 class DeepSymbol():
     def __init__(self, inpt_dim, hid_dim, func_set, lr) -> None:
@@ -66,6 +73,7 @@ class DeepSymbol():
         # s = self.env.reset()
         self.func_set = func_set
         self.dict_dim = len(func_set)
+
         self.model = Model(inpt_dim = self.inpt_dim,
                             dict_dim= self.dict_dim)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
