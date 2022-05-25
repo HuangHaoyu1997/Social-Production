@@ -20,6 +20,7 @@ class Memory:
         del self.logprobs[:]
         del self.rewards[:]
         del self.is_terminals[:]
+
 class ActorCritic(nn.Module):
     def __init__(self, state_dim, action_dim, action_std):
         super(ActorCritic, self).__init__()
