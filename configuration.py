@@ -102,3 +102,34 @@ class config:
     epsilon = 0.4 # 一次生成batch个tau,根据reward选择前90%的样本进行训练
 
 
+class CCMABM_Config:
+    T = 3000 # number of simulation periods
+    H = 3000 # number of workers
+    Fc = 200 # number of C-firms
+    Fk = 50  # number of K-firms
+    Ze = 5   # number of firms visited by a unemployed worker
+    Zc = 2   # number of C-firms visited by a consumer
+    Zk = 2   # number of K-firms visited by a C-firm
+    ksi = 0.96 # Memory parameter (human wealth)
+    tau = 0.2  # Dividend payout ratio派息率
+    chi = 0.05 # Fraction of wealth devoted to consumption用于消费的财富比例
+    r = 0.01   # risk free interest rate无风险利率
+    rho = 0.9  # Quantity adjustment parameter数量调整参数
+    import random
+    eta = random.uniform(0, 0.1) # Price adjustment parameter (random variable)
+    mu = 1.2   # Bank's gross mark-up
+    alpha = 0.5 # Productivity of labor
+    kappa = 1/3 # Productivity of capital
+    gamma = 0.25 # Probability of investing
+    zeta = 0.002 # Bank's loss parameter
+    theta = 0.05 # Installment on Debt债务分期付款
+    delta = 0.02 # Depreciation of capital资本折旧
+    nu = 0.5     # Memory parameter (investment)
+    omega_ = 0.85 # Desired capacity utilization rate所需产能利用率
+    w = 1 # wage工资
+    Df1 = 10 # Initial liquidity of (all) the firms所有公司的初始流动性
+    K1 = 10  # Initial capital初始资本
+    Yc1 = 5  # Initial production (C-firms)C公司初始产量
+    Yk1 = 3  # Initial production (K-firms)K公司初始产量
+    Eb1 = 3000 # Initial equity of the bank银行的初始抵押资产的净值
+    Eh1 = 2 # Initial households’ personal assets初始家庭个人资产
