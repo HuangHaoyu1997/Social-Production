@@ -2,10 +2,7 @@
 Cartesian genetic programming
 """
 
-import random
-import copy
-import math
-from sre_parse import Verbose
+import random, copy
 import numpy as np
 from function import *
 from configuration import config
@@ -14,13 +11,9 @@ np.random.seed(config.seed)
 random.seed(config.seed)
 
 class Node:
-    """
-    A node in CGP graph
-    """
+    """A node in CGP graph"""
     def __init__(self, arity):
-        """
-        Initialize this node randomly
-        """
+        """Initialize this node randomly"""
         self.arity = arity
         self.i_func = None # 该节点的函数在函数集的index
         self.i_inputs = [None] * arity
@@ -29,24 +22,25 @@ class Node:
         self.output = None
         self.active = False
 
-
 class Individual:
-    """
-    An individual (chromosome, genotype, etc.) in evolution
+    """An individual (chromosome, genotype, etc.) in evolution"""
     
-    """
-    max_arity = 3
+    # 以下是class变量，init内是实例化object的变量
+    # max_arity = 3
     
     n_cols = config.N_COLS # number of cols (nodes) in a single-row CGP
     level_back = config.LEVEL_BACK # 后面的节点可以最远连接的前面节点的相对位置
     fitness = None
 
-    def __init__(self,input_dim,out_dim,function_set=fs):
+    def __init__(self, input_dim, out_dim, function_set=fs):
         # 【创新点：给不同位置的node设置不同的function set,人的先验知识可以起作用，可能需要给node class设置一个fun_set】
         self.function_set = function_set
+        self.max_arity = max(f.arity for f in fs)
         self.n_inputs = input_dim
         self.n_outputs = out_dim # 输出维度
         self.weight_range = [-1, 1]
+        
+        # 创建nodes
         self.nodes = []
         for pos in range(self.n_cols):
             self.nodes.append(self._create_random_node(pos))
@@ -85,7 +79,6 @@ class Individual:
             node.i_inputs[i] = random.randint(max(pos - self.level_back, -self.n_inputs), pos - 1)
             node.weights[i] = 1.0 # random.uniform(self.weight_range[0], self.weight_range[1])
         node.i_output = pos
-
         return node
 
     def _determine_active_nodes(self):
@@ -163,6 +156,8 @@ class Individual:
                 if node.i_inputs[i] is None or random.random() < mut_rate:  # if the mutated function requires more arguments, then the last ones are None 
                     node.i_inputs[i] = random.randint(max(pos - self.level_back, -self.n_inputs), pos - 1)
                 if node.weights[i] is None or random.random() < mut_rate:
+                    # 节点之间不再设置随机权重，统一固定1.0
+                    # 【创新】分两阶段，先学结构，再学参数
                     node.weights[i] = 1.0 # random.uniform(self.weight_range[0], self.weight_range[1])
             # initially an individual is not active except the last output node
             node.active = False
@@ -172,8 +167,8 @@ class Individual:
         child._active_determined = False
         return child
 
-Individual.function_set = fs
-Individual.max_arity = max(f.arity for f in fs)
+# Individual.function_set = fs
+# Individual.max_arity = max(f.arity for f in fs)
 
 def evolve(pop, mut_rate, mu, lambda_):
     """
@@ -193,11 +188,11 @@ def evolve(pop, mut_rate, mu, lambda_):
     return parents + offspring
 
 
-def create_population(n,input_dim,out_dim):
-    """
-    Create a random population composed of n individuals.
-    """
-    return [Individual(input_dim,out_dim) for _ in range(n)]
+def create_population(n, input_dim, out_dim):
+    """Create a random population composed of n individuals."""
+    return [Individual(input_dim, out_dim, fs) for _ in range(n)]
 
 
-
+if __name__ == '__main__':
+    pop = create_population(10, 5, 1)
+    print(pop[0].nodes[46].weights)
