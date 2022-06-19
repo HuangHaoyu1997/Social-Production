@@ -69,11 +69,48 @@ class CCAgent(agent):
         '''random search Zc C-firms for consumption'''
         pass
     
-    def deposit(self, ):
+    def get_wage(self, firm):
+        pass
+    
+    def deposit(self, bank):
         '''saving money into banks'''
         pass
     
     def employment(self, firm_list):
         '''random search Zd K- and C-firms for vacancies'''
         pass
+
+class Firm:
+    def __init__(self, ftype, init_capital) -> None:
+        self.type = ftype # K-firm or C-firm
+        self.current_price = None
+        self.current_production = None
+        self.avg_price = None
+        self.capital = init_capital
+        
+    
+    def production(self, ):
+        pass
+    
+    def price(self, ):
+        pass
+    
+    def investment(self, ):
+        pass
+    
+    def decision(self, ):
+        pass
+    
+    def sell(self, agent_list):
+        '''sell productions to agent'''
+        pass
+    
+    def fire(self, agent_list):
+        '''fire a list of agents'''
+        pass
+    
+class Bank(Firm):
+    def __init__(self, ftype, init_capital) -> None:
+        super().__init__(ftype, init_capital)
+    
     
