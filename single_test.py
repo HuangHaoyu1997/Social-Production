@@ -5,30 +5,6 @@ import numpy as np
 import time, os, shutil, random, pickle
 from cmath import inf
 
-# ['coin_a', 
-                # 'coin_v', 
-                # 'coin_g', 
-                # 'coin_t', 
-                # 'avg_coin_e', 
-                # 'std_coin_e', 
-                # 'avg_coin_w', 
-                # 'std_coin_w', 
-                # 'avg_coin_u', 
-                # 'std_coin_u', 
-                # 'avg_coin_t', 
-                # 'std_coin_t', 
-                # 'Upop', 
-                # 'Wpop', 
-                # 'Epop', 
-                # 'Tpop', 
-                # 'RJ', 
-                # 'RSV', 
-                # 'RH', 
-                # 'w1', 
-                # 'w2',
-                # 'avg_age',]
-                
-
 from cgp import *
 import matplotlib.pyplot as plt
 from configuration import config
