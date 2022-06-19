@@ -62,4 +62,18 @@ class agent:
 class CCAgent(agent):
     def __init__(self, x, y, name, skill, coin, age, intention) -> None:
         super().__init__(x, y, name, skill, coin, age, intention)
-        
+        self.wage = None # 工资
+        self.profit = None # 资本分红比例
+    
+    def consume(self, firm_list):
+        '''random search Zc C-firms for consumption'''
+        pass
+    
+    def deposit(self, ):
+        '''saving money into banks'''
+        pass
+    
+    def employment(self, firm_list):
+        '''random search Zd K- and C-firms for vacancies'''
+        pass
+    
