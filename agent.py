@@ -14,7 +14,7 @@ class agent:
         self.hungry = 0
         self.name = name
         self.age = age
-        self.employment_intention = intention
+        self.employment_intention = intention # 就业意愿
 
         self.work = c.work_state # 工作状态
         self.coin = coin # 货币量
@@ -59,4 +59,8 @@ class agent:
         if self.y < c.y_range[0]: self.y = c.y_range[0]
         elif self.y > c.y_range[1]: self.y = c.y_range[1]
 
+        
+class CCAgent(agent):
+    def __init__(self, x, y, name, skill, coin, age, intention) -> None:
+        super().__init__(x, y, name, skill, coin, age, intention)
         
