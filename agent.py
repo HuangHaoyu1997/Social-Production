@@ -9,7 +9,6 @@ class agent:
         self.y = y
         
         self.skill = skill 
-        
         self.alive = True
         self.hungry = 0
         self.name = name
