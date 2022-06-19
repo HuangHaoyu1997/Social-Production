@@ -113,4 +113,4 @@ class Bank(Firm):
     def __init__(self, ftype, init_capital) -> None:
         super().__init__(ftype, init_capital)
     
-    
+
