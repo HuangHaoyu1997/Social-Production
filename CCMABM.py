@@ -24,6 +24,7 @@ class CCMABM:
         self.observation_shape = 23 # len(info)
         self.action_shape = 1
     
+    
     def seed(self, seed=None):
         '''set random seed for env'''
         if seed is None:
