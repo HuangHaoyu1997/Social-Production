@@ -70,7 +70,8 @@ class CCAgent(agent):
         '''random search Zc C-firms for consumption'''
         pass
     
-    def get_wage(self, firm):
+    def _get_wage(self, ):
+        assert self.work != 'U'
         pass
     
     def deposit(self, bank):

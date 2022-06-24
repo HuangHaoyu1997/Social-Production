@@ -1,4 +1,3 @@
-from unicodedata import name
 import numpy as np
 from numpy.random import uniform
 from configuration import CCMABM_Config
@@ -15,7 +14,7 @@ class CC_MABM:
         self.config = config
         self.cFirms = None
         self.kFirms = None
-        self.agents = None
+        self.workers = None
         
     def seed(self, seed=None):
         '''set random seed for env'''
@@ -26,10 +25,28 @@ class CC_MABM:
             random.seed(seed)
             np.random.seed(seed)
     
-    def reset(self, seed):
+    def reset(self, seed=None):
+        self.seed(seed)
+        
         self.cFirms = self._generate_firm(type='C')
         self.kFirms = self._generate_firm(type='K')
-        self.agent = self._generate_agent()
+        self.workers = self._generate_agent(type='U', pop=self.config.H)
+        
+        
+    def step(self, action=None):
+        # agent find job
+        
+        # firm decision production
+        
+        # wage
+        for name in self.workers:
+            worker:CCAgent = self.workers[name]
+            if agent.alive and agent.work != 'U':
+                firm_name = agent.
+        # consumption
+        
+        # loan
+        
         
     def _generate_firm(self, type='C'):
         '''generate C- or K- firms'''
@@ -39,15 +56,15 @@ class CC_MABM:
             Firms[name] = Firm(ftype=type, init_capital=self.config.K1)
         return Firms
     
-    def _generate_agent(self, type='U'):
+    def _generate_agent(self, type, pop):
         '''generate unemployed workers or capitalists'''
         agent = {}
-        for i in range(self.config.H):
+        for i in range(pop):
             name = str(i)+str(time.time()).split('.')[1]
-            x = np.random.uniform(self.config.x_range)
-            y = np.random.uniform(self.config.y_range)
-            sk = np.random.uniform(self.config.skill)
-            agent[name] = CCAgent(x,y,name,sk,self.config.Eh1,None,None)
+            x = uniform(self.config.x_range)
+            y = uniform(self.config.y_range)
+            sk = uniform(self.config.skill)
+            agent[name] = CCAgent(x,y,name,sk,self.config.Eh1,type,None,None)
         return agent
 
 
