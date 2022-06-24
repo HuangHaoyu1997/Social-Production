@@ -107,6 +107,11 @@ class CCMABM_Config:
     x_range = [0,200]
     y_range = [0,200]
     skill = [0,1]               # 技能水平，实数
+    tax = True
+    base_tax_rate = 0.001       # 税率基准
+    p_tax = 1.5                 # 个税倍率
+    c_tax = 2.0                 # 消费税倍率
+    
     
     T = 3000                    # number of simulation periods
     H = 3000                    # number of workers

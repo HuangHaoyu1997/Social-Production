@@ -1,7 +1,8 @@
 import numpy as np
 from configuration import config as c
+from configuration import CCMABM_Config as CC
 # import configuration as c
-np.random.seed(c.seed)
+# np.random.seed(c.seed)
 
 class agent:
     def __init__(self, x, y, name, skill, coin, age, intention) -> None:
@@ -82,6 +83,21 @@ class CCAgent(agent):
         '''random search Zd K- and C-firms for vacancies'''
         pass
 
+class Government:
+    def __init__(self, config:CC) -> None:
+        self.config = config
+        self._set_tax_rate(config)
+        
+    def _set_tax_rate(self, c:CC):
+        if c.tax: self.base_tax = c.base_tax_rate
+        else: self.base_tax = 0
+        
+        self.personal_income_tax = self.base_tax * c.p_tax  # 个人所得税5%
+        self.consumption_tax = self.base_tax*     # 消费税
+        self.business_tax = 0.001 if tax else 0          # 企业税
+        self.property_tax = 0.001 if tax else 0          # 财产税
+        self.death_tax = 0.25 if tax else 0              # 遗产税
+
 class Firm:
     def __init__(self, ftype, init_capital) -> None:
         self.type = ftype # K-firm or C-firm
@@ -89,7 +105,7 @@ class Firm:
         self.current_production = None
         self.avg_price = None
         self.capital = init_capital
-        
+        self.hire_list = []
     
     def production(self, ):
         pass
