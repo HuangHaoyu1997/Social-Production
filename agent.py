@@ -1,3 +1,4 @@
+from collections import namedtuple
 import numpy as np
 from configuration import config as c
 from configuration import CCMABM_Config as CC
@@ -87,16 +88,35 @@ class Government:
     def __init__(self, config:CC) -> None:
         self.config = config
         self._set_tax_rate(config)
+        self.revenue = config.revenue
+        
         
     def _set_tax_rate(self, c:CC):
-        if c.tax: self.base_tax = c.base_tax_rate
-        else: self.base_tax = 0
+        if c.tax: base_tax = c.base_tax_rate
+        else: base_tax = 0.
         
-        self.personal_income_tax = self.base_tax * c.p_tax  # 个人所得税5%
-        self.consumption_tax = self.base_tax * c.c_tax     # 消费税
-        self.business_tax = self.base_tax * c.b_tax          # 企业税
-        self.property_tax = self.base_tax * c.pr_tax          # 财产税
-        self.inheritance_tax = self.base_tax * c.i_tax              # 遗产税
+        self.tax = {
+            'base_tax': base_tax,
+            'income': base_tax * c.p_tax,           # 个税
+            'consumption': base_tax * c.c_tax,      # 消费税
+            'business': base_tax * c.b_tax,         # 企业税
+            'property': base_tax * c.pr_tax,        # 财产税
+            'inheritance': base_tax * c.i_tax       # 遗产税
+        }
+        
+    
+    def taxing(self, money, tax_type):
+        if isinstance(money, list):
+            tax, surplus = [], []
+            for mm in money:
+                tax.append(mm*self.tax[tax_type])
+                surplus.append(mm-tax[-1])
+        else:
+            tax = money * self.tax[tax_type]
+            surplus = money - tax
+        
+        self.revenue += np.sum(tax)
+        return surplus
 
 class Firm:
     def __init__(self, ftype, init_capital) -> None:

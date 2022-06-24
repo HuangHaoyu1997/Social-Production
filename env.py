@@ -44,7 +44,7 @@ class Env:
         # TODO【想法】开局不一定全部是unemployment，可以有UWE之分，每个人初始coin也可以不一样
         self.agent_pool = add_agent(config.N1) # 添加智能体
         self.market_V = config.V # 市场价值
-        self.gov = config.budget # 政府财政
+        self.gov = config.revenue # 政府财政
         
         self.E, self.W, self.U = working_state(self.agent_pool) # 更新维护智能体状态
         

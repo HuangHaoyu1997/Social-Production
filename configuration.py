@@ -31,7 +31,7 @@ class config:
 
     # for government
     V = 100                     # 初始市场价值
-    budget = 0                  # 初始政府财政
+    revenue = 0                  # 初始政府财政收入
     dN = pow(N2/N1, 1/T) - 1 # 单步人口增量占当前人口比例,根据目标人口和初始人口进行推算
     w1 = 50                     # 初始最低工资
     w2 = 150                    # 初始最高工资
@@ -114,7 +114,7 @@ class CCMABM_Config:
     b_tax = 8.0                 # 经营税倍率
     pr_tax = 1.0                # 财产税倍率
     i_tax = 10.0                # 遗产税倍率
-    
+    revenue = 200               # init government revenue
     
     T = 3000                    # number of simulation periods
     H = 3000                    # number of workers
