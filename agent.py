@@ -93,10 +93,10 @@ class Government:
         else: self.base_tax = 0
         
         self.personal_income_tax = self.base_tax * c.p_tax  # 个人所得税5%
-        self.consumption_tax = self.base_tax*     # 消费税
-        self.business_tax = 0.001 if tax else 0          # 企业税
-        self.property_tax = 0.001 if tax else 0          # 财产税
-        self.death_tax = 0.25 if tax else 0              # 遗产税
+        self.consumption_tax = self.base_tax * c.c_tax     # 消费税
+        self.business_tax = self.base_tax * c.b_tax          # 企业税
+        self.property_tax = self.base_tax * c.pr_tax          # 财产税
+        self.inheritance_tax = self.base_tax * c.i_tax              # 遗产税
 
 class Firm:
     def __init__(self, ftype, init_capital) -> None:

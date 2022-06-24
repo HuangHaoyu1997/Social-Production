@@ -5,16 +5,17 @@ import random, math, copy
 from utils import *
 import networkx as nx
 from collections import deque
-from agent import CCAgent, Firm, Bank
+from agent import CCAgent, Firm, Bank, Government
 
 class CC_MABM:
     '''implementation of CC-MABM'''
     
     def __init__(self, config:CCMABM_Config) -> None:
         self.config = config
-        self.cFirms = None
-        self.kFirms = None
-        self.workers = None
+        self.Firms = None
+        self.Caps = None
+        self.Workers = None
+        self.Gov = None
         
     def seed(self, seed=None):
         '''set random seed for env'''
@@ -28,33 +29,61 @@ class CC_MABM:
     def reset(self, seed=None):
         self.seed(seed)
         
-        self.cFirms = self._generate_firm(type='C')
-        self.kFirms = self._generate_firm(type='K')
-        self.workers = self._generate_agent(type='U', pop=self.config.H)
+        self._generate_gov()
+        self._generate_firm(type='C', N_firm=self.config.Fc)
+        self._generate_firm(type='K', N_firm=self.config.Fk)
+        self._generate_agent(type='U', pop=self.config.H)
+        self._generate_agent(type='C', pop=self.config.Fc+self.config.Fk) # 资本家数量=企业总数
         
         
+    def pay(self, firm_name):
+        '''
+        为agent_pool[name].hire中的worker发工资
+        '''
+        assert firm_name in self.Firms
+        firm:Firm = self.Firms[firm_name]
+        assert firm.hire_list != []
+        
+        # update working state
+        wage_list = []
+        for worker_name in firm.hire_list:
+            assert self.Workers[worker_name].alive is True
+            assert self.Workers[worker_name].employer == firm_name and self.Workers[worker_name].work == 'W'
+            wage_list.append(worker_name)
+            
+        
+    
     def step(self, action=None):
         # agent find job
         
         # firm decision production
         
         # wage
-        for name in self.workers:
-            worker:CCAgent = self.workers[name]
-            if agent.alive and agent.work != 'U':
-                firm_name = agent.
+        # for name in self.Workers:
+        #     worker:CCAgent = self.Workers[name]
+        #     if worker.alive and worker.work != 'U':
+        #         firm_name = worker.employer
+        #         assert firm_name in self.Firms
+        #         self.Firms[firm_name].add_wage_list(name)
+                
+        
         # consumption
         
         # loan
         
+        pass
+    def _generate_gov(self, ):
+        self.Gov = Government(self.config)
         
-    def _generate_firm(self, type='C'):
+    def _generate_firm(self, type='C', N_firm=None):
         '''generate C- or K- firms'''
-        Firms = {}
-        for i in range(self.config.Fc):
-            name = str(i)+str(time.time()).split('.')[1] # 【应该不会出现重名？】
-            Firms[name] = Firm(ftype=type, init_capital=self.config.K1)
-        return Firms
+        firms = {}
+        for i in range(N_firm):
+            name = str(i)+str(time.time()).split('.')[1]
+            firms[name] = Firm(ftype=type, init_capital=self.config.K1)
+        
+        if self.Firms is None: self.Firms = firms
+        elif self.Firms is not None: self.Firms.update(firms)
     
     def _generate_agent(self, type, pop):
         '''generate unemployed workers or capitalists'''
@@ -64,8 +93,17 @@ class CC_MABM:
             x = uniform(self.config.x_range)
             y = uniform(self.config.y_range)
             sk = uniform(self.config.skill)
-            agent[name] = CCAgent(x,y,name,sk,self.config.Eh1,type,None,None)
-        return agent
+            agent[name] = CCAgent(x, y, name, sk, self.config.Eh1, type, None, None)
+        if type == 'U':
+            if self.Workers is None:
+                self.Workers = agent
+            elif self.Workers is not None:
+                self.Workers.update(agent)
+        elif type == 'C':
+            if self.Caps is None:
+                self.Caps = agent
+            elif self.Caps is not None:
+                self.Caps.update(agent)
 
 
 

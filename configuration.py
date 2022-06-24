@@ -111,6 +111,9 @@ class CCMABM_Config:
     base_tax_rate = 0.001       # 税率基准
     p_tax = 1.5                 # 个税倍率
     c_tax = 2.0                 # 消费税倍率
+    b_tax = 8.0                 # 经营税倍率
+    pr_tax = 1.0                # 财产税倍率
+    i_tax = 10.0                # 遗产税倍率
     
     
     T = 3000                    # number of simulation periods
