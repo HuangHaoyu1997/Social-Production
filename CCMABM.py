@@ -1,10 +1,56 @@
+from unicodedata import name
 import numpy as np
 from numpy.random import uniform
-from configuration import config
+from configuration import CCMABM_Config
 import random, math, copy
 from utils import *
 import networkx as nx
 from collections import deque
+from agent import CCAgent, Firm, Bank
+
+class CC_MABM:
+    '''implementation of CC-MABM'''
+    
+    def __init__(self, config:CCMABM_Config) -> None:
+        self.config = config
+        self.cFirms = None
+        self.kFirms = None
+        self.agents = None
+        
+    def seed(self, seed=None):
+        '''set random seed for env'''
+        if seed is None:
+            random.seed(self.config.seed)
+            np.random.seed(self.config.seed)
+        else:
+            random.seed(seed)
+            np.random.seed(seed)
+    
+    def reset(self, seed):
+        self.cFirms = self._generate_firm(type='C')
+        self.kFirms = self._generate_firm(type='K')
+        self.agent = self._generate_agent()
+        
+    def _generate_firm(self, type='C'):
+        '''generate C- or K- firms'''
+        Firms = {}
+        for i in range(self.config.Fc):
+            name = str(i)+str(time.time()).split('.')[1] # 【应该不会出现重名？】
+            Firms[name] = Firm(ftype=type, init_capital=self.config.K1)
+        return Firms
+    
+    def _generate_agent(self, type='U'):
+        '''generate unemployed workers or capitalists'''
+        agent = {}
+        for i in range(self.config.H):
+            name = str(i)+str(time.time()).split('.')[1]
+            x = np.random.uniform(self.config.x_range)
+            y = np.random.uniform(self.config.y_range)
+            sk = np.random.uniform(self.config.skill)
+            agent[name] = CCAgent(x,y,name,sk,self.config.Eh1,None,None)
+        return agent
+
+
 
 class CCMABM:
     '''
