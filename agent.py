@@ -60,8 +60,9 @@ class agent:
 
         
 class CCAgent(agent):
-    def __init__(self, x, y, name, skill, coin, age, intention) -> None:
+    def __init__(self, x, y, name, skill, coin, work, age, intention) -> None:
         super().__init__(x, y, name, skill, coin, age, intention)
+        self.work = work # working type
         self.wage = None # 工资
         self.profit = None # 资本分红比例
     
