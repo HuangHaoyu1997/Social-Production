@@ -174,6 +174,8 @@ class CCAgent(agent):
         self.wage = None # 工资
         self.profit = None # 资本分红比例
         self.cash = None # 现金
+        self.
+        
     def consume(self, firm_list):
         '''random search Zc C-firms for consumption'''
         pass
@@ -187,7 +189,12 @@ class CCAgent(agent):
         assert self.cash>0
         bank.add_D(self.name, self.cash)
     
-    def consume(self, market:Market)
+    def set_demand(self, ):
+        '''consumption decision'''
+        self.m_consume = 
+        
+    def consume(self, market:Market):
+        market.sell(self.name, )
     
     def employment(self, firm_list):
         '''random search Zd K- and C-firms for vacancies'''

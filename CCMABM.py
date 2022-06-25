@@ -102,7 +102,7 @@ class CC_MABM:
             x = uniform(self.config.x_range)
             y = uniform(self.config.y_range)
             sk = uniform(self.config.skill)
-            agent[name] = CCAgent(x, y, name, sk, self.config.Eh1, type, None, None)
+            agent[name] = CCAgent(x, y, name, sk, self.config.Eh1, type, age=18, intention=1.0, )
         if type == 'U':
             if self.Workers is None:
                 self.Workers = agent

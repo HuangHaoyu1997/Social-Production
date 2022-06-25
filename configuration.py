@@ -116,11 +116,11 @@ class CCMABM_Config:
     i_tax = 10.0                # 遗产税倍率
     revenue = 200               # init government revenue
     
-    T = 3000                    # number of simulation periods
-    H = 3000                    # number of workers
-    Fc = 200                    # number of C-firms
-    Fk = 50                     # number of K-firms
-    Ze = 5                      # number of firms visited by a unemployed worker
+    T = 3000                    # 仿真步数 number of simulation periods
+    H = 3000                    # 工人数量 number of workers
+    Fc = 200                    # C公司数量 number of C-firms
+    Fk = 50                     # K公司数量 number of K-firms
+    Ze = 5                      # 择业公司数量 number of firms visited by a unemployed worker
     Zc = 2                      # number of C-firms visited by a consumer
     Zk = 2                      # number of K-firms visited by a C-firm
     ksi = 0.96                  # Memory parameter (human wealth)
