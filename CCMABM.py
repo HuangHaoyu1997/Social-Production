@@ -50,7 +50,7 @@ class CC_MABM:
             assert self.Workers[worker_name].alive is True
             assert self.Workers[worker_name].employer == firm_name and self.Workers[worker_name].work == 'W'
             wage_list.append(worker_name)
-            
+        
         
     
     def step(self, action=None):
@@ -65,7 +65,6 @@ class CC_MABM:
         #         firm_name = worker.employer
         #         assert firm_name in self.Firms
         #         self.Firms[firm_name].add_wage_list(name)
-                
         
         # consumption
         
