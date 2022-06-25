@@ -139,7 +139,7 @@ class CCMABM_Config:
     delta = 0.02                # Depreciation of capital 资本折旧
     nu = 0.5                    # Memory parameter (investment)
     omega_ = 0.85               # Desired capacity utilization rate 所需产能利用率
-    w = 1                       # wage 工资
+    w = 1                       # Wage 工资
     Df1 = 10                    # Initial liquidity of (all) the firms所有公司的初始流动性
     K1 = 10                     # Initial capital初始资本
     Yc1 = 5                     # Initial production (C-firms)C公司初始产量
