@@ -118,6 +118,24 @@ class Government:
         self.revenue += np.sum(tax)
         return surplus
 
+class Market:
+    def __init__(self, type, n_visit, ) -> None:
+        self.type = type
+        self.n_visit = n_visit
+        self.goods_list = {}
+        self.sold = {}
+    def reset(self, ):
+        self.goods_list = {}
+    
+    def add_goods(self, fname, production, price):
+        self.goods_list[fname] = [production, price]
+        
+    def sell(self, cname, demand):
+        pass
+    
+    def statistic(self, ):
+        pass
+
 class Firm:
     def __init__(self, ftype, init_capital) -> None:
         self.type = ftype # K-firm or C-firm

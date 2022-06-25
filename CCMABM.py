@@ -5,7 +5,7 @@ import random, math, copy
 from utils import *
 import networkx as nx
 from collections import deque
-from agent import CCAgent, Firm, Bank, Government
+from agent import CCAgent, Firm, Bank, Government, Market
 
 class CC_MABM:
     '''implementation of CC-MABM'''
@@ -16,6 +16,7 @@ class CC_MABM:
         self.Caps = None
         self.Workers = None
         self.Gov = None
+        self.Bank = None
         
     def seed(self, seed=None):
         '''set random seed for env'''
@@ -35,11 +36,10 @@ class CC_MABM:
         self._generate_agent(type='U', pop=self.config.H)
         self._generate_agent(type='C', pop=self.config.Fc+self.config.Fk) # 资本家数量=企业总数
         
-        
+        self._generate_market()
+    
     def pay(self, firm_name):
-        '''
-        为agent_pool[name].hire中的worker发工资
-        '''
+        '''为agent_pool[name].hire中的worker发工资'''
         assert firm_name in self.Firms
         firm:Firm = self.Firms[firm_name]
         assert firm.hire_list != []
@@ -71,6 +71,16 @@ class CC_MABM:
         # loan
         
         pass
+    
+    def _generate_bank(self, ):
+        self.Bank = Bank(ftype='B', init_capital=self.config.Eb1)
+        
+    def _generate_market(self, ):
+        self.K_Market = Market(type='K', n_visit=self.config.Zk)
+        self.C_Market = Market(type='C', n_visit=self.config.Zc)
+        self.E_Market = Market(type='E', n_visit=self.config.Ze)
+        
+        
     def _generate_gov(self, ):
         self.Gov = Government(self.config)
         
@@ -103,8 +113,6 @@ class CC_MABM:
                 self.Caps = agent
             elif self.Caps is not None:
                 self.Caps.update(agent)
-
-
 
 class CCMABM:
     '''
