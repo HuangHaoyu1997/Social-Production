@@ -60,29 +60,58 @@ class agent:
         if self.y < c.y_range[0]: self.y = c.y_range[0]
         elif self.y > c.y_range[1]: self.y = c.y_range[1]
 
-        
-class CCAgent(agent):
-    def __init__(self, x, y, name, skill, coin, work, age, intention) -> None:
-        super().__init__(x, y, name, skill, coin, age, intention)
-        self.work = work # working type
-        self.wage = None # 工资
-        self.profit = None # 资本分红比例
+class Firm:
+    def __init__(self, ftype, init_capital) -> None:
+        self.type = ftype # K-firm or C-firm
+        self.current_price = None
+        self.current_production = None
+        self.avg_price = None
+        self.capital = init_capital
+        self.hire_list = []
     
-    def consume(self, firm_list):
-        '''random search Zc C-firms for consumption'''
+    def production(self, ):
         pass
     
-    def _get_wage(self, ):
-        assert self.work != 'U'
+    def price(self, ):
         pass
     
-    def deposit(self, bank):
-        '''saving money into banks'''
+    def investment(self, ):
         pass
     
-    def employment(self, firm_list):
-        '''random search Zd K- and C-firms for vacancies'''
+    def decision(self, ):
         pass
+    
+    def sell(self, agent_list):
+        '''sell productions to agent'''
+        pass
+    
+    def fire(self, agent_list):
+        '''fire a list of agents'''
+        pass
+    
+class Bank(Firm):
+    def __init__(self, ftype, init_capital, r) -> None:
+        super().__init__(ftype, init_capital)
+        self.r = r
+        self.deposit_list = {}
+        self.total_D = None
+    
+    def add_D(self, C_name, delta_m):
+        assert delta_m>0 and C_name in self.deposit_list
+        self.deposit_list[C_name] += delta_m
+        return True
+    
+    def get_D(self, C_name):
+        assert C_name in self.deposit_list
+        return self.deposit_list[C_name]
+    
+    def withdraw_D(self, C_name, delta_m):
+        assert delta_m>0 and C_name in self.deposit_list
+        assert delta_m <= self.deposit_list[C_name]
+        self.deposit_list[C_name] -= delta_m
+        return True
+    
+
 
 class Government:
     def __init__(self, config:CC) -> None:
@@ -136,37 +165,30 @@ class Market:
     def statistic(self, ):
         pass
 
-class Firm:
-    def __init__(self, ftype, init_capital) -> None:
-        self.type = ftype # K-firm or C-firm
-        self.current_price = None
-        self.current_production = None
-        self.avg_price = None
-        self.capital = init_capital
-        self.hire_list = []
-    
-    def production(self, ):
-        pass
-    
-    def price(self, ):
-        pass
-    
-    def investment(self, ):
-        pass
-    
-    def decision(self, ):
-        pass
-    
-    def sell(self, agent_list):
-        '''sell productions to agent'''
-        pass
-    
-    def fire(self, agent_list):
-        '''fire a list of agents'''
-        pass
-    
-class Bank(Firm):
-    def __init__(self, ftype, init_capital) -> None:
-        super().__init__(ftype, init_capital)
-    
 
+
+class CCAgent(agent):
+    def __init__(self, x, y, name, skill, coin, work, age, intention) -> None:
+        super().__init__(x, y, name, skill, coin, age, intention)
+        self.work = work # working type
+        self.wage = None # 工资
+        self.profit = None # 资本分红比例
+        self.cash = None # 现金
+    def consume(self, firm_list):
+        '''random search Zc C-firms for consumption'''
+        pass
+    
+    def _get_wage(self, ):
+        assert self.work != 'U'
+        pass
+    
+    def deposit(self, bank:Bank):
+        '''saving money into banks'''
+        assert self.cash>0
+        bank.add_D(self.name, self.cash)
+    
+    def consume(self, market:Market)
+    
+    def employment(self, firm_list):
+        '''random search Zd K- and C-firms for vacancies'''
+        pass

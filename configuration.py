@@ -124,7 +124,7 @@ class CCMABM_Config:
     Zc = 2                      # number of C-firms visited by a consumer
     Zk = 2                      # number of K-firms visited by a C-firm
     ksi = 0.96                  # Memory parameter (human wealth)
-    tau = 0.2                   # Dividend payout ratio派息率
+    tau = 0.2                   # Dividend payout ratio 派息率，资本家分红占企业利润之比例
     chi = 0.05                  # Fraction of wealth devoted to consumption用于消费的财富比例
     r = 0.01                    # risk free interest rate无风险利率
     rho = 0.9                   # Quantity adjustment parameter数量调整参数
