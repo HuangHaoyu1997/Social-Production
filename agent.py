@@ -6,9 +6,8 @@ from configuration import CCMABM_Config as CC
 # np.random.seed(c.seed)
 
 class agent:
-    def __init__(self, x, y, name, skill, coin, age, intention) -> None:
-        self.x = x
-        self.y = y
+    def __init__(self, position, name, skill, asset, age, intention) -> None:
+        self.x, self.y = position
         
         self.skill = skill 
         self.alive = True
@@ -18,7 +17,7 @@ class agent:
         self.employment_intention = intention # 就业意愿
 
         self.work = c.work_state # 工作状态
-        self.coin = coin # 货币量
+        self.asset = asset # 财产
 
         # special for employer
         self.hire = [] # 雇佣工人集合
@@ -61,22 +60,35 @@ class agent:
         elif self.y > c.y_range[1]: self.y = c.y_range[1]
 
 class Firm:
-    def __init__(self, ftype, init_capital) -> None:
+    def __init__(self, ftype, init_capital, rho, eta) -> None:
         self.type = ftype # K-firm or C-firm
-        self.current_price = None
-        self.current_production = None
+        
+        self.current_price:float = None
+        self.current_quantity:float = None
+        
         self.avg_price = None
         self.capital = init_capital
+        self.labor = None
         self.hire_list = []
+        
+        self.rho:float = rho # 产量调整参数
+        self.eta:float = eta # 价格调整参数
+        
     
     def production(self, ):
         pass
     
-    def price(self, ):
-        pass
-    
     def investment(self, ):
         pass
+    
+    def price_decision(self, avg_price, forecast_err):
+        # forecast_err = 产量 - 销售量
+        # forecast_err <0: 供小于求,应增加产量
+        # forecast_err >0: 供大于求,应减少产量
+        self.current_quantity -= self.rho * forecast_err
+    
+    def quantity_decision(self, avg_price, forecast_err):
+        self.current_quantity *= 
     
     def decision(self, ):
         pass
@@ -168,15 +180,20 @@ class Market:
 
 
 class CCAgent(agent):
-    def __init__(self, x, y, name, skill, coin, work, age, intention) -> None:
-        super().__init__(x, y, name, skill, coin, age, intention)
+    def __init__(self, position, name, skill, asset, work, age, intention, memory) -> None:
+        super().__init__(position, name, skill, asset, age, intention)
         self.work = work # working type
         self.wage = None # 工资
         self.profit = None # 资本分红比例
         self.cash = None # 现金
-        self.
-        
-    def consume(self, firm_list):
+        self.memory = memory # 计算期望收入的滑动平均系数
+        self.current_income = None
+        self.history_income = None
+    
+    def consume_decision(self, ):
+        pass
+    
+    def consume(self, firm_list:list):
         '''random search Zc C-firms for consumption'''
         pass
     
@@ -191,7 +208,7 @@ class CCAgent(agent):
     
     def set_demand(self, ):
         '''consumption decision'''
-        self.m_consume = 
+        pass
         
     def consume(self, market:Market):
         market.sell(self.name, )
@@ -199,3 +216,4 @@ class CCAgent(agent):
     def employment(self, firm_list):
         '''random search Zd K- and C-firms for vacancies'''
         pass
+    
