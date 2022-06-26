@@ -1,3 +1,5 @@
+from numpy.random import uniform
+
 class config:
     '''
     w1,w2与init_coin的比例很大程度上决定了雇佣率的高低
@@ -126,11 +128,10 @@ class CCMABM_Config:
     ksi = 0.96                  # Memory parameter (human wealth)
     tau = 0.2                   # Dividend payout ratio 派息率，资本家分红占企业利润之比例
     chi = 0.05                  # Fraction of wealth devoted to consumption用于消费的财富比例
-    r = 0.01                    # risk free interest rate无风险利率
-    rho = 0.9                   # Quantity adjustment parameter数量调整参数
-    import random
-    eta = random.uniform(0, 0.1) # Price adjustment parameter (random variable)
-    mu = 1.2                    # Bank's gross mark-up
+    r = 0.01                    # 无风险利率 risk free interest rate
+    rho = 0.9                   # 产量调整参数 Quantity adjustment parameter
+    eta = uniform(0, 0.1)       # Price adjustment parameter (random variable)
+    mu = 1.2                    # 银行总加价,无风险利率->实际利率的放大倍数 Bank's gross mark-up
     alpha = 0.5                 # Productivity of labor
     kappa = 1/3                 # Productivity of capital
     gamma = 0.25                # Probability of investing
@@ -139,10 +140,10 @@ class CCMABM_Config:
     delta = 0.02                # Depreciation of capital 资本折旧
     nu = 0.5                    # Memory parameter (investment)
     omega_ = 0.85               # Desired capacity utilization rate 所需产能利用率
-    w = 1                       # Wage 工资
+    w = 1                       # 工资 Wage
     Df1 = 10                    # Initial liquidity of (all) the firms所有公司的初始流动性
     K1 = 10                     # Initial capital初始资本
-    Yc1 = 5                     # Initial production (C-firms)C公司初始产量
-    Yk1 = 3                     # Initial production (K-firms)K公司初始产量
-    Eb1 = 3000                  # Initial equity of the bank银行的初始抵押资产的净值
-    Eh1 = 2                     # Initial households’ personal assets初始家庭个人资产
+    Yc1 = 5                     # C公司初始产量 Initial production (C-firms)
+    Yk1 = 3                     # K公司初始产量 Initial production (K-firms)
+    Eb1 = 3000                  # 初始银行净资产 Initial equity of the bank
+    Eh1 = 2                     # 初始家庭个人资产 Initial households’ personal assets

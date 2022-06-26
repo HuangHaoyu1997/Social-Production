@@ -1,3 +1,4 @@
+from turtle import position
 import numpy as np
 from numpy.random import uniform
 from configuration import CCMABM_Config
@@ -89,7 +90,11 @@ class CC_MABM:
         firms = {}
         for i in range(N_firm):
             name = str(i)+str(time.time()).split('.')[1]
-            firms[name] = Firm(ftype=type, init_capital=self.config.K1)
+            firms[name] = Firm(ftype=type, 
+                               init_capital=self.config.K1,
+                               rho=self.config.rho,
+                               eta=self.config.eta,
+                               )
         
         if self.Firms is None: self.Firms = firms
         elif self.Firms is not None: self.Firms.update(firms)
@@ -102,7 +107,7 @@ class CC_MABM:
             x = uniform(self.config.x_range)
             y = uniform(self.config.y_range)
             sk = uniform(self.config.skill)
-            agent[name] = CCAgent(x, y, name, sk, self.config.Eh1, type, age=18, intention=1.0, )
+            agent[name] = CCAgent(position=[x,y], name, sk, self.config.Eh1, type, age=18, intention=1.0, memory=)
         if type == 'U':
             if self.Workers is None:
                 self.Workers = agent
