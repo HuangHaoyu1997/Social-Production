@@ -1,4 +1,5 @@
 from collections import namedtuple
+from random import uniform
 import numpy as np
 from configuration import config as c
 from configuration import CCMABM_Config as CC
@@ -63,8 +64,10 @@ class Firm:
     def __init__(self, ftype, init_capital, rho, eta) -> None:
         self.type = ftype # K-firm or C-firm
         
-        self.current_price:float = None
-        self.current_quantity:float = None
+        self.t_price:float = None
+        self.t_quantity:float = None
+        self.tt_price:float = None
+        self.tt_quantity:float = None
         
         self.avg_price = None
         self.capital = init_capital
@@ -81,14 +84,24 @@ class Firm:
     def investment(self, ):
         pass
     
-    def price_decision(self, avg_price, forecast_err):
+    def quantity_decision(self, avg_price, forecast_err):
         # forecast_err = 产量 - 销售量
         # forecast_err <0: 供小于求,应增加产量
         # forecast_err >0: 供大于求,应减少产量
-        self.current_quantity -= self.rho * forecast_err
+        self.tt_quantity = self.t_quantity - self.rho * forecast_err
     
-    def quantity_decision(self, avg_price, forecast_err):
-        self.current_quantity *= 
+    def price_decision(self, avg_price, forecast_err):
+        # 供小于求+低价-->涨价
+        if forecast_err <= 0 and self.t_price < avg_price:
+            self.tt_price = self.t_price * (1 + uniform(0, self.eta))
+        # 供大于求+高价-->降价
+        elif forecast_err > 0 and self.t_price >= avg_price:
+            self.tt_price = self.t_price * (1 - uniform(0, self.eta))
+        
+        # 其他情况略微波动
+        else:
+            price_change = uniform(-self.eta*0.1, self.eta*0.1)
+            self.tt_price = self.t_price * (1 + price_change)
     
     def decision(self, ):
         pass
