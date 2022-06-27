@@ -140,7 +140,7 @@ class CCMABM_Config:
     # Bank Parameters
     r = 0.01                    # 无风险利率 risk free interest rate
     mu = 1.2                    # 银行总加价,无风险利率->实际利率的放大倍数 Bank's gross mark-up
-    zeta = 0.002                # 单笔贷款损失上限,占银行净资产比例 Bank's loss parameter
+    zeta = 0.002                # 单笔贷款最大额度,占银行净资产比例 Bank's loss parameter
     theta = 0.05                # 债务分期付款比例 Installment on Debt
     Eb1 = 3000                  # 初始银行净资产 Initial equity of the bank
     
@@ -154,8 +154,8 @@ class CCMABM_Config:
     nu = 0.5                    # Memory parameter (investment)
     omega_ = 0.85               # 所需产能利用率 Desired capacity utilization rate
     w = 1                       # 工资 Wage
-    Df1 = 10                    # Initial liquidity of (all) the firms所有公司的初始流动性
-    K1 = 10                     # Initial capital初始资本
+    Df1 = 10                    # 公司初始存款 Initial liquidity of (all) the firms
+    K1 = 10                     # 初始资本 Initial capital
     Yc1 = 5                     # C公司初始产量 Initial production (C-firms)
     Yk1 = 3                     # K公司初始产量 Initial production (K-firms)
     

@@ -62,7 +62,10 @@ class agent:
 class Firm:
     def __init__(self, 
                  ftype, 
-                 init_capital, 
+                 init_capital,
+                 init_deposit,
+                 init_quantity,
+                 wage,
                  rho, 
                  eta, 
                  alpha, 
@@ -72,10 +75,12 @@ class Firm:
                  nu,
                  omega,
                  ) -> None:
+        
+        
         self.type = ftype # K-firm or C-firm
         
         self.t_price:float = None
-        self.t_quantity:float = None
+        self.t_quantity:float = init_quantity
         self.tt_price:float = None
         self.tt_quantity:float = None
         
@@ -85,10 +90,11 @@ class Firm:
         self.capital_deprec:float = delta # 资本折旧率
         self.invest_memory:float = nu # 资本价格滑动平均参数
         self.desired_capacity_util:float = omega # 长期产能利用率
-        self.wage:float = 
+        self.wage:float = wage
         
         self.avg_price = None
-        self.capital = init_capital
+        self.capital = init_capital # 公司初始固定资产
+        self.deposit = init_deposit # 公司在银行的初始存款
         self.labor = None
         self.hire_list = []
         
@@ -133,10 +139,20 @@ class Firm:
         pass
 
 
-class Bank(Firm):
-    def __init__(self, ftype, init_capital, r) -> None:
-        super().__init__(ftype, init_capital)
-        self.r = r
+class Bank:
+    def __init__(self, ftype, 
+                 init_capital, 
+                 r,
+                 mu,
+                 zeta,
+                 theta,
+                 ) -> None:
+        
+        self.type = ftype
+        self.equity = init_capital
+        self.r_free = r
+        self.r_risk = r * mu
+        self.max_loss_ratio = zeta # 单笔贷款最大额度
         self.deposit_list = {}
         self.total_D = None
     
