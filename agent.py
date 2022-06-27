@@ -74,6 +74,7 @@ class Firm:
                  delta, 
                  nu,
                  omega,
+                 theta,
                  ) -> None:
         
         
@@ -90,10 +91,13 @@ class Firm:
         self.capital_deprec:float = delta # 资本折旧率
         self.invest_memory:float = nu # 资本价格滑动平均参数
         self.desired_capacity_util:float = omega # 长期产能利用率
+        self.installment:float = theta # 分期付款比例
         self.wage:float = wage
         
         self.avg_price = None
         self.capital = init_capital # 公司初始固定资产
+        self.cap_t = None # t-1 step
+        self.cap_tt = None
         self.deposit = init_deposit # 公司在银行的初始存款
         self.labor = None
         self.hire_list = []
@@ -101,9 +105,14 @@ class Firm:
         self.rho:float = rho # 产量调整参数
         self.eta:float = eta # 价格调整参数
         
-    
+    def avg_cap(self, ):
+        '''
+        calculating moving average capital used in past time 
+        '''
+        
+        
     def production(self, ):
-        pass
+        
     
     def investment(self, ):
         pass
@@ -153,6 +162,7 @@ class Bank:
         self.r_free = r
         self.r_risk = r * mu
         self.max_loss_ratio = zeta # 单笔贷款最大额度
+        self.installment_debt = theta # 每期还款比例
         self.deposit_list = {}
         self.total_D = None
     
@@ -228,13 +238,27 @@ class Market:
 
 
 class CCAgent(agent):
-    def __init__(self, position, name, skill, asset, work, age, intention, memory) -> None:
+    def __init__(self, 
+                 position, 
+                 name, 
+                 skill, 
+                 asset, 
+                 work, 
+                 age, 
+                 intention, 
+                 memory,
+                 chi,
+                 ) -> None:
         super().__init__(position, name, skill, asset, age, intention)
+        
         self.work = work # working type
         self.wage = None # 工资
         self.profit = None # 资本分红比例
         self.cash = None # 现金
         self.memory = memory # 计算期望收入的滑动平均系数
+        self.consume_fraction = chi # 每期消费比例
+        
+        
         self.current_income = None
         self.history_income = None
     

@@ -92,8 +92,18 @@ class CC_MABM:
             name = str(i)+str(time.time()).split('.')[1]
             firms[name] = Firm(ftype=type, 
                                init_capital=self.config.K1,
+                               init_deposit=self.config.Df1,
+                               init_quantity=self.config.Yc1 if type=='C' else self.config.Yk1,
                                rho=self.config.rho,
                                eta=self.config.eta,
+                               alpha=self.config.alpha,
+                               kappa=self.config.kappa,
+                               gamma=self.config.gamma,
+                               delta=self.config.delta,
+                               nu=self.config.nu,
+                               omega=self.config.omega_,
+                               theta=self.config.theta,
+                               
                                )
         
         if self.Firms is None: self.Firms = firms
@@ -107,7 +117,16 @@ class CC_MABM:
             x = uniform(self.config.x_range)
             y = uniform(self.config.y_range)
             sk = uniform(self.config.skill)
-            agent[name] = CCAgent(position=[x,y], name, sk, self.config.Eh1, type, age=18, intention=1.0, memory=)
+            agent[name] = CCAgent(position=[x,y], 
+                                  name=name, 
+                                  skill=sk, 
+                                  asset=self.config.Eh1, 
+                                  work=type, 
+                                  age=18, 
+                                  intention=1.0, 
+                                  memory=self.config.ksi,
+                                  chi=self.config.chi,
+                                  )
         if type == 'U':
             if self.Workers is None:
                 self.Workers = agent
