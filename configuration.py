@@ -105,10 +105,14 @@ class config:
 
 
 class CCMABM_Config:
+    # Env Parameters
     seed = 123
-    x_range = [0,200]
-    y_range = [0,200]
-    skill = [0,1]               # 技能水平，实数
+    T = 3000                    # 仿真步数 number of simulation periods
+    H = 3000                    # 工人数量 number of workers
+    Fc = 200                    # C公司数量 number of C-firms
+    Fk = 50                     # K公司数量 number of K-firms
+    
+    # Gov Parameters
     tax = True
     base_tax_rate = 0.001       # 税率基准
     p_tax = 1.5                 # 个税倍率
@@ -118,25 +122,34 @@ class CCMABM_Config:
     i_tax = 10.0                # 遗产税倍率
     revenue = 200               # init government revenue
     
-    T = 3000                    # 仿真步数 number of simulation periods
-    H = 3000                    # 工人数量 number of workers
-    Fc = 200                    # C公司数量 number of C-firms
-    Fk = 50                     # K公司数量 number of K-firms
+    # Market Parameters
     Ze = 5                      # 择业公司数量 number of firms visited by a unemployed worker
     Zc = 2                      # number of C-firms visited by a consumer
     Zk = 2                      # number of K-firms visited by a C-firm
+    
+    # Agent Parameters
+    x_range = [0,200]
+    y_range = [0,200]
+    skill = [0,1]               # 技能水平，实数
     ksi = 0.96                  # Memory parameter (human wealth)
-    tau = 0.2                   # Dividend payout ratio 派息率，资本家分红占企业利润之比例
-    chi = 0.05                  # Fraction of wealth devoted to consumption用于消费的财富比例
+    tau = 0.2                   # 派息率,资本家分红占企业利润之比例 Dividend payout ratio 
+    chi = 0.05                  # 每期用于消费的财富比例 Fraction of wealth devoted to consumption
+    Eh1 = 2                     # 初始家庭个人资产 Initial households’ personal assets
+    
+    
+    # Bank Parameters
     r = 0.01                    # 无风险利率 risk free interest rate
-    rho = 0.9                   # 产量调整参数 Quantity adjustment parameter
-    eta = 0.1                   # Price adjustment parameter (random variable)
     mu = 1.2                    # 银行总加价,无风险利率->实际利率的放大倍数 Bank's gross mark-up
+    zeta = 0.002                # 单笔贷款损失上限,占银行净资产比例 Bank's loss parameter
+    theta = 0.05                # 债务分期付款比例 Installment on Debt
+    Eb1 = 3000                  # 初始银行净资产 Initial equity of the bank
+    
+    # Firm Parameters
     alpha = 0.5                 # 劳动生产率 Productivity of labor
     kappa = 1/3                 # 资本生产率 Productivity of capital
     gamma = 0.25                # 投资概率 Probability of investing
-    zeta = 0.002                # 单笔贷款损失上限,占银行净资产比例 Bank's loss parameter
-    theta = 0.05                # 债务分期付款比例 Installment on Debt
+    rho = 0.9                   # 产量调整参数 Quantity adjustment parameter
+    eta = 0.1                   # 价格调整参数 Price adjustment parameter (random variable)
     delta = 0.02                # 资本折旧率 Depreciation of capital
     nu = 0.5                    # Memory parameter (investment)
     omega_ = 0.85               # 所需产能利用率 Desired capacity utilization rate
@@ -145,5 +158,4 @@ class CCMABM_Config:
     K1 = 10                     # Initial capital初始资本
     Yc1 = 5                     # C公司初始产量 Initial production (C-firms)
     Yk1 = 3                     # K公司初始产量 Initial production (K-firms)
-    Eb1 = 3000                  # 初始银行净资产 Initial equity of the bank
-    Eh1 = 2                     # 初始家庭个人资产 Initial households’ personal assets
+    

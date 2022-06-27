@@ -61,13 +61,16 @@ class agent:
         elif self.y > c.y_range[1]: self.y = c.y_range[1]
 
 class Firm:
-    def __init__(self, ftype, init_capital, rho, eta) -> None:
+    def __init__(self, ftype, init_capital, rho, eta, alpha, kappa) -> None:
         self.type = ftype # K-firm or C-firm
         
         self.t_price:float = None
         self.t_quantity:float = None
         self.tt_price:float = None
         self.tt_quantity:float = None
+        
+        self.labor_prod:float = alpha # 劳动生产率
+        self.capital_prod:float = kappa # 资本生产率
         
         self.avg_price = None
         self.capital = init_capital
@@ -113,7 +116,8 @@ class Firm:
     def fire(self, agent_list):
         '''fire a list of agents'''
         pass
-    
+
+
 class Bank(Firm):
     def __init__(self, ftype, init_capital, r) -> None:
         super().__init__(ftype, init_capital)
