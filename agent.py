@@ -1,4 +1,3 @@
-from collections import namedtuple
 from random import uniform
 import numpy as np
 from configuration import config as c
@@ -61,7 +60,18 @@ class agent:
         elif self.y > c.y_range[1]: self.y = c.y_range[1]
 
 class Firm:
-    def __init__(self, ftype, init_capital, rho, eta, alpha, kappa) -> None:
+    def __init__(self, 
+                 ftype, 
+                 init_capital, 
+                 rho, 
+                 eta, 
+                 alpha, 
+                 kappa, 
+                 gamma, 
+                 delta, 
+                 nu,
+                 omega,
+                 ) -> None:
         self.type = ftype # K-firm or C-firm
         
         self.t_price:float = None
@@ -71,6 +81,11 @@ class Firm:
         
         self.labor_prod:float = alpha # 劳动生产率
         self.capital_prod:float = kappa # 资本生产率
+        self.invest_prob:float = gamma # 当期投资概率
+        self.capital_deprec:float = delta # 资本折旧率
+        self.invest_memory:float = nu # 资本价格滑动平均参数
+        self.desired_capacity_util:float = omega # 长期产能利用率
+        self.wage:float = 
         
         self.avg_price = None
         self.capital = init_capital
