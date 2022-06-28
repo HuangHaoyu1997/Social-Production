@@ -1,5 +1,6 @@
-from random import uniform
+from random import sample, uniform
 import numpy as np
+import random
 from configuration import config as c
 from configuration import CCMABM_Config as CC
 # import configuration as c
@@ -234,14 +235,35 @@ class Market:
         self.n_visit = n_visit
         self.goods_list = {}
         self.sold = {}
+    
     def reset(self, ):
         self.goods_list = {}
     
     def add_goods(self, fname, production, price):
         self.goods_list[fname] = [production, price]
-        
-    def sell(self, name, demand):
+    
+    def sort(self, ):
         pass
+    
+    def add_sold(self, name):
+        pass
+    
+    def sell(self, name, demand):
+        
+        # consumers only visit a part of firms
+        fname_sampled = random.sample(self.goods_list.keys(), 
+                                      self.n_visit)
+        # sort the goods by price
+        good_quantity = np.array([self.goods_list[f][0] for f in fname_sampled])
+        good_price = np.array([self.goods_list[f][1] for f in fname_sampled])
+        idx = np.argsort(good_price) # less --> more
+        good_quantity_sorted = good_quantity[idx]
+        good_price_sorted = good_price[idx]
+        fname_sampled_sorted = 
+        for q,p in zip(good_quantity_sorted, good_price_sorted):
+            print(q, p)
+            if q >= demand:
+                self.add_sold(name, demand)
     
     def statistic(self, ):
         pass
