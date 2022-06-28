@@ -37,7 +37,20 @@ class CC_MABM:
         self._generate_agent(type='U', pop=self.config.H)
         self._generate_agent(type='C', pop=self.config.Fc+self.config.Fk) # 资本家数量=企业总数
         
+        Cfirms:list = self._get_fname(type='C')
+        Kfirms:list = self._get_fname(type='K')
+        self.fnames = {
+                        'C': Cfirms, 
+                        'K': Kfirms,
+                        }
         self._generate_market()
+    
+    def _get_fname(self, type):
+        '''get all X-firms name'''
+        fnames = []
+        for fname in self.Firms:
+            if self.Firms[fname].type == type: fnames.append(fname)
+        return fnames
     
     def pay(self, firm_name):
         '''为agent_pool[name].hire中的worker发工资'''
@@ -73,6 +86,41 @@ class CC_MABM:
         
         pass
     
+    def collect_goods(self, type):
+        '''
+        get X goods from all of X-firms
+        add them to X-Market
+        '''
+        assert type=='C' or type=='K'
+        for fname in self.fnames[type]:
+            quantity, price = self.Firms[fname].get_production()
+            if type=='C':
+                self.C_Market.add_goods(fname=fname,
+                                        production=quantity,
+                                        price=price)
+            elif type=='K':
+                self.K_Market.add_goods(fname=fname,
+                                        production=quantity,
+                                        price=price)
+            else:
+                raise NotImplementedError
+    
+    def sell(self, type:str):
+        '''
+        call Market object and sell goods
+        '''
+        
+        for fname in self.fnames[type]:
+            demand = self.Firms[fname].get_demand()
+            if type=='C':
+                self.C_Market.sell(name=fname,
+                                   demand=demand)
+            elif type == 'K':
+                self.K_Market.sell(name=fname,
+                                   demand=demand)
+            else:
+                raise NotImplementedError
+            
     def _generate_bank(self, ):
         self.Bank = Bank(ftype='B', init_capital=self.config.Eb1)
         
@@ -90,7 +138,8 @@ class CC_MABM:
         firms = {}
         for i in range(N_firm):
             name = str(i)+str(time.time()).split('.')[1]
-            firms[name] = Firm(ftype=type, 
+            firms[name] = Firm(name=name,
+                               ftype=type, 
                                init_capital=self.config.K1,
                                init_deposit=self.config.Df1,
                                init_quantity=self.config.Yc1 if type=='C' else self.config.Yk1,

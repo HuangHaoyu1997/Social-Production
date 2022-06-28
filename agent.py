@@ -61,6 +61,7 @@ class agent:
 
 class Firm:
     def __init__(self, 
+                 name,
                  ftype, 
                  init_capital,
                  init_deposit,
@@ -77,27 +78,30 @@ class Firm:
                  theta,
                  ) -> None:
         
-        
-        self.type = ftype # K-firm or C-firm
+        self.step = 0
+        self.name = name
+        self.type:str = ftype # K-firm or C-firm
         
         self.t_price:float = None
         self.t_quantity:float = init_quantity
-        self.tt_price:float = None
-        self.tt_quantity:float = None
+        self.tt_price:float = None      # t+1 step价格
+        self.tt_quantity:float = None   # t+1 step产量
         
-        self.labor_prod:float = alpha # 劳动生产率
+        self.labor_prod:float = alpha   # 劳动生产率
         self.capital_prod:float = kappa # 资本生产率
-        self.invest_prob:float = gamma # 当期投资概率
+        self.invest_prob:float = gamma  # 当期投资概率
         self.capital_deprec:float = delta # 资本折旧率
-        self.invest_memory:float = nu # 资本价格滑动平均参数
+        self.invest_memory:float = nu   # 资本价格滑动平均参数
         self.desired_capacity_util:float = omega # 长期产能利用率
-        self.installment:float = theta # 分期付款比例
+        self.installment:float = theta  # 分期付款比例
         self.wage:float = wage
         
         self.avg_price = None
         self.capital = init_capital # 公司初始固定资产
-        self.cap_t = None # t-1 step
-        self.cap_tt = None
+        self.cap_t = init_capital # t-1 step
+        self.cap_tt = init_capital # t-2 step
+        self.cap_avg = [init_capital]*2
+        
         self.deposit = init_deposit # 公司在银行的初始存款
         self.labor = None
         self.hire_list = []
@@ -109,19 +113,27 @@ class Firm:
         '''
         calculating moving average capital used in past time 
         '''
+        self.cap_avg
         
+    def get_production(self, ):
         
-    def production(self, ):
-        
+        return self.t_quantity, self.t_price
     
     def investment(self, ):
         pass
     
     def quantity_decision(self, avg_price, forecast_err):
+        
         # forecast_err = 产量 - 销售量
-        # forecast_err <0: 供小于求,应增加产量
-        # forecast_err >0: 供大于求,应减少产量
-        self.tt_quantity = self.t_quantity - self.rho * forecast_err
+        # forecast_err <0: 供小于求,高于均价->增加产量
+        # forecast_err >0: 供大于求,低于均价->减少产量
+        # 其他情况小范围随机波动
+        if forecast_err<0 and self.t_price >= avg_price:
+            self.tt_quantity = self.t_quantity - self.rho * forecast_err
+        elif forecast_err>0 and self.t_price < avg_price:
+            self.tt_quantity = self.t_quantity - self.rho * forecast_err
+        else:
+            self.tt_quantity = self.t_quantity + uniform(-0.1*self.rho, 0.1*self.rho)
     
     def price_decision(self, avg_price, forecast_err):
         # 供小于求+低价-->涨价
@@ -130,7 +142,6 @@ class Firm:
         # 供大于求+高价-->降价
         elif forecast_err > 0 and self.t_price >= avg_price:
             self.tt_price = self.t_price * (1 - uniform(0, self.eta))
-        
         # 其他情况略微波动
         else:
             price_change = uniform(-self.eta*0.1, self.eta*0.1)
@@ -229,7 +240,7 @@ class Market:
     def add_goods(self, fname, production, price):
         self.goods_list[fname] = [production, price]
         
-    def sell(self, cname, demand):
+    def sell(self, name, demand):
         pass
     
     def statistic(self, ):
