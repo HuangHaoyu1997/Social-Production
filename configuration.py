@@ -158,4 +158,5 @@ class CCMABM_Config:
     K1 = 10                     # 初始资本 Initial capital
     Yc1 = 5                     # C公司初始产量 Initial production (C-firms)
     Yk1 = 3                     # K公司初始产量 Initial production (K-firms)
-    
+    init_Cprice = 0.8*Eh1*chi   # C公司初始价格上限
+    init_Kprice = 0.1           # K公司初始价格上限
