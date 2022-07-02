@@ -155,11 +155,15 @@ class CC_MABM:
                                
                                )
         
+        # 更新已有Firms字典
         if self.Firms is None: self.Firms = firms
         elif self.Firms is not None: self.Firms.update(firms)
     
     def _generate_agent(self, type, pop):
-        '''generate unemployed workers or capitalists'''
+        '''
+        生成智能体，即资本家或失业状态的工人
+        generate unemployed workers or capitalists
+        '''
         agent = {}
         for i in range(pop):
             name = str(i)+str(time.time()).split('.')[1]
@@ -176,6 +180,7 @@ class CC_MABM:
                                   memory=self.config.ksi,
                                   chi=self.config.chi,
                                   )
+        # 新生成的agent population更新Workers或Capitalists
         if type == 'U':
             if self.Workers is None:
                 self.Workers = agent
