@@ -151,13 +151,29 @@ class Firm:
     def decision(self, ):
         pass
     
-    def sell(self, agent_list):
+    def get(self, agent_list):
         '''sell productions to agent'''
         pass
     
-    def fire(self, agent_list):
+    def fire(self, number):
         '''fire a list of agents'''
-        pass
+        fire_list = random.sample(self.hire_list, number)
+        assert len(fire_list) < len(self.hire_list)
+
+        for fname in fire_list:
+            fid = self.hire_list.index(fname)
+            self.hire_list.pop(fid)
+        return fire_list
+    
+    def pay_wage(self, ):
+        '''pay the salary to workers hired in this firm'''
+        assert len(self.hire_list)>0
+        wage_list = {}
+        for name in self.hire_list:
+            wage_list[name] = self.wage
+            self.deposit -= self.wage
+        
+        return wage_list
 
 
 class Bank:
@@ -298,9 +314,10 @@ class CCAgent(agent):
     def consume_decision(self, ):
         pass
     
-    def consume(self, firm_list:list):
+    def consume(self, good_dict:dict):
         '''random search Zc C-firms for consumption'''
-        pass
+        for name in good_dict:
+            pass
     
     def _get_wage(self, ):
         assert self.work != 'U'
