@@ -5,7 +5,8 @@ from configuration import config as c
 from configuration import CCMABM_Config as CC
 # import configuration as c
 # np.random.seed(c.seed)
-
+import warnings
+warnings.filterwarnings("ignore")
 class agent:
     def __init__(self, position, name, skill, asset, age, intention) -> None:
         self.x, self.y = position
@@ -262,7 +263,10 @@ class Market:
         pass
     
     def add_sold(self, fname, cname, quantity, price):
-        self.sold[fname] = [cname, price, quantity]
+        if fname not in self.sold:
+            self.sold[fname] = []
+        
+        self.sold[fname].append({cname: [price, quantity]})
     
     def sell(self, name, m_demand):
         '''
@@ -292,15 +296,15 @@ class Market:
         )
         pso = PSO(func=object, 
                   n_dim=self.n_visit, 
-                  pop=10, 
-                  max_iter=20, 
+                  pop=40, 
+                  max_iter=200, 
                   lb=0, 
                   ub=m_demand, 
                   constraint_ueq=constraint_ueq)
         pso.run()
         # 消费金额的最优分配方案
-        quan = pso.gbest_x/good_price
-        
+        quan = pso.gbest_x / good_price
+        print(pso.gbest_x, sum(pso.gbest_x), m_demand, good_price)
         for fname, q_, p, q in zip(fname_sampled, quan, good_price, good_quantity):
             # 更新库存量=库存量q - 消费量q_
             self.goods_list[fname][0] = q - q_
@@ -312,7 +316,9 @@ class Market:
         
     
     def statistic(self, ):
-        pass
+        for fname in self.goods_list:
+            if fname in self.sold:
+                print(fname,self.sold[fname])
 
 
 
@@ -374,5 +380,13 @@ if __name__ == '__main__':
     for t in range(100):
         m.add_goods(fname=str(t), 
                     price=round(uniform(1,5), 2),
-                    production=round(uniform(0,3), 2))
-    m.sell(name='C123',m_demand=3.5)
+                    quantity=round(uniform(0,3), 2))
+    m.sell(name='C1',m_demand=3.5)
+    m.sell(name='C2',m_demand=5.5)
+    m.sell(name='C3',m_demand=10.5)
+    m.sell(name='C4',m_demand=2.5)
+    m.sell(name='C5',m_demand=5.5)
+    m.sell(name='C6',m_demand=7.5)
+    m.sell(name='C7',m_demand=28.5)
+    m.sell(name='C8',m_demand=20.5)
+    m.statistic()

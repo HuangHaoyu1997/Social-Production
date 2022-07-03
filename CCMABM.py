@@ -88,6 +88,7 @@ class CC_MABM:
     
     def collect_goods(self, type):
         '''
+        遍历所有公司，收集产品到市场上
         get X goods from all of X-firms
         add them to X-Market
         '''

@@ -1,17 +1,17 @@
 # Details
 
-Date : 2022-06-28 00:53:08
+Date : 2022-07-04 01:05:33
 
 Directory /home/hhy/Social-Production
 
-Total : 24 files,  3787 codes, 533 comments, 876 blanks, all 5196 lines
+Total : 24 files,  3898 codes, 544 comments, 892 blanks, all 5334 lines
 
 [Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
 
 ## Files
 | filename | language | code | comment | blank | total |
 | :--- | :--- | ---: | ---: | ---: | ---: |
-| [CCMABM.py](/CCMABM.py) | Python | 659 | 121 | 171 | 951 |
+| [CCMABM.py](/CCMABM.py) | Python | 709 | 123 | 176 | 1,008 |
 | [CartPoleContinuous.py](/CartPoleContinuous.py) | Python | 49 | 7 | 8 | 64 |
 | [DSO.py](/DSO.py) | Python | 174 | 16 | 30 | 220 |
 | [DSO_Gym.py](/DSO_Gym.py) | Python | 211 | 18 | 42 | 271 |
@@ -19,9 +19,9 @@ Total : 24 files,  3787 codes, 533 comments, 876 blanks, all 5196 lines
 | [DoubleAuction.py](/DoubleAuction.py) | Python | 73 | 17 | 14 | 104 |
 | [Gumbel.py](/Gumbel.py) | Python | 146 | 11 | 42 | 199 |
 | [VPG_SP.py](/VPG_SP.py) | Python | 99 | 12 | 25 | 136 |
-| [agent.py](/agent.py) | Python | 230 | 10 | 58 | 298 |
+| [agent.py](/agent.py) | Python | 289 | 19 | 70 | 378 |
 | [algorithms/PPO.py](/algorithms/PPO.py) | Python | 206 | 25 | 53 | 284 |
-| [configuration.py](/configuration.py) | Python | 124 | 16 | 21 | 161 |
+| [configuration.py](/configuration.py) | Python | 126 | 16 | 20 | 162 |
 | [env.py](/env.py) | Python | 563 | 109 | 146 | 818 |
 | [examples/PolicyGradient.py](/examples/PolicyGradient.py) | Python | 84 | 4 | 24 | 112 |
 | [examples/atari.py](/examples/atari.py) | Python | 87 | 5 | 12 | 104 |
