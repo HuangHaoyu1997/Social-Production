@@ -105,6 +105,9 @@ class CC_MABM:
             else:
                 raise NotImplementedError
     
+    def sell_single(self, agent_name):
+        pass
+    
     def sell(self, type:str):
         '''
         call Market object and sell goods

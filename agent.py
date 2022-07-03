@@ -255,31 +255,61 @@ class Market:
     def reset(self, ):
         self.goods_list = {}
     
-    def add_goods(self, fname, production, price):
-        self.goods_list[fname] = [production, price]
+    def add_goods(self, fname, quantity, price):
+        self.goods_list[fname] = [quantity, price]
     
     def sort(self, ):
         pass
     
-    def add_sold(self, name):
-        pass
+    def add_sold(self, fname, cname, quantity, price):
+        self.sold[fname] = [cname, price, quantity]
     
-    def sell(self, name, demand):
-        
+    def sell(self, name, m_demand):
+        '''
+        name: consumer name
+        m_demand: money for consumption
+        '''
         # consumers only visit a part of firms
         fname_sampled = random.sample(self.goods_list.keys(), 
                                       self.n_visit)
-        # sort the goods by price
+        
+        # 按价格从低到高排序sort the goods by price
         good_quantity = np.array([self.goods_list[f][0] for f in fname_sampled])
         good_price = np.array([self.goods_list[f][1] for f in fname_sampled])
-        idx = np.argsort(good_price) # less --> more
-        good_quantity_sorted = good_quantity[idx]
-        good_price_sorted = good_price[idx]
-        fname_sampled_sorted = 
-        for q,p in zip(good_quantity_sorted, good_price_sorted):
-            print(q, p)
-            if q >= demand:
-                self.add_sold(name, demand)
+        
+        # idx = np.argsort(good_price) # less --> more
+        # good_quantity_sorted = good_quantity[idx]
+        # good_price_sorted = good_price[idx]
+        # fname_sampled_sorted = np.array(fname_sampled)[idx]
+        
+        from sko.PSO import PSO
+        def object(money):
+            return -np.sum([m/p for m,p in zip(money, good_price)])
+        constraint_ueq = (
+            lambda m: m[0]/good_price[0]-good_quantity[0], # n_visit
+            lambda m: m[1]/good_price[1]-good_quantity[1],
+            lambda m: m[2]/good_price[2]-good_quantity[2],
+        )
+        pso = PSO(func=object, 
+                  n_dim=self.n_visit, 
+                  pop=10, 
+                  max_iter=20, 
+                  lb=0, 
+                  ub=m_demand, 
+                  constraint_ueq=constraint_ueq)
+        pso.run()
+        # 消费金额的最优分配方案
+        quan = pso.gbest_x/good_price
+        
+        for fname, q_, p, q in zip(fname_sampled, quan, good_price, good_quantity):
+            # 更新库存量=库存量q - 消费量q_
+            self.goods_list[fname][0] = q - q_
+            # 记录成交订单
+            self.add_sold(fname=fname,
+                          cname=name,
+                          quantity=q_,
+                          price=p)
+        
     
     def statistic(self, ):
         pass
@@ -339,3 +369,10 @@ class CCAgent(agent):
         '''random search Zd K- and C-firms for vacancies'''
         pass
     
+if __name__ == '__main__':
+    m = Market(type='C', n_visit=3)
+    for t in range(100):
+        m.add_goods(fname=str(t), 
+                    price=round(uniform(1,5), 2),
+                    production=round(uniform(0,3), 2))
+    m.sell(name='C123',m_demand=3.5)
