@@ -305,43 +305,60 @@ class Market:
         # # 消费金额的最优分配方案
         # quan = pso.gbest_x / good_price
         
-        from scipy.optimize import minimize
-        def f(x):
-            return -np.sum(x)
-        m = m_demand
-        e = 1e-10
-        p = good_price
-        q = good_quantity
-        cons = ({'type': 'ineq', 'fun': lambda q_: q[0]-q_[0]},
-                {'type': 'ineq', 'fun': lambda q_: q[1]-q_[1]},
-                {'type': 'ineq', 'fun': lambda q_: q[2]-q_[2]},
-                {'type': 'ineq', 'fun': lambda q_: q_[0]-e},
-                {'type': 'ineq', 'fun': lambda q_: q_[1]-e},
-                {'type': 'ineq', 'fun': lambda q_: q_[2]-e},
-                {'type': 'ineq', 'fun': lambda q_: m-(p[0]*q_[0]+p[1]*q_[1]+p[2]*q_[2])})
-        x0 = np.array((m, m, m))/self.n_visit #设置初始值，初始值的设置很重要，很容易收敛到另外的极值点中，建议多试几个值
-        res = minimize(fun=f,
-                       x0=x0,
-                       method='SLSQP',
-                       constraints=cons, 
-                       options={'maxiter':10}
-                       ) # 'SLSQP'
+        def consumption_solve(p, q, m, n_visit):
+            from scipy.optimize import minimize
+            f = lambda x: -np.sum(x)
+            e = 1e-10
+            cons = ({'type': 'ineq', 'fun': lambda q_: q[0]-q_[0]},
+                    {'type': 'ineq', 'fun': lambda q_: q[1]-q_[1]},
+                    {'type': 'ineq', 'fun': lambda q_: q[2]-q_[2]},
+                    {'type': 'ineq', 'fun': lambda q_: q_[0]-e},
+                    {'type': 'ineq', 'fun': lambda q_: q_[1]-e},
+                    {'type': 'ineq', 'fun': lambda q_: q_[2]-e},
+                    {'type': 'ineq', 'fun': lambda q_: m-(p[0]*q_[0]+p[1]*q_[1]+p[2]*q_[2])})
+            x0 = np.array((m, m, m))/n_visit #设置初始值，初始值的设置很重要，很容易收敛到另外的极值点中，建议多试几个值
+            res = minimize(fun=f,
+                        x0=x0,
+                        method='SLSQP',
+                        constraints=cons, 
+                        options={'maxiter':10}
+                        )
+            quantity_decision = np.round(res.x, 2)
+            return quantity_decision
         
-        print(res.x, sum(res.x), m_demand)
-        for fname, q_, p, q in zip(fname_sampled, quan, good_price, good_quantity):
-            # 更新库存量=库存量q - 消费量q_
-            self.goods_list[fname][0] = q - q_
+        quantity_decision = consumption_solve(p=good_price,
+                                              q=good_quantity,
+                                              m=m_demand,
+                                              n_visit=self.n_visit)
+        
+        # 消费基金的剩余, 返还消费者
+        surplus = m_demand - sum(quantity_decision*good_price)
+        surplus = surplus if surplus>0 else 0
+        
+        for fname, q_, p, q in zip(fname_sampled, quantity_decision, good_price, good_quantity):
             # 记录成交订单
-            self.add_sold(fname=fname,
-                          cname=name,
-                          quantity=q_,
-                          price=p)
-        
+            if round(q_, 2)>0:
+                self.add_sold(fname=fname, # 商家名
+                              cname=name, # 消费者名
+                              quantity=round(q_, 2), # 消费数量
+                              price=round(p, 2)) # 价格
+            
+            # 更新库存量=库存量q - 消费量q_
+            if round(q - q_, 2)==0: # 售罄,清空good_list
+                self.goods_list.pop(fname)
+                continue
+            self.goods_list[fname][0] = round(q - q_, 2)
+            
+        return surplus, sum(quantity_decision) # 剩下的钱, 消费量
     
     def statistic(self, ):
-        for fname in self.goods_list:
-            if fname in self.sold:
-                print(fname,self.sold[fname])
+        firm_sold = {}
+        
+        for fname in self.sold:
+            sold_quanity = 0
+            for cname in self.sold[fname]:
+                sold_quanity += cname[list(cname.keys())[0]][1]
+            print(fname, round(sold_quanity, 2))
 
 
 
@@ -403,13 +420,7 @@ if __name__ == '__main__':
     for t in range(100):
         m.add_goods(fname=str(t), 
                     price=round(uniform(1,5), 2),
-                    quantity=round(uniform(0,3), 2))
-    m.sell(name='C1',m_demand=3.5)
-    m.sell(name='C2',m_demand=5.5)
-    m.sell(name='C3',m_demand=10.5)
-    m.sell(name='C4',m_demand=2.5)
-    m.sell(name='C5',m_demand=5.5)
-    m.sell(name='C6',m_demand=7.5)
-    m.sell(name='C7',m_demand=28.5)
-    m.sell(name='C8',m_demand=20.5)
+                    quantity=round(uniform(10,30), 2))
+    for i in range(500):
+        m.sell(name='C'+str(i), m_demand=uniform(3, 10))
     m.statistic()

@@ -1,10 +1,22 @@
 {
     "cSpell.words": [
+        "argsort",
+        "CCMABM",
+        "cname",
+        "deprec",
         "dtype",
+        "ftype",
+        "gbest",
+        "ineq",
+        "maxiter",
         "ndarray",
         "networkx",
         "Ornstein",
         "pyplot",
+        "quan",
+        "scipy",
+        "SLSQP",
+        "timestep",
         "Uhlenbeck"
     ]
 }
