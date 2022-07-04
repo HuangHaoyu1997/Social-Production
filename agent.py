@@ -286,25 +286,48 @@ class Market:
         # good_price_sorted = good_price[idx]
         # fname_sampled_sorted = np.array(fname_sampled)[idx]
         
-        from sko.PSO import PSO
-        def object(money):
-            return -np.sum([m/p for m,p in zip(money, good_price)])
-        constraint_ueq = (
-            lambda m: m[0]/good_price[0]-good_quantity[0], # n_visit
-            lambda m: m[1]/good_price[1]-good_quantity[1],
-            lambda m: m[2]/good_price[2]-good_quantity[2],
-        )
-        pso = PSO(func=object, 
-                  n_dim=self.n_visit, 
-                  pop=40, 
-                  max_iter=200, 
-                  lb=0, 
-                  ub=m_demand, 
-                  constraint_ueq=constraint_ueq)
-        pso.run()
-        # 消费金额的最优分配方案
-        quan = pso.gbest_x / good_price
-        print(pso.gbest_x, sum(pso.gbest_x), m_demand, good_price)
+        # from sko.PSO import PSO
+        # def object(money):
+        #     return -np.sum([m/p for m,p in zip(money, good_price)])
+        # constraint_ueq = (
+        #     lambda m: m[0]/good_price[0]-good_quantity[0], # n_visit
+        #     lambda m: m[1]/good_price[1]-good_quantity[1],
+        #     lambda m: m[2]/good_price[2]-good_quantity[2],
+        # )
+        # pso = PSO(func=object, 
+        #           n_dim=self.n_visit, 
+        #           pop=40, 
+        #           max_iter=200, 
+        #           lb=0, 
+        #           ub=m_demand, 
+        #           constraint_ueq=constraint_ueq)
+        # pso.run()
+        # # 消费金额的最优分配方案
+        # quan = pso.gbest_x / good_price
+        
+        from scipy.optimize import minimize
+        def f(x):
+            return -np.sum(x)
+        m = m_demand
+        e = 1e-10
+        p = good_price
+        q = good_quantity
+        cons = ({'type': 'ineq', 'fun': lambda q_: q[0]-q_[0]},
+                {'type': 'ineq', 'fun': lambda q_: q[1]-q_[1]},
+                {'type': 'ineq', 'fun': lambda q_: q[2]-q_[2]},
+                {'type': 'ineq', 'fun': lambda q_: q_[0]-e},
+                {'type': 'ineq', 'fun': lambda q_: q_[1]-e},
+                {'type': 'ineq', 'fun': lambda q_: q_[2]-e},
+                {'type': 'ineq', 'fun': lambda q_: m-(p[0]*q_[0]+p[1]*q_[1]+p[2]*q_[2])})
+        x0 = np.array((m, m, m))/self.n_visit #设置初始值，初始值的设置很重要，很容易收敛到另外的极值点中，建议多试几个值
+        res = minimize(fun=f,
+                       x0=x0,
+                       method='SLSQP',
+                       constraints=cons, 
+                       options={'maxiter':10}
+                       ) # 'SLSQP'
+        
+        print(res.x, sum(res.x), m_demand)
         for fname, q_, p, q in zip(fname_sampled, quan, good_price, good_quantity):
             # 更新库存量=库存量q - 消费量q_
             self.goods_list[fname][0] = q - q_
