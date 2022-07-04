@@ -352,13 +352,18 @@ class Market:
         return surplus, sum(quantity_decision) # 剩下的钱, 消费量
     
     def statistic(self, ):
-        firm_sold = {}
-        
+        '''
+        统计各公司的销售量和销售额
+        '''
+        quan_sold, price_sold = {}, {}
         for fname in self.sold:
-            sold_quanity = 0
+            sold_quanity, sold_price = 0, 0
             for cname in self.sold[fname]:
-                sold_quanity += cname[list(cname.keys())[0]][1]
-            print(fname, round(sold_quanity, 2))
+                # 销售额=单价x销量
+                sold_price += cname[list(cname.keys())[0]][0] * cname[list(cname.keys())[0]][1]
+                sold_quanity += cname[list(cname.keys())[0]][1] # 销量
+            quan_sold[fname] = round(sold_quanity, 2)
+            price_sold[fname] = round(sold_price, 2)
 
 
 
