@@ -252,21 +252,57 @@ class Market:
         self.n_visit = n_visit
         self.goods_list = {}
         self.sold = {}
-    
-    def reset(self, ):
-        self.goods_list = {}
+        self.total_add_quantity = 0.
+        self.total_add_value = 0.
     
     def add_goods(self, fname, quantity, price):
+        self.total_add_quantity += quantity
+        self.total_add_value += quantity * price
         self.goods_list[fname] = [quantity, price]
     
-    def sort(self, ):
-        pass
+    def reset(self, ):
+        '''
+        完成1轮销售, 清空
+        1）商品列表
+        2）销售列表
+        3）各统计量
+        '''
+        self.goods_list = {}
+        self.sold = {}
+        self.total_add_quantity = 0.
+        self.total_add_value = 0.
     
     def add_sold(self, fname, cname, quantity, price):
+        '''
+        统计成交订单
+        '''
         if fname not in self.sold:
             self.sold[fname] = []
         
         self.sold[fname].append({cname: [price, quantity]})
+    
+    def add_statistic(self, ):
+        '''
+        统计t时刻开始销售之前的市场信息
+        '''
+        quan_add:dict = {}
+        value_add:dict = {} 
+        total_value:float = 0.
+        total_quan:float = 0.
+        
+        for fname in self.goods_list:
+            goods = self.goods_list[fname]
+            # fname的销售量, 销售额
+            add_quanity, add_value = 0, 0
+            goods
+            # 消费者cname的销售额=单价x销量
+            add_value += cname[list(cname.keys())[0]][0] * cname[list(cname.keys())[0]][1]
+            total_value += sold_value
+            # 销量
+            add_quanity += cname[list(cname.keys())[0]][1] 
+            total_quan += cname[list(cname.keys())[0]][1]
+            
+        return quan_add, value_add, total_quan, total_value
     
     def sell(self, name, m_demand):
         '''
@@ -351,7 +387,7 @@ class Market:
             
         return surplus, sum(quantity_decision) # 剩下的钱, 消费量
     
-    def statistic(self, ):
+    def sold_statistic(self, ):
         '''
         统计各公司的销售量和销售额
         quan_sold: dict
