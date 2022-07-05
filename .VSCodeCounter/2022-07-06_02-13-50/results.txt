@@ -1,19 +1,19 @@
-Date : 2022-07-02 23:37:53
+Date : 2022-07-06 02:13:50
 Directory : /home/hhy/Social-Production
-Total : 24 files,  3853 codes, 535 comments, 884 blanks, all 5272 lines
+Total : 24 files,  3973 codes, 568 comments, 908 blanks, all 5449 lines
 
 Languages
 +----------+------------+------------+------------+------------+------------+
 | language | files      | code       | comment    | blank      | total      |
 +----------+------------+------------+------------+------------+------------+
-| Python   |         24 |      3,853 |        535 |        884 |      5,272 |
+| Python   |         24 |      3,973 |        568 |        908 |      5,449 |
 +----------+------------+------------+------------+------------+------------+
 
 Directories
 +--------------------------------------------------------+------------+------------+------------+------------+------------+
 | path                                                   | files      | code       | comment    | blank      | total      |
 +--------------------------------------------------------+------------+------------+------------+------------+------------+
-| .                                                      |         24 |      3,853 |        535 |        884 |      5,272 |
+| .                                                      |         24 |      3,973 |        568 |        908 |      5,449 |
 | algorithms                                             |          1 |        206 |         25 |         53 |        284 |
 | examples                                               |          5 |        343 |         36 |         83 |        462 |
 +--------------------------------------------------------+------------+------------+------------+------------+------------+
@@ -22,7 +22,7 @@ Files
 +--------------------------------------------------------+----------+------------+------------+------------+------------+
 | filename                                               | language | code       | comment    | blank      | total      |
 +--------------------------------------------------------+----------+------------+------------+------------+------------+
-| /home/hhy/Social-Production/CCMABM.py                  | Python   |        704 |        121 |        175 |      1,000 |
+| /home/hhy/Social-Production/CCMABM.py                  | Python   |        710 |        123 |        176 |      1,009 |
 | /home/hhy/Social-Production/CartPoleContinuous.py      | Python   |         49 |          7 |          8 |         64 |
 | /home/hhy/Social-Production/DSO.py                     | Python   |        174 |         16 |         30 |        220 |
 | /home/hhy/Social-Production/DSO_Gym.py                 | Python   |        211 |         18 |         42 |        271 |
@@ -30,7 +30,7 @@ Files
 | /home/hhy/Social-Production/DoubleAuction.py           | Python   |         73 |         17 |         14 |        104 |
 | /home/hhy/Social-Production/Gumbel.py                  | Python   |        146 |         11 |         42 |        199 |
 | /home/hhy/Social-Production/VPG_SP.py                  | Python   |         99 |         12 |         25 |        136 |
-| /home/hhy/Social-Production/agent.py                   | Python   |        249 |         12 |         63 |        324 |
+| /home/hhy/Social-Production/agent.py                   | Python   |        363 |         43 |         86 |        492 |
 | /home/hhy/Social-Production/algorithms/PPO.py          | Python   |        206 |         25 |         53 |        284 |
 | /home/hhy/Social-Production/configuration.py           | Python   |        126 |         16 |         20 |        162 |
 | /home/hhy/Social-Production/env.py                     | Python   |        563 |        109 |        146 |        818 |
@@ -46,5 +46,5 @@ Files
 | /home/hhy/Social-Production/single_test.py             | Python   |         69 |          8 |          8 |         85 |
 | /home/hhy/Social-Production/test.py                    | Python   |         35 |          2 |         12 |         49 |
 | /home/hhy/Social-Production/utils.py                   | Python   |        336 |         34 |         67 |        437 |
-| Total                                                  |          |      3,853 |        535 |        884 |      5,272 |
+| Total                                                  |          |      3,973 |        568 |        908 |      5,449 |
 +--------------------------------------------------------+----------+------------+------------+------------+------------+

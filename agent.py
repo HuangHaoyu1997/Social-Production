@@ -248,16 +248,27 @@ class Government:
 
 class Market:
     def __init__(self, type, n_visit, ) -> None:
-        self.type = type
-        self.n_visit = n_visit
-        self.goods_list = {}
-        self.sold = {}
-        self.total_add_quantity = 0.
-        self.total_add_value = 0.
+        self.type = type                # 市场类型
+        self.n_visit = n_visit          # 消费者单次最大访问数
+        
+        self.goods_list = {}            # 商品订单
+        self.sold = {}                  # 成交订单
+        self.total_add_quantity = 0.    # 售前商品总量
+        self.total_add_value = 0.       # 售前商品总价值
+        self.avg_price_add = 0.         # 售前均价
+        self.total_sold_value = 0.      # 商品成交总价值
+        self.total_sold_quan = 0.       # 成交总量
+        self.avg_price_sold = 0.        # 成交均价
+        
     
     def add_goods(self, fname, quantity, price):
+        '''
+        添加商品：
+        公司名, 数量, 单价
+        '''
         self.total_add_quantity += quantity
         self.total_add_value += quantity * price
+        assert fname not in self.goods_list 
         self.goods_list[fname] = [quantity, price]
     
     def reset(self, ):
@@ -269,49 +280,35 @@ class Market:
         '''
         self.goods_list = {}
         self.sold = {}
+        
         self.total_add_quantity = 0.
         self.total_add_value = 0.
+        self.avg_price_add = 0.
+        self.total_sold_value = 0.
+        self.total_sold_quan = 0.
+        self.avg_price_sold = 0.
     
     def add_sold(self, fname, cname, quantity, price):
         '''
-        统计成交订单
+        添加新成交订单
         '''
         if fname not in self.sold:
             self.sold[fname] = []
         
+        self.total_sold_quan += quantity
+        self.total_sold_value += quantity * price
+        
         self.sold[fname].append({cname: [price, quantity]})
     
-    def add_statistic(self, ):
-        '''
-        统计t时刻开始销售之前的市场信息
-        '''
-        quan_add:dict = {}
-        value_add:dict = {} 
-        total_value:float = 0.
-        total_quan:float = 0.
-        
-        for fname in self.goods_list:
-            goods = self.goods_list[fname]
-            # fname的销售量, 销售额
-            add_quanity, add_value = 0, 0
-            goods
-            # 消费者cname的销售额=单价x销量
-            add_value += cname[list(cname.keys())[0]][0] * cname[list(cname.keys())[0]][1]
-            total_value += sold_value
-            # 销量
-            add_quanity += cname[list(cname.keys())[0]][1] 
-            total_quan += cname[list(cname.keys())[0]][1]
-            
-        return quan_add, value_add, total_quan, total_value
     
     def sell(self, name, m_demand):
         '''
+        单人消费函数
         name: consumer name
         m_demand: money for consumption
         '''
         # consumers only visit a part of firms
-        fname_sampled = random.sample(self.goods_list.keys(), 
-                                      self.n_visit)
+        fname_sampled = random.sample(self.goods_list.keys(), self.n_visit)
         
         # 按价格从低到高排序sort the goods by price
         good_quantity = np.array([self.goods_list[f][0] for f in fname_sampled])
@@ -387,6 +384,13 @@ class Market:
             
         return surplus, sum(quantity_decision) # 剩下的钱, 消费量
     
+    def add_statistic(self, ):
+        '''
+        返回t时刻开始销售之前的市场统计信息
+        '''
+        self.avg_price_add = self.total_add_value / self.total_add_quantity
+        return self.total_add_quantity, self.total_add_value, self.avg_price_add
+    
     def sold_statistic(self, ):
         '''
         统计各公司的销售量和销售额
@@ -394,10 +398,10 @@ class Market:
         value_sold: dict
         
         '''
+        # 各公司销售情况
         quan_sold:dict = {}
         value_sold:dict = {} 
-        total_value:float = 0.
-        total_quan:float = 0.
+        
         
         for fname in self.sold:
             # fname的销售量, 销售额
@@ -405,14 +409,16 @@ class Market:
             for cname in self.sold[fname]:
                 # 消费者cname的销售额=单价x销量
                 sold_value += cname[list(cname.keys())[0]][0] * cname[list(cname.keys())[0]][1]
-                total_value += sold_value
                 # 销量
                 sold_quanity += cname[list(cname.keys())[0]][1] 
-                total_quan += cname[list(cname.keys())[0]][1]
             
             quan_sold[fname] = round(sold_quanity, 2)
             value_sold[fname] = round(sold_value, 2)
-        return quan_sold, value_sold, total_quan, total_value
+        
+        # 计算成交均价
+        self.avg_price_sold = self.total_sold_value / self.total_sold_quan
+        
+        return quan_sold, value_sold, self.total_sold_quan, self.total_sold_value, self.avg_price_sold
 
 
 
@@ -470,12 +476,17 @@ class CCAgent(agent):
         pass
     
 if __name__ == '__main__':
+    np.random.seed(123)
+    random.seed(123)
+    
     m = Market(type='C', n_visit=3)
+    # add goods
     for t in range(100):
         m.add_goods(fname=str(t), 
                     price=round(uniform(1,5), 2),
                     quantity=round(uniform(10,30), 2))
+    print(m.add_statistic())
     for i in range(500):
         m.sell(name='C'+str(i), m_demand=uniform(3, 10))
-    quan_sold, value_sold, total_quan, total_value = m.statistic()
-    print(total_quan, total_value, total_value/total_quan)
+    quan_sold, value_sold, total_quan, total_value, avg_price_sold = m.sold_statistic()
+    print(total_quan, total_value, avg_price_sold)
