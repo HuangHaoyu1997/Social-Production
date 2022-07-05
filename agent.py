@@ -354,16 +354,29 @@ class Market:
     def statistic(self, ):
         '''
         统计各公司的销售量和销售额
+        quan_sold: dict
+        value_sold: dict
+        
         '''
-        quan_sold, price_sold = {}, {}
+        quan_sold:dict = {}
+        value_sold:dict = {} 
+        total_value:float = 0.
+        total_quan:float = 0.
+        
         for fname in self.sold:
-            sold_quanity, sold_price = 0, 0
+            # fname的销售量, 销售额
+            sold_quanity, sold_value = 0, 0
             for cname in self.sold[fname]:
-                # 销售额=单价x销量
-                sold_price += cname[list(cname.keys())[0]][0] * cname[list(cname.keys())[0]][1]
-                sold_quanity += cname[list(cname.keys())[0]][1] # 销量
+                # 消费者cname的销售额=单价x销量
+                sold_value += cname[list(cname.keys())[0]][0] * cname[list(cname.keys())[0]][1]
+                total_value += sold_value
+                # 销量
+                sold_quanity += cname[list(cname.keys())[0]][1] 
+                total_quan += cname[list(cname.keys())[0]][1]
+            
             quan_sold[fname] = round(sold_quanity, 2)
-            price_sold[fname] = round(sold_price, 2)
+            value_sold[fname] = round(sold_value, 2)
+        return quan_sold, value_sold, total_quan, total_value
 
 
 
@@ -428,4 +441,5 @@ if __name__ == '__main__':
                     quantity=round(uniform(10,30), 2))
     for i in range(500):
         m.sell(name='C'+str(i), m_demand=uniform(3, 10))
-    m.statistic()
+    quan_sold, value_sold, total_quan, total_value = m.statistic()
+    print(total_quan, total_value, total_value/total_quan)
